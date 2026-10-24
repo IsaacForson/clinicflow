@@ -1,0 +1,2286 @@
+[
+{
+"code": "A00.9",
+"description": "Cholera, unspecified"
+},
+{
+"code": "A01.0",
+"description": "Typhoid fever"
+},
+{
+"code": "A01.4",
+"description": "Paratyphoid fever, unspecified"
+},
+{
+"code": "A02.0",
+"description": "Salmonella enteritis"
+},
+{
+"code": "A03.9",
+"description": "Shigellosis, unspecified"
+},
+{
+"code": "A04.9",
+"description": "Bacterial intestinal infection, unspecified"
+},
+{
+"code": "A06.0",
+"description": "Acute amoebic dysentery"
+},
+{
+"code": "A06.9",
+"description": "Amoebiasis, unspecified"
+},
+{
+"code": "A07.1",
+"description": "Giardiasis"
+},
+{
+"code": "A08.4",
+"description": "Viral intestinal infection, unspecified"
+},
+{
+"code": "A09",
+"description": "Diarrhoea and gastroenteritis of presumed infectious origin"
+},
+{
+"code": "A15.0",
+"description": "Tuberculosis of lung, confirmed by sputum microscopy"
+},
+{
+"code": "A16.2",
+"description": "Tuberculosis of lung, without mention of bacteriological or histological confirmation"
+},
+{
+"code": "A16.9",
+"description": "Respiratory tuberculosis unspecified"
+},
+{
+"code": "A18.0",
+"description": "Tuberculosis of bones and joints"
+},
+{
+"code": "A30.9",
+"description": "Leprosy, unspecified"
+},
+{
+"code": "A33",
+"description": "Tetanus neonatorum"
+},
+{
+"code": "A35",
+"description": "Other tetanus"
+},
+{
+"code": "A37.9",
+"description": "Whooping cough, unspecified"
+},
+{
+"code": "A38",
+"description": "Scarlet fever"
+},
+{
+"code": "A39.0",
+"description": "Meningococcal meningitis"
+},
+{
+"code": "A41.9",
+"description": "Sepsis, unspecified"
+},
+{
+"code": "A46",
+"description": "Erysipelas"
+},
+{
+"code": "A49.9",
+"description": "Bacterial infection, unspecified"
+},
+{
+"code": "A50.9",
+"description": "Congenital syphilis, unspecified"
+},
+{
+"code": "A53.9",
+"description": "Syphilis, unspecified"
+},
+{
+"code": "A54.9",
+"description": "Gonococcal infection, unspecified"
+},
+{
+"code": "A56.0",
+"description": "Chlamydial infection of lower genitourinary tract"
+},
+{
+"code": "A59.0",
+"description": "Urogenital trichomoniasis"
+},
+{
+"code": "A60.0",
+"description": "Herpesviral infection of genitalia and urogenital tract"
+},
+{
+"code": "A63.0",
+"description": "Anogenital (venereal) warts"
+},
+{
+"code": "A64",
+"description": "Unspecified sexually transmitted disease"
+},
+{
+"code": "A69.2",
+"description": "Lyme disease"
+},
+{
+"code": "A82.9",
+"description": "Rabies, unspecified"
+},
+{
+"code": "A90",
+"description": "Dengue fever"
+},
+{
+"code": "A91",
+"description": "Dengue haemorrhagic fever"
+},
+{
+"code": "A95.9",
+"description": "Yellow fever, unspecified"
+},
+{
+"code": "A98.4",
+"description": "Ebola virus disease"
+},
+{
+"code": "B00.9",
+"description": "Herpesviral infection, unspecified"
+},
+{
+"code": "B01.9",
+"description": "Varicella without complication"
+},
+{
+"code": "B02.9",
+"description": "Zoster without complication"
+},
+{
+"code": "B05.9",
+"description": "Measles without complication"
+},
+{
+"code": "B06.9",
+"description": "Rubella without complication"
+},
+{
+"code": "B07",
+"description": "Viral warts"
+},
+{
+"code": "B08.1",
+"description": "Molluscum contagiosum"
+},
+{
+"code": "B08.4",
+"description": "Enteroviral vesicular stomatitis with exanthem (hand, foot and mouth disease)"
+},
+{
+"code": "B15.9",
+"description": "Hepatitis A without hepatic coma"
+},
+{
+"code": "B16.9",
+"description": "Acute hepatitis B without delta-agent and without hepatic coma"
+},
+{
+"code": "B17.1",
+"description": "Acute hepatitis C"
+},
+{
+"code": "B18.1",
+"description": "Chronic viral hepatitis B without delta-agent"
+},
+{
+"code": "B18.2",
+"description": "Chronic viral hepatitis C"
+},
+{
+"code": "B19.9",
+"description": "Unspecified viral hepatitis without hepatic coma"
+},
+{
+"code": "B20",
+"description": "HIV disease resulting in infectious and parasitic diseases"
+},
+{
+"code": "B24",
+"description": "Unspecified human immunodeficiency virus [HIV] disease"
+},
+{
+"code": "B26.9",
+"description": "Mumps without complication"
+},
+{
+"code": "B27.9",
+"description": "Infectious mononucleosis, unspecified"
+},
+{
+"code": "B34.9",
+"description": "Viral infection, unspecified"
+},
+{
+"code": "B35.0",
+"description": "Tinea barbae and tinea capitis"
+},
+{
+"code": "B35.1",
+"description": "Tinea unguium"
+},
+{
+"code": "B35.3",
+"description": "Tinea pedis"
+},
+{
+"code": "B35.4",
+"description": "Tinea corporis"
+},
+{
+"code": "B35.6",
+"description": "Tinea cruris"
+},
+{
+"code": "B35.9",
+"description": "Dermatophytosis, unspecified"
+},
+{
+"code": "B36.0",
+"description": "Pityriasis versicolor"
+},
+{
+"code": "B37.0",
+"description": "Candidal stomatitis (oral thrush)"
+},
+{
+"code": "B37.2",
+"description": "Candidiasis of skin and nail"
+},
+{
+"code": "B37.3",
+"description": "Candidiasis of vulva and vagina"
+},
+{
+"code": "B37.9",
+"description": "Candidiasis, unspecified"
+},
+{
+"code": "B50.0",
+"description": "Plasmodium falciparum malaria with cerebral complications"
+},
+{
+"code": "B50.8",
+"description": "Other severe and complicated Plasmodium falciparum malaria"
+},
+{
+"code": "B50.9",
+"description": "Plasmodium falciparum malaria, unspecified"
+},
+{
+"code": "B51.9",
+"description": "Plasmodium vivax malaria without complication"
+},
+{
+"code": "B52.9",
+"description": "Plasmodium malariae malaria without complication"
+},
+{
+"code": "B53.0",
+"description": "Plasmodium ovale malaria"
+},
+{
+"code": "B53.8",
+"description": "Other parasitologically confirmed malaria, not elsewhere classified"
+},
+{
+"code": "B54",
+"description": "Unspecified malaria"
+},
+{
+"code": "B55.0",
+"description": "Visceral leishmaniasis"
+},
+{
+"code": "B56.9",
+"description": "African trypanosomiasis, unspecified"
+},
+{
+"code": "B65.0",
+"description": "Schistosomiasis due to Schistosoma haematobium (urinary schistosomiasis)"
+},
+{
+"code": "B65.1",
+"description": "Schistosomiasis due to Schistosoma mansoni (intestinal schistosomiasis)"
+},
+{
+"code": "B65.9",
+"description": "Schistosomiasis, unspecified"
+},
+{
+"code": "B67.9",
+"description": "Echinococcosis, other and unspecified"
+},
+{
+"code": "B68.9",
+"description": "Taeniasis, unspecified"
+},
+{
+"code": "B72",
+"description": "Dracunculiasis"
+},
+{
+"code": "B73",
+"description": "Onchocerciasis"
+},
+{
+"code": "B74.0",
+"description": "Filariasis due to Wuchereria bancrofti"
+},
+{
+"code": "B76.9",
+"description": "Hookworm disease, unspecified"
+},
+{
+"code": "B77.9",
+"description": "Ascariasis, unspecified"
+},
+{
+"code": "B79",
+"description": "Trichuriasis"
+},
+{
+"code": "B80",
+"description": "Enterobiasis"
+},
+{
+"code": "B82.9",
+"description": "Intestinal parasitism, unspecified"
+},
+{
+"code": "B83.9",
+"description": "Helminthiasis, unspecified"
+},
+{
+"code": "B85.0",
+"description": "Pediculosis due to Pediculus humanus capitis"
+},
+{
+"code": "B86",
+"description": "Scabies"
+},
+{
+"code": "B99",
+"description": "Other and unspecified infectious diseases"
+},
+{
+"code": "C16.9",
+"description": "Malignant neoplasm of stomach, unspecified"
+},
+{
+"code": "C18.9",
+"description": "Malignant neoplasm of colon, unspecified"
+},
+{
+"code": "C22.0",
+"description": "Liver cell carcinoma"
+},
+{
+"code": "C34.9",
+"description": "Malignant neoplasm of bronchus or lung, unspecified"
+},
+{
+"code": "C46.9",
+"description": "Kaposi sarcoma, unspecified"
+},
+{
+"code": "C50.9",
+"description": "Malignant neoplasm of breast, unspecified"
+},
+{
+"code": "C53.9",
+"description": "Malignant neoplasm of cervix uteri, unspecified"
+},
+{
+"code": "C61",
+"description": "Malignant neoplasm of prostate"
+},
+{
+"code": "C80.9",
+"description": "Malignant neoplasm, primary site unspecified"
+},
+{
+"code": "D24",
+"description": "Benign neoplasm of breast"
+},
+{
+"code": "D25.9",
+"description": "Leiomyoma of uterus, unspecified"
+},
+{
+"code": "D50.0",
+"description": "Iron deficiency anaemia secondary to blood loss (chronic)"
+},
+{
+"code": "D50.9",
+"description": "Iron deficiency anaemia, unspecified"
+},
+{
+"code": "D52.9",
+"description": "Folate deficiency anaemia, unspecified"
+},
+{
+"code": "D53.9",
+"description": "Nutritional anaemia, unspecified"
+},
+{
+"code": "D55.0",
+"description": "Anaemia due to glucose-6-phosphate dehydrogenase [G6PD] deficiency"
+},
+{
+"code": "D57.0",
+"description": "Sickle-cell anaemia with crisis"
+},
+{
+"code": "D57.1",
+"description": "Sickle-cell anaemia without crisis"
+},
+{
+"code": "D57.2",
+"description": "Double heterozygous sickling disorders (HbSC disease)"
+},
+{
+"code": "D57.3",
+"description": "Sickle-cell trait"
+},
+{
+"code": "D64.9",
+"description": "Anaemia, unspecified"
+},
+{
+"code": "D69.6",
+"description": "Thrombocytopenia, unspecified"
+},
+{
+"code": "D72.1",
+"description": "Eosinophilia"
+},
+{
+"code": "E03.9",
+"description": "Hypothyroidism, unspecified"
+},
+{
+"code": "E04.9",
+"description": "Nontoxic goitre, unspecified"
+},
+{
+"code": "E05.9",
+"description": "Thyrotoxicosis, unspecified"
+},
+{
+"code": "E10.9",
+"description": "Type 1 diabetes mellitus without complications"
+},
+{
+"code": "E11.2",
+"description": "Type 2 diabetes mellitus with renal complications"
+},
+{
+"code": "E11.4",
+"description": "Type 2 diabetes mellitus with neurological complications"
+},
+{
+"code": "E11.5",
+"description": "Type 2 diabetes mellitus with peripheral circulatory complications"
+},
+{
+"code": "E11.6",
+"description": "Type 2 diabetes mellitus with other specified complications"
+},
+{
+"code": "E11.9",
+"description": "Type 2 diabetes mellitus without complications"
+},
+{
+"code": "E14.9",
+"description": "Unspecified diabetes mellitus without complications"
+},
+{
+"code": "E16.2",
+"description": "Hypoglycaemia, unspecified"
+},
+{
+"code": "E28.2",
+"description": "Polycystic ovarian syndrome"
+},
+{
+"code": "E40",
+"description": "Kwashiorkor"
+},
+{
+"code": "E41",
+"description": "Nutritional marasmus"
+},
+{
+"code": "E43",
+"description": "Unspecified severe protein-energy malnutrition"
+},
+{
+"code": "E44.0",
+"description": "Moderate protein-energy malnutrition"
+},
+{
+"code": "E46",
+"description": "Unspecified protein-energy malnutrition"
+},
+{
+"code": "E55.9",
+"description": "Vitamin D deficiency, unspecified"
+},
+{
+"code": "E66.9",
+"description": "Obesity, unspecified"
+},
+{
+"code": "E78.5",
+"description": "Hyperlipidaemia, unspecified"
+},
+{
+"code": "E79.0",
+"description": "Hyperuricaemia without signs of inflammatory arthritis"
+},
+{
+"code": "E86",
+"description": "Volume depletion (dehydration)"
+},
+{
+"code": "E87.6",
+"description": "Hypokalaemia"
+},
+{
+"code": "F10.2",
+"description": "Mental and behavioural disorders due to use of alcohol, dependence syndrome"
+},
+{
+"code": "F12.2",
+"description": "Mental and behavioural disorders due to use of cannabinoids, dependence syndrome"
+},
+{
+"code": "F17.2",
+"description": "Mental and behavioural disorders due to use of tobacco, dependence syndrome"
+},
+{
+"code": "F20.9",
+"description": "Schizophrenia, unspecified"
+},
+{
+"code": "F23.9",
+"description": "Acute and transient psychotic disorder, unspecified"
+},
+{
+"code": "F29",
+"description": "Unspecified nonorganic psychosis"
+},
+{
+"code": "F31.9",
+"description": "Bipolar affective disorder, unspecified"
+},
+{
+"code": "F32.0",
+"description": "Mild depressive episode"
+},
+{
+"code": "F32.1",
+"description": "Moderate depressive episode"
+},
+{
+"code": "F32.2",
+"description": "Severe depressive episode without psychotic symptoms"
+},
+{
+"code": "F32.9",
+"description": "Depressive episode, unspecified"
+},
+{
+"code": "F41.0",
+"description": "Panic disorder"
+},
+{
+"code": "F41.1",
+"description": "Generalized anxiety disorder"
+},
+{
+"code": "F41.9",
+"description": "Anxiety disorder, unspecified"
+},
+{
+"code": "F43.1",
+"description": "Post-traumatic stress disorder"
+},
+{
+"code": "F43.2",
+"description": "Adjustment disorders"
+},
+{
+"code": "F45.9",
+"description": "Somatoform disorder, unspecified"
+},
+{
+"code": "F51.0",
+"description": "Nonorganic insomnia"
+},
+{
+"code": "F70.9",
+"description": "Mild mental retardation without mention of impairment of behaviour"
+},
+{
+"code": "F80.9",
+"description": "Developmental disorder of speech and language, unspecified"
+},
+{
+"code": "F84.0",
+"description": "Childhood autism"
+},
+{
+"code": "F90.0",
+"description": "Disturbance of activity and attention (ADHD)"
+},
+{
+"code": "F98.0",
+"description": "Nonorganic enuresis"
+},
+{
+"code": "G03.9",
+"description": "Meningitis, unspecified"
+},
+{
+"code": "G06.0",
+"description": "Intracranial abscess and granuloma"
+},
+{
+"code": "G40.9",
+"description": "Epilepsy, unspecified"
+},
+{
+"code": "G41.9",
+"description": "Status epilepticus, unspecified"
+},
+{
+"code": "G43.9",
+"description": "Migraine, unspecified"
+},
+{
+"code": "G44.2",
+"description": "Tension-type headache"
+},
+{
+"code": "G45.9",
+"description": "Transient cerebral ischaemic attack, unspecified"
+},
+{
+"code": "G47.3",
+"description": "Sleep apnoea"
+},
+{
+"code": "G51.0",
+"description": "Bell palsy"
+},
+{
+"code": "G56.0",
+"description": "Carpal tunnel syndrome"
+},
+{
+"code": "G57.1",
+"description": "Meralgia paraesthetica"
+},
+{
+"code": "G62.9",
+"description": "Polyneuropathy, unspecified"
+},
+{
+"code": "G63.2",
+"description": "Diabetic polyneuropathy"
+},
+{
+"code": "G80.9",
+"description": "Cerebral palsy, unspecified"
+},
+{
+"code": "G81.9",
+"description": "Hemiplegia, unspecified"
+},
+{
+"code": "H00.0",
+"description": "Hordeolum and other deep inflammation of eyelid (stye)"
+},
+{
+"code": "H00.1",
+"description": "Chalazion"
+},
+{
+"code": "H01.0",
+"description": "Blepharitis"
+},
+{
+"code": "H04.1",
+"description": "Other disorders of lacrimal gland (dry eye syndrome)"
+},
+{
+"code": "H10.1",
+"description": "Acute atopic conjunctivitis"
+},
+{
+"code": "H10.3",
+"description": "Acute conjunctivitis, unspecified"
+},
+{
+"code": "H10.4",
+"description": "Chronic conjunctivitis"
+},
+{
+"code": "H10.9",
+"description": "Conjunctivitis, unspecified"
+},
+{
+"code": "H11.0",
+"description": "Pterygium"
+},
+{
+"code": "H16.0",
+"description": "Corneal ulcer"
+},
+{
+"code": "H16.9",
+"description": "Keratitis, unspecified"
+},
+{
+"code": "H20.0",
+"description": "Acute and subacute iridocyclitis"
+},
+{
+"code": "H25.9",
+"description": "Senile cataract, unspecified"
+},
+{
+"code": "H26.9",
+"description": "Cataract, unspecified"
+},
+{
+"code": "H33.2",
+"description": "Serous retinal detachment"
+},
+{
+"code": "H35.0",
+"description": "Background retinopathy and retinal vascular changes"
+},
+{
+"code": "H36.0",
+"description": "Diabetic retinopathy"
+},
+{
+"code": "H40.1",
+"description": "Primary open-angle glaucoma"
+},
+{
+"code": "H40.9",
+"description": "Glaucoma, unspecified"
+},
+{
+"code": "H44.0",
+"description": "Purulent endophthalmitis"
+},
+{
+"code": "H50.9",
+"description": "Strabismus, unspecified"
+},
+{
+"code": "H52.0",
+"description": "Hypermetropia"
+},
+{
+"code": "H52.1",
+"description": "Myopia"
+},
+{
+"code": "H52.2",
+"description": "Astigmatism"
+},
+{
+"code": "H52.4",
+"description": "Presbyopia"
+},
+{
+"code": "H53.9",
+"description": "Visual disturbance, unspecified"
+},
+{
+"code": "H54.7",
+"description": "Unspecified visual loss"
+},
+{
+"code": "H57.1",
+"description": "Ocular pain"
+},
+{
+"code": "H60.3",
+"description": "Other infective otitis externa"
+},
+{
+"code": "H60.9",
+"description": "Otitis externa, unspecified"
+},
+{
+"code": "H61.2",
+"description": "Impacted cerumen"
+},
+{
+"code": "H65.9",
+"description": "Nonsuppurative otitis media, unspecified"
+},
+{
+"code": "H66.0",
+"description": "Acute suppurative otitis media"
+},
+{
+"code": "H66.3",
+"description": "Other chronic suppurative otitis media"
+},
+{
+"code": "H66.9",
+"description": "Otitis media, unspecified"
+},
+{
+"code": "H81.1",
+"description": "Benign paroxysmal vertigo"
+},
+{
+"code": "H81.3",
+"description": "Other peripheral vertigo"
+},
+{
+"code": "H91.9",
+"description": "Hearing loss, unspecified"
+},
+{
+"code": "H92.0",
+"description": "Otalgia"
+},
+{
+"code": "H93.1",
+"description": "Tinnitus"
+},
+{
+"code": "I05.9",
+"description": "Mitral valve disease, unspecified"
+},
+{
+"code": "I09.9",
+"description": "Rheumatic heart disease, unspecified"
+},
+{
+"code": "I10",
+"description": "Essential (primary) hypertension"
+},
+{
+"code": "I11.9",
+"description": "Hypertensive heart disease without (congestive) heart failure"
+},
+{
+"code": "I12.9",
+"description": "Hypertensive renal disease without renal failure"
+},
+{
+"code": "I20.9",
+"description": "Angina pectoris, unspecified"
+},
+{
+"code": "I21.9",
+"description": "Acute myocardial infarction, unspecified"
+},
+{
+"code": "I25.9",
+"description": "Chronic ischaemic heart disease, unspecified"
+},
+{
+"code": "I42.9",
+"description": "Cardiomyopathy, unspecified"
+},
+{
+"code": "I48",
+"description": "Atrial fibrillation and flutter"
+},
+{
+"code": "I49.9",
+"description": "Cardiac arrhythmia, unspecified"
+},
+{
+"code": "I50.0",
+"description": "Congestive heart failure"
+},
+{
+"code": "I50.9",
+"description": "Heart failure, unspecified"
+},
+{
+"code": "I61.9",
+"description": "Intracerebral haemorrhage, unspecified"
+},
+{
+"code": "I63.9",
+"description": "Cerebral infarction, unspecified"
+},
+{
+"code": "I64",
+"description": "Stroke, not specified as haemorrhage or infarction"
+},
+{
+"code": "I80.2",
+"description": "Phlebitis and thrombophlebitis of other deep vessels of lower extremities (DVT)"
+},
+{
+"code": "I83.9",
+"description": "Varicose veins of lower extremities without ulcer or inflammation"
+},
+{
+"code": "I84.9",
+"description": "Unspecified haemorrhoids without complication"
+},
+{
+"code": "I95.9",
+"description": "Hypotension, unspecified"
+},
+{
+"code": "J00",
+"description": "Acute nasopharyngitis [common cold]"
+},
+{
+"code": "J01.9",
+"description": "Acute sinusitis, unspecified"
+},
+{
+"code": "J02.0",
+"description": "Streptococcal pharyngitis"
+},
+{
+"code": "J02.9",
+"description": "Acute pharyngitis, unspecified"
+},
+{
+"code": "J03.9",
+"description": "Acute tonsillitis, unspecified"
+},
+{
+"code": "J04.0",
+"description": "Acute laryngitis"
+},
+{
+"code": "J05.0",
+"description": "Acute obstructive laryngitis [croup]"
+},
+{
+"code": "J06.9",
+"description": "Acute upper respiratory infection, unspecified"
+},
+{
+"code": "J10.1",
+"description": "Influenza with other respiratory manifestations, other influenza virus identified"
+},
+{
+"code": "J11.1",
+"description": "Influenza with other respiratory manifestations, virus not identified"
+},
+{
+"code": "J12.9",
+"description": "Viral pneumonia, unspecified"
+},
+{
+"code": "J13",
+"description": "Pneumonia due to Streptococcus pneumoniae"
+},
+{
+"code": "J15.9",
+"description": "Bacterial pneumonia, unspecified"
+},
+{
+"code": "J18.0",
+"description": "Bronchopneumonia, unspecified"
+},
+{
+"code": "J18.9",
+"description": "Pneumonia, unspecified"
+},
+{
+"code": "J20.9",
+"description": "Acute bronchitis, unspecified"
+},
+{
+"code": "J21.9",
+"description": "Acute bronchiolitis, unspecified"
+},
+{
+"code": "J22",
+"description": "Unspecified acute lower respiratory infection"
+},
+{
+"code": "J30.1",
+"description": "Allergic rhinitis due to pollen"
+},
+{
+"code": "J30.4",
+"description": "Allergic rhinitis, unspecified"
+},
+{
+"code": "J31.0",
+"description": "Chronic rhinitis"
+},
+{
+"code": "J32.9",
+"description": "Chronic sinusitis, unspecified"
+},
+{
+"code": "J33.9",
+"description": "Nasal polyp, unspecified"
+},
+{
+"code": "J35.0",
+"description": "Chronic tonsillitis"
+},
+{
+"code": "J35.2",
+"description": "Hypertrophy of adenoids"
+},
+{
+"code": "J40",
+"description": "Bronchitis, not specified as acute or chronic"
+},
+{
+"code": "J42",
+"description": "Unspecified chronic bronchitis"
+},
+{
+"code": "J44.9",
+"description": "Chronic obstructive pulmonary disease, unspecified"
+},
+{
+"code": "J45.0",
+"description": "Predominantly allergic asthma"
+},
+{
+"code": "J45.9",
+"description": "Asthma, unspecified"
+},
+{
+"code": "J46",
+"description": "Status asthmaticus"
+},
+{
+"code": "J81",
+"description": "Pulmonary oedema"
+},
+{
+"code": "J90",
+"description": "Pleural effusion, not elsewhere classified"
+},
+{
+"code": "K00.6",
+"description": "Disturbances in tooth eruption"
+},
+{
+"code": "K00.7",
+"description": "Teething syndrome"
+},
+{
+"code": "K01.1",
+"description": "Impacted teeth"
+},
+{
+"code": "K02.1",
+"description": "Caries of dentine"
+},
+{
+"code": "K02.9",
+"description": "Dental caries, unspecified"
+},
+{
+"code": "K03.0",
+"description": "Excessive attrition of teeth"
+},
+{
+"code": "K03.1",
+"description": "Abrasion of teeth"
+},
+{
+"code": "K03.6",
+"description": "Deposits [accretions] on teeth (calculus)"
+},
+{
+"code": "K04.0",
+"description": "Pulpitis"
+},
+{
+"code": "K04.1",
+"description": "Necrosis of pulp"
+},
+{
+"code": "K04.4",
+"description": "Acute apical periodontitis of pulpal origin"
+},
+{
+"code": "K04.5",
+"description": "Chronic apical periodontitis"
+},
+{
+"code": "K04.6",
+"description": "Periapical abscess with sinus"
+},
+{
+"code": "K04.7",
+"description": "Periapical abscess without sinus"
+},
+{
+"code": "K05.0",
+"description": "Acute gingivitis"
+},
+{
+"code": "K05.1",
+"description": "Chronic gingivitis"
+},
+{
+"code": "K05.2",
+"description": "Acute periodontitis"
+},
+{
+"code": "K05.3",
+"description": "Chronic periodontitis"
+},
+{
+"code": "K06.0",
+"description": "Gingival recession"
+},
+{
+"code": "K07.3",
+"description": "Tooth position anomalies"
+},
+{
+"code": "K07.6",
+"description": "Temporomandibular joint disorders"
+},
+{
+"code": "K08.1",
+"description": "Loss of teeth due to accident, extraction or local periodontal disease"
+},
+{
+"code": "K08.8",
+"description": "Other specified disorders of teeth and supporting structures (toothache)"
+},
+{
+"code": "K10.3",
+"description": "Alveolitis of jaws (dry socket)"
+},
+{
+"code": "K11.2",
+"description": "Sialoadenitis"
+},
+{
+"code": "K12.0",
+"description": "Recurrent oral aphthae"
+},
+{
+"code": "K12.2",
+"description": "Cellulitis and abscess of mouth"
+},
+{
+"code": "K13.0",
+"description": "Diseases of lips (cheilitis)"
+},
+{
+"code": "K14.0",
+"description": "Glossitis"
+},
+{
+"code": "K20",
+"description": "Oesophagitis"
+},
+{
+"code": "K21.9",
+"description": "Gastro-oesophageal reflux disease without oesophagitis"
+},
+{
+"code": "K25.9",
+"description": "Gastric ulcer, unspecified as acute or chronic, without haemorrhage or perforation"
+},
+{
+"code": "K26.9",
+"description": "Duodenal ulcer, unspecified as acute or chronic, without haemorrhage or perforation"
+},
+{
+"code": "K27.9",
+"description": "Peptic ulcer, site unspecified, without haemorrhage or perforation"
+},
+{
+"code": "K29.0",
+"description": "Acute haemorrhagic gastritis"
+},
+{
+"code": "K29.7",
+"description": "Gastritis, unspecified"
+},
+{
+"code": "K30",
+"description": "Dyspepsia"
+},
+{
+"code": "K35.8",
+"description": "Acute appendicitis, other and unspecified"
+},
+{
+"code": "K40.9",
+"description": "Unilateral or unspecified inguinal hernia, without obstruction or gangrene"
+},
+{
+"code": "K42.9",
+"description": "Umbilical hernia without obstruction or gangrene"
+},
+{
+"code": "K46.9",
+"description": "Unspecified abdominal hernia without obstruction or gangrene"
+},
+{
+"code": "K52.9",
+"description": "Noninfective gastroenteritis and colitis, unspecified"
+},
+{
+"code": "K56.6",
+"description": "Other and unspecified intestinal obstruction"
+},
+{
+"code": "K58.9",
+"description": "Irritable bowel syndrome without diarrhoea"
+},
+{
+"code": "K59.0",
+"description": "Constipation"
+},
+{
+"code": "K60.2",
+"description": "Anal fissure, unspecified"
+},
+{
+"code": "K61.0",
+"description": "Anal abscess"
+},
+{
+"code": "K62.5",
+"description": "Haemorrhage of anus and rectum"
+},
+{
+"code": "K70.3",
+"description": "Alcoholic cirrhosis of liver"
+},
+{
+"code": "K74.6",
+"description": "Other and unspecified cirrhosis of liver"
+},
+{
+"code": "K76.0",
+"description": "Fatty (change of) liver, not elsewhere classified"
+},
+{
+"code": "K80.2",
+"description": "Calculus of gallbladder without cholecystitis"
+},
+{
+"code": "K81.0",
+"description": "Acute cholecystitis"
+},
+{
+"code": "K85.9",
+"description": "Acute pancreatitis, unspecified"
+},
+{
+"code": "K92.2",
+"description": "Gastrointestinal haemorrhage, unspecified"
+},
+{
+"code": "L01.0",
+"description": "Impetigo"
+},
+{
+"code": "L02.4",
+"description": "Cutaneous abscess, furuncle and carbuncle of limb"
+},
+{
+"code": "L02.9",
+"description": "Cutaneous abscess, furuncle and carbuncle, unspecified"
+},
+{
+"code": "L03.1",
+"description": "Cellulitis of other parts of limb"
+},
+{
+"code": "L03.9",
+"description": "Cellulitis, unspecified"
+},
+{
+"code": "L08.9",
+"description": "Local infection of skin and subcutaneous tissue, unspecified"
+},
+{
+"code": "L20.9",
+"description": "Atopic dermatitis, unspecified"
+},
+{
+"code": "L21.9",
+"description": "Seborrhoeic dermatitis, unspecified"
+},
+{
+"code": "L22",
+"description": "Diaper (napkin) dermatitis"
+},
+{
+"code": "L23.9",
+"description": "Allergic contact dermatitis, unspecified cause"
+},
+{
+"code": "L24.9",
+"description": "Irritant contact dermatitis, unspecified cause"
+},
+{
+"code": "L25.9",
+"description": "Unspecified contact dermatitis, unspecified cause"
+},
+{
+"code": "L27.0",
+"description": "Generalized skin eruption due to drugs and medicaments"
+},
+{
+"code": "L28.2",
+"description": "Other prurigo (papular urticaria)"
+},
+{
+"code": "L29.9",
+"description": "Pruritus, unspecified"
+},
+{
+"code": "L30.9",
+"description": "Dermatitis, unspecified"
+},
+{
+"code": "L40.9",
+"description": "Psoriasis, unspecified"
+},
+{
+"code": "L50.9",
+"description": "Urticaria, unspecified"
+},
+{
+"code": "L60.0",
+"description": "Ingrowing nail"
+},
+{
+"code": "L63.9",
+"description": "Alopecia areata, unspecified"
+},
+{
+"code": "L70.0",
+"description": "Acne vulgaris"
+},
+{
+"code": "L73.2",
+"description": "Hidradenitis suppurativa"
+},
+{
+"code": "L74.0",
+"description": "Miliaria rubra (prickly heat)"
+},
+{
+"code": "L80",
+"description": "Vitiligo"
+},
+{
+"code": "L81.0",
+"description": "Postinflammatory hyperpigmentation"
+},
+{
+"code": "L91.0",
+"description": "Keloid scar"
+},
+{
+"code": "L97",
+"description": "Ulcer of lower limb, not elsewhere classified"
+},
+{
+"code": "L98.9",
+"description": "Disorder of skin and subcutaneous tissue, unspecified"
+},
+{
+"code": "M06.9",
+"description": "Rheumatoid arthritis, unspecified"
+},
+{
+"code": "M10.9",
+"description": "Gout, unspecified"
+},
+{
+"code": "M13.9",
+"description": "Arthritis, unspecified"
+},
+{
+"code": "M15.9",
+"description": "Polyarthrosis, unspecified"
+},
+{
+"code": "M16.9",
+"description": "Coxarthrosis, unspecified (osteoarthritis of hip)"
+},
+{
+"code": "M17.9",
+"description": "Gonarthrosis, unspecified (osteoarthritis of knee)"
+},
+{
+"code": "M19.9",
+"description": "Arthrosis, unspecified"
+},
+{
+"code": "M25.5",
+"description": "Pain in joint"
+},
+{
+"code": "M41.9",
+"description": "Scoliosis, unspecified"
+},
+{
+"code": "M47.8",
+"description": "Other spondylosis"
+},
+{
+"code": "M50.9",
+"description": "Cervical disc disorder, unspecified"
+},
+{
+"code": "M51.2",
+"description": "Other specified intervertebral disc displacement"
+},
+{
+"code": "M53.1",
+"description": "Cervicobrachial syndrome"
+},
+{
+"code": "M54.2",
+"description": "Cervicalgia (neck pain)"
+},
+{
+"code": "M54.3",
+"description": "Sciatica"
+},
+{
+"code": "M54.4",
+"description": "Lumbago with sciatica"
+},
+{
+"code": "M54.5",
+"description": "Low back pain"
+},
+{
+"code": "M54.6",
+"description": "Pain in thoracic spine"
+},
+{
+"code": "M54.9",
+"description": "Dorsalgia, unspecified"
+},
+{
+"code": "M62.6",
+"description": "Muscle strain"
+},
+{
+"code": "M65.4",
+"description": "Radial styloid tenosynovitis [de Quervain]"
+},
+{
+"code": "M70.2",
+"description": "Olecranon bursitis"
+},
+{
+"code": "M72.2",
+"description": "Plantar fascial fibromatosis (plantar fasciitis)"
+},
+{
+"code": "M75.0",
+"description": "Adhesive capsulitis of shoulder (frozen shoulder)"
+},
+{
+"code": "M75.1",
+"description": "Rotator cuff syndrome"
+},
+{
+"code": "M75.4",
+"description": "Impingement syndrome of shoulder"
+},
+{
+"code": "M76.6",
+"description": "Achilles tendinitis"
+},
+{
+"code": "M77.0",
+"description": "Medial epicondylitis"
+},
+{
+"code": "M77.1",
+"description": "Lateral epicondylitis (tennis elbow)"
+},
+{
+"code": "M79.1",
+"description": "Myalgia"
+},
+{
+"code": "M79.6",
+"description": "Pain in limb"
+},
+{
+"code": "M79.7",
+"description": "Fibromyalgia"
+},
+{
+"code": "M81.9",
+"description": "Osteoporosis, unspecified"
+},
+{
+"code": "M86.9",
+"description": "Osteomyelitis, unspecified"
+},
+{
+"code": "M87.9",
+"description": "Osteonecrosis, unspecified"
+},
+{
+"code": "N10",
+"description": "Acute tubulo-interstitial nephritis (acute pyelonephritis)"
+},
+{
+"code": "N18.9",
+"description": "Chronic kidney disease, unspecified"
+},
+{
+"code": "N19",
+"description": "Unspecified kidney failure"
+},
+{
+"code": "N20.0",
+"description": "Calculus of kidney"
+},
+{
+"code": "N20.9",
+"description": "Urinary calculus, unspecified"
+},
+{
+"code": "N30.0",
+"description": "Acute cystitis"
+},
+{
+"code": "N34.1",
+"description": "Nonspecific urethritis"
+},
+{
+"code": "N39.0",
+"description": "Urinary tract infection, site not specified"
+},
+{
+"code": "N40",
+"description": "Hyperplasia of prostate"
+},
+{
+"code": "N41.0",
+"description": "Acute prostatitis"
+},
+{
+"code": "N43.3",
+"description": "Hydrocele, unspecified"
+},
+{
+"code": "N45.9",
+"description": "Orchitis, epididymitis and epididymo-orchitis without abscess"
+},
+{
+"code": "N46",
+"description": "Male infertility"
+},
+{
+"code": "N48.4",
+"description": "Impotence of organic origin"
+},
+{
+"code": "N60.1",
+"description": "Diffuse cystic mastopathy"
+},
+{
+"code": "N61",
+"description": "Inflammatory disorders of breast (mastitis)"
+},
+{
+"code": "N63",
+"description": "Unspecified lump in breast"
+},
+{
+"code": "N70.9",
+"description": "Salpingitis and oophoritis, unspecified"
+},
+{
+"code": "N73.9",
+"description": "Female pelvic inflammatory disease, unspecified"
+},
+{
+"code": "N76.0",
+"description": "Acute vaginitis"
+},
+{
+"code": "N77.1",
+"description": "Vaginitis, vulvitis and vulvovaginitis in diseases classified elsewhere"
+},
+{
+"code": "N80.9",
+"description": "Endometriosis, unspecified"
+},
+{
+"code": "N83.2",
+"description": "Other and unspecified ovarian cysts"
+},
+{
+"code": "N89.8",
+"description": "Other specified noninflammatory disorders of vagina (vaginal discharge)"
+},
+{
+"code": "N91.2",
+"description": "Amenorrhoea, unspecified"
+},
+{
+"code": "N92.0",
+"description": "Excessive and frequent menstruation with regular cycle"
+},
+{
+"code": "N92.6",
+"description": "Irregular menstruation, unspecified"
+},
+{
+"code": "N94.6",
+"description": "Dysmenorrhoea, unspecified"
+},
+{
+"code": "N95.1",
+"description": "Menopausal and female climacteric states"
+},
+{
+"code": "N97.9",
+"description": "Female infertility, unspecified"
+},
+{
+"code": "O00.9",
+"description": "Ectopic pregnancy, unspecified"
+},
+{
+"code": "O02.1",
+"description": "Missed abortion"
+},
+{
+"code": "O03.9",
+"description": "Spontaneous abortion, complete or unspecified, without complication"
+},
+{
+"code": "O06.9",
+"description": "Unspecified abortion, complete or unspecified, without complication"
+},
+{
+"code": "O13",
+"description": "Gestational [pregnancy-induced] hypertension without significant proteinuria"
+},
+{
+"code": "O14.9",
+"description": "Pre-eclampsia, unspecified"
+},
+{
+"code": "O15.9",
+"description": "Eclampsia, unspecified as to time period"
+},
+{
+"code": "O16",
+"description": "Unspecified maternal hypertension"
+},
+{
+"code": "O20.0",
+"description": "Threatened abortion"
+},
+{
+"code": "O21.0",
+"description": "Mild hyperemesis gravidarum"
+},
+{
+"code": "O21.9",
+"description": "Vomiting of pregnancy, unspecified"
+},
+{
+"code": "O23.4",
+"description": "Unspecified infection of urinary tract in pregnancy"
+},
+{
+"code": "O24.4",
+"description": "Diabetes mellitus arising in pregnancy (gestational diabetes)"
+},
+{
+"code": "O26.9",
+"description": "Pregnancy-related condition, unspecified"
+},
+{
+"code": "O30.0",
+"description": "Twin pregnancy"
+},
+{
+"code": "O32.1",
+"description": "Maternal care for breech presentation"
+},
+{
+"code": "O34.2",
+"description": "Maternal care due to uterine scar from previous surgery"
+},
+{
+"code": "O36.5",
+"description": "Maternal care for known or suspected poor fetal growth"
+},
+{
+"code": "O42.9",
+"description": "Premature rupture of membranes, unspecified"
+},
+{
+"code": "O44.1",
+"description": "Placenta praevia with haemorrhage"
+},
+{
+"code": "O45.9",
+"description": "Premature separation of placenta, unspecified"
+},
+{
+"code": "O47.9",
+"description": "False labour, unspecified"
+},
+{
+"code": "O48",
+"description": "Prolonged pregnancy"
+},
+{
+"code": "O60",
+"description": "Preterm labour"
+},
+{
+"code": "O72.1",
+"description": "Other immediate postpartum haemorrhage"
+},
+{
+"code": "O80.9",
+"description": "Single spontaneous delivery, unspecified"
+},
+{
+"code": "O82.9",
+"description": "Delivery by caesarean section, unspecified"
+},
+{
+"code": "O85",
+"description": "Puerperal sepsis"
+},
+{
+"code": "O91.2",
+"description": "Nonpurulent mastitis associated with childbirth"
+},
+{
+"code": "O98.6",
+"description": "Protozoal diseases complicating pregnancy, childbirth and the puerperium (malaria in pregnancy)"
+},
+{
+"code": "O99.0",
+"description": "Anaemia complicating pregnancy, childbirth and the puerperium"
+},
+{
+"code": "P05.9",
+"description": "Slow fetal growth, unspecified"
+},
+{
+"code": "P07.3",
+"description": "Other preterm infants"
+},
+{
+"code": "P21.9",
+"description": "Birth asphyxia, unspecified"
+},
+{
+"code": "P22.9",
+"description": "Respiratory distress of newborn, unspecified"
+},
+{
+"code": "P36.9",
+"description": "Bacterial sepsis of newborn, unspecified"
+},
+{
+"code": "P38",
+"description": "Omphalitis of newborn with or without mild haemorrhage"
+},
+{
+"code": "P59.9",
+"description": "Neonatal jaundice, unspecified"
+},
+{
+"code": "P92.9",
+"description": "Feeding problem of newborn, unspecified"
+},
+{
+"code": "Q21.0",
+"description": "Ventricular septal defect"
+},
+{
+"code": "Q53.9",
+"description": "Undescended testicle, unspecified"
+},
+{
+"code": "Q66.0",
+"description": "Talipes equinovarus"
+},
+{
+"code": "R00.2",
+"description": "Palpitations"
+},
+{
+"code": "R04.0",
+"description": "Epistaxis"
+},
+{
+"code": "R05",
+"description": "Cough"
+},
+{
+"code": "R06.0",
+"description": "Dyspnoea"
+},
+{
+"code": "R07.4",
+"description": "Chest pain, unspecified"
+},
+{
+"code": "R10.1",
+"description": "Pain localized to upper abdomen (epigastric pain)"
+},
+{
+"code": "R10.4",
+"description": "Other and unspecified abdominal pain"
+},
+{
+"code": "R11",
+"description": "Nausea and vomiting"
+},
+{
+"code": "R12",
+"description": "Heartburn"
+},
+{
+"code": "R17",
+"description": "Unspecified jaundice"
+},
+{
+"code": "R19.7",
+"description": "Diarrhoea, unspecified"
+},
+{
+"code": "R21",
+"description": "Rash and other nonspecific skin eruption"
+},
+{
+"code": "R31",
+"description": "Unspecified haematuria"
+},
+{
+"code": "R32",
+"description": "Unspecified urinary incontinence"
+},
+{
+"code": "R35",
+"description": "Polyuria"
+},
+{
+"code": "R42",
+"description": "Dizziness and giddiness"
+},
+{
+"code": "R50.9",
+"description": "Fever, unspecified"
+},
+{
+"code": "R51",
+"description": "Headache"
+},
+{
+"code": "R53",
+"description": "Malaise and fatigue"
+},
+{
+"code": "R55",
+"description": "Syncope and collapse"
+},
+{
+"code": "R56.0",
+"description": "Febrile convulsions"
+},
+{
+"code": "R59.9",
+"description": "Enlarged lymph nodes, unspecified"
+},
+{
+"code": "R62.5",
+"description": "Lack of expected normal physiological development (failure to thrive)"
+},
+{
+"code": "R63.4",
+"description": "Abnormal weight loss"
+},
+{
+"code": "R73.9",
+"description": "Hyperglycaemia, unspecified"
+},
+{
+"code": "R79.9",
+"description": "Abnormal finding of blood chemistry, unspecified"
+},
+{
+"code": "R80",
+"description": "Isolated proteinuria"
+},
+{
+"code": "S00.9",
+"description": "Superficial injury of head, part unspecified"
+},
+{
+"code": "S01.9",
+"description": "Open wound of head, part unspecified"
+},
+{
+"code": "S06.0",
+"description": "Concussion"
+},
+{
+"code": "S09.9",
+"description": "Unspecified injury of head"
+},
+{
+"code": "S13.4",
+"description": "Sprain and strain of cervical spine"
+},
+{
+"code": "S20.2",
+"description": "Contusion of thorax"
+},
+{
+"code": "S22.3",
+"description": "Fracture of rib"
+},
+{
+"code": "S30.0",
+"description": "Contusion of lower back and pelvis"
+},
+{
+"code": "S33.5",
+"description": "Sprain and strain of lumbar spine"
+},
+{
+"code": "S42.0",
+"description": "Fracture of clavicle"
+},
+{
+"code": "S52.5",
+"description": "Fracture of lower end of radius"
+},
+{
+"code": "S60.0",
+"description": "Contusion of finger(s) without damage to nail"
+},
+{
+"code": "S61.9",
+"description": "Open wound of wrist and hand, part unspecified"
+},
+{
+"code": "S62.6",
+"description": "Fracture of other finger"
+},
+{
+"code": "S63.5",
+"description": "Sprain and strain of wrist"
+},
+{
+"code": "S72.0",
+"description": "Fracture of neck of femur"
+},
+{
+"code": "S80.0",
+"description": "Contusion of knee"
+},
+{
+"code": "S81.9",
+"description": "Open wound of lower leg, part unspecified"
+},
+{
+"code": "S82.6",
+"description": "Fracture of lateral malleolus"
+},
+{
+"code": "S83.6",
+"description": "Sprain and strain of other and unspecified parts of knee"
+},
+{
+"code": "S91.3",
+"description": "Open wound of other parts of foot"
+},
+{
+"code": "S93.4",
+"description": "Sprain and strain of ankle"
+},
+{
+"code": "T07",
+"description": "Unspecified multiple injuries"
+},
+{
+"code": "T14.0",
+"description": "Superficial injury of unspecified body region"
+},
+{
+"code": "T14.1",
+"description": "Open wound of unspecified body region"
+},
+{
+"code": "T14.9",
+"description": "Injury, unspecified"
+},
+{
+"code": "T15.9",
+"description": "Foreign body on external eye, part unspecified"
+},
+{
+"code": "T16",
+"description": "Foreign body in ear"
+},
+{
+"code": "T17.1",
+"description": "Foreign body in nostril"
+},
+{
+"code": "T30.0",
+"description": "Burn of unspecified body region, unspecified degree"
+},
+{
+"code": "T63.0",
+"description": "Toxic effect of snake venom"
+},
+{
+"code": "T63.4",
+"description": "Toxic effect of venom of other arthropods (insect bite or sting)"
+},
+{
+"code": "T78.3",
+"description": "Angioneurotic oedema"
+},
+{
+"code": "T78.4",
+"description": "Allergy, unspecified"
+},
+{
+"code": "T88.7",
+"description": "Unspecified adverse effect of drug or medicament"
+},
+{
+"code": "U07.1",
+"description": "COVID-19, virus identified"
+},
+{
+"code": "U07.2",
+"description": "COVID-19, virus not identified"
+},
+{
+"code": "V89.2",
+"description": "Person injured in unspecified motor-vehicle accident, traffic"
+},
+{
+"code": "W54",
+"description": "Bitten or struck by dog"
+},
+{
+"code": "X49",
+"description": "Accidental poisoning by and exposure to other and unspecified chemicals and noxious substances"
+},
+{
+"code": "Z00.0",
+"description": "General medical examination"
+},
+{
+"code": "Z00.1",
+"description": "Routine child health examination"
+},
+{
+"code": "Z01.0",
+"description": "Examination of eyes and vision"
+},
+{
+"code": "Z01.2",
+"description": "Dental examination"
+},
+{
+"code": "Z01.4",
+"description": "Gynaecological examination (general)(routine)"
+},
+{
+"code": "Z02.7",
+"description": "Issue of medical certificate"
+},
+{
+"code": "Z09.9",
+"description": "Follow-up examination after unspecified treatment for other conditions"
+},
+{
+"code": "Z11.4",
+"description": "Special screening examination for human immunodeficiency virus [HIV]"
+},
+{
+"code": "Z12.4",
+"description": "Special screening examination for neoplasm of cervix"
+},
+{
+"code": "Z13.1",
+"description": "Special screening examination for diabetes mellitus"
+},
+{
+"code": "Z20.6",
+"description": "Contact with and exposure to human immunodeficiency virus [HIV]"
+},
+{
+"code": "Z21",
+"description": "Asymptomatic human immunodeficiency virus [HIV] infection status"
+},
+{
+"code": "Z23.5",
+"description": "Need for immunization against tetanus alone"
+},
+{
+"code": "Z24.6",
+"description": "Need for immunization against viral hepatitis"
+},
+{
+"code": "Z27.1",
+"description": "Need for immunization against diphtheria-tetanus-pertussis, combined [DTP]"
+},
+{
+"code": "Z27.8",
+"description": "Need for immunization against other combinations of infectious diseases"
+},
+{
+"code": "Z30.0",
+"description": "General counselling and advice on contraception"
+},
+{
+"code": "Z30.1",
+"description": "Insertion of (intrauterine) contraceptive device"
+},
+{
+"code": "Z30.4",
+"description": "Surveillance of contraceptive drugs"
+},
+{
+"code": "Z30.5",
+"description": "Surveillance of (intrauterine) contraceptive device"
+},
+{
+"code": "Z32.1",
+"description": "Pregnancy confirmed"
+},
+{
+"code": "Z33",
+"description": "Pregnant state, incidental"
+},
+{
+"code": "Z34.0",
+"description": "Supervision of normal first pregnancy"
+},
+{
+"code": "Z34.8",
+"description": "Supervision of other normal pregnancy"
+},
+{
+"code": "Z34.9",
+"description": "Supervision of normal pregnancy, unspecified"
+},
+{
+"code": "Z35.9",
+"description": "Supervision of high-risk pregnancy, unspecified"
+},
+{
+"code": "Z36.9",
+"description": "Antenatal screening, unspecified"
+},
+{
+"code": "Z39.2",
+"description": "Routine postpartum follow-up"
+},
+{
+"code": "Z48.0",
+"description": "Attention to surgical dressings and sutures"
+},
+{
+"code": "Z51.8",
+"description": "Other specified medical care"
+},
+{
+"code": "Z71.1",
+"description": "Person with feared complaint in whom no diagnosis is made"
+},
+{
+"code": "Z71.3",
+"description": "Dietary counselling and surveillance"
+},
+{
+"code": "Z71.9",
+"description": "Counselling, unspecified"
+},
+{
+"code": "Z72.0",
+"description": "Tobacco use"
+},
+{
+"code": "Z76.0",
+"description": "Issue of repeat prescription"
+},
+{
+"code": "Z76.2",
+"description": "Health supervision and care of other healthy infant and child"
+},
+{
+"code": "Z86.1",
+"description": "Personal history of infectious and parasitic diseases"
+},
+{
+"code": "Z88.0",
+"description": "Personal history of allergy to penicillin"
+},
+{
+"code": "Z91.1",
+"description": "Personal history of noncompliance with medical treatment and regimen"
+},
+{
+"code": "Z92.2",
+"description": "Personal history of long-term (current) use of other medicaments"
+},
+{
+"code": "Z96.1",
+"description": "Presence of intraocular lens"
+},
+{
+"code": "Z97.3",
+"description": "Presence of spectacles and contact lenses"
+}
+]

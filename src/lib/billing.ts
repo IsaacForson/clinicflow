@@ -10,7 +10,7 @@ import { nextNumber } from "./numbers";
 type Invoice = typeof invoices.$inferSelect;
 
 /** Insurer applies when the patient has one and the cover hasn't expired. */
-async function activeInsurer(t: Tx, patientId: string) {
+export async function activeInsurer(t: Tx, patientId: string) {
   const [p] = await t.select({ insurerId: patients.insurerId, expiry: patients.insuranceExpiry }).from(patients).where(eq(patients.id, patientId));
   if (!p?.insurerId) return null;
   if (p.expiry && new Date(p.expiry) < new Date(new Date().toISOString().slice(0, 10))) return null;
@@ -120,7 +120,8 @@ export type PaymentInput = {
 };
 
 /** Records a payment (or a deposit when invoiceId is null) and returns it. Idempotent on clientId/providerRef. */
-export async function recordPayment(t: Tx, ctx: Pick<Ctx, "tenant" | "branchId" | "user"> & Partial<Ctx>, o: PaymentInput) {
+/** ctx may be a system context (webhooks): `{ tenant: { id }, branchId, user: { id: null } }`. */
+export async function recordPayment(t: Tx, ctx: { tenant: Pick<Ctx["tenant"], "id">; branchId: string; user: { id: string | null } | null }, o: PaymentInput) {
   if (o.amountMinor <= 0) throw new UserError("Amount must be greater than zero");
   if (o.clientId) {
     const [dup] = await t.select().from(payments).where(eq(payments.clientId, o.clientId));
