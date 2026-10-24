@@ -142,14 +142,18 @@ export async function queuePatientMessage(t: Tx, o: {
   }
   const [tpl] = await t.select().from(messageTemplates)
     .where(and(eq(messageTemplates.key, o.templateKey), eq(messageTemplates.language, p.language), eq(messageTemplates.active, true))).limit(1);
-  const body = render(tpl?.body ?? DEFAULT_TEMPLATES[o.templateKey] ?? "", { name: p.firstName, clinic: tenant.name, ...o.vars });
+  const tplBody = tpl?.body ?? DEFAULT_TEMPLATES[o.templateKey] ?? "";
+  const vars = { name: p.firstName, clinic: tenant.name, ...o.vars };
+  const body = render(tplBody, vars);
+  // WhatsApp template parameters in placeholder order (Meta rejects empty parameters).
+  const waParams = [...tplBody.matchAll(/\{\{(\w+)\}\}/g)].map((m) => String(vars[m[1] as keyof typeof vars] ?? "").trim() || "-");
   const [log] = await t.insert(messageLog).values({
     tenantId: o.tenantId, patientId: p.id, channel, to: to ?? "", templateKey: o.templateKey, purpose: o.purpose, body,
     status: to ? "queued" : "skipped", error: to ? null : "No contact on file", consentId,
   }).returning({ id: messageLog.id });
   if (!to) return null;
   await t.insert(jobs).values({
-    tenantId: o.tenantId, type: "message.send", payload: { messageId: log.id, waTemplate: tpl?.waTemplateName ?? null },
+    tenantId: o.tenantId, type: "message.send", payload: { messageId: log.id, waTemplate: tpl?.waTemplateName ?? null, waParams },
     runAt: o.runAt ?? new Date(), dedupeKey: o.dedupeKey,
   }).onConflictDoNothing();
   return log.id;

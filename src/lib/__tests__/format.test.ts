@@ -29,3 +29,11 @@ describe("totp", () => {
     expect(verifyTotp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", "287082", 59_000)).toBe(true);
   });
 });
+
+import { isPrivateAddress } from "../net";
+describe("isPrivateAddress", () => {
+  it("flags internal ranges", () => {
+    for (const ip of ["127.0.0.1", "10.1.2.3", "172.20.0.1", "192.168.1.1", "169.254.169.254", "100.64.0.1", "::1", "fd00::1", "::ffff:127.0.0.1"]) expect(isPrivateAddress(ip)).toBe(true);
+    for (const ip of ["8.8.8.8", "172.32.0.1", "2001:4860::8888"]) expect(isPrivateAddress(ip)).toBe(false);
+  });
+});

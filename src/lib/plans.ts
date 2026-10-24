@@ -19,7 +19,7 @@ export const hasFeature = (t: Pick<Tenant, "plan" | "planStatus">, f: Feature) =
 /** Effective access: trial and paid accounts can write; unpaid beyond grace becomes read-only (export still allowed). */
 export function accessLevel(t: Pick<Tenant, "planStatus" | "trialEndsAt" | "currentPeriodEnd">, now = new Date()): "full" | "read_only" {
   if (t.planStatus === "read_only" || t.planStatus === "cancelled") return "read_only";
-  const end = t.planStatus === "trialing" ? t.trialEndsAt : t.currentPeriodEnd;
+  const end = t.planStatus === "trialing" ? t.trialEndsAt : (t.currentPeriodEnd ?? t.trialEndsAt);
   if (!end) return "full";
   const graceEnd = new Date(end.getTime() + GRACE_DAYS * 86400_000);
   return now > graceEnd ? "read_only" : "full";
