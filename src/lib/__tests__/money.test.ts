@@ -23,6 +23,9 @@ describe("money", () => {
     expect(custom.plans.clinic).toBe(75000);
     expect(subscriptionTotal(custom, "clinic", "annual", 1)).toBe((75000 + 15000) * 10);
   });
+  it("keeps USD list prices exact", () => {
+    expect(priceListFor("USD", rates).plans.group).toBe(19900);
+  });
   it("computes MRR in the clinic's currency", () => {
     const ghs = priceListFor("GHS", rates);
     const t = { plan: "clinic" as const, planStatus: "active", billingCycle: "annual", scribeSeats: 0 };

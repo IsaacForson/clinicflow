@@ -34,7 +34,8 @@ export function priceListFor(currency: string, rates: Rates, custom?: { solo: nu
     return { currency, custom: true, plans: { solo: custom.solo, clinic: custom.clinic, group: custom.group }, scribe: custom.scribe,
       migration: { basic: custom.migrationBasic, standard: custom.migrationStandard, full: custom.migrationFull } };
   }
-  const conv = (usd: number) => nicePrice(convertMinor(usd * 100, "USD", currency, rates) / 100) * 100;
+  // USD is the base list price: never rounded. Other currencies are converted, then rounded to a clean figure.
+  const conv = (usd: number) => currency === "USD" ? usd * 100 : nicePrice(convertMinor(usd * 100, "USD", currency, rates) / 100) * 100;
   return {
     currency, custom: false,
     plans: { solo: conv(PLANS.solo.priceUsd), clinic: conv(PLANS.clinic.priceUsd), group: conv(PLANS.group.priceUsd) },
