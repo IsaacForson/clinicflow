@@ -7,7 +7,7 @@ import { audit, AuthError, getCtx, tx } from "@/lib/auth";
 // The request is recorded in the append-only audit log (entity "tenant", action deletion_request / deletion_cancel); platform ops act on it.
 async function ownerCtx() {
   const ctx = await getCtx();
-  if (!ctx || ctx.user.role !== "owner") throw new AuthError("Only the clinic owner can do that.");
+  if (!ctx || ctx.user.role !== "owner" || ctx.impersonatedBy) throw new AuthError("Only the clinic owner can do that.");
   return ctx;
 }
 

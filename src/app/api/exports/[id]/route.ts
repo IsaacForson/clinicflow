@@ -6,7 +6,7 @@ import { getFile } from "@/lib/storage";
 /** Owner-only download of a finished full export (works for read-only accounts too). */
 export async function GET(_: Request, { params }: RouteContext<"/api/exports/[id]">) {
   const ctx = await getCtx();
-  if (!ctx || ctx.user.role !== "owner") return new Response("Unauthorized", { status: 401 });
+  if (!ctx || ctx.user.role !== "owner" || ctx.impersonatedBy) return new Response("Unauthorized", { status: 401 });
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) return new Response("Not found", { status: 404 });
   const job = await tx(ctx, async (t) => {

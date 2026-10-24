@@ -3,7 +3,7 @@ import { and, desc, eq, gt, or } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { adminDb } from "@/db";
-import { auditLog, otpCodes, sessions, users } from "@/db/schema";
+import { auditLog, otpCodes, sessions, tenants, users } from "@/db/schema";
 import { formObject, run, UserError, type ActionState } from "@/lib/action";
 import { createSession, destroySession, readSession } from "@/lib/auth";
 import { sha256, verifyPassword, verifyTotp } from "@/lib/crypto";
@@ -12,6 +12,8 @@ import { sendNow } from "@/lib/messaging";
 import { COUNTRIES, provisionTenant } from "@/lib/provision";
 
 async function finishLogin(user: typeof users.$inferSelect, method: string) {
+  const [t] = await adminDb().select({ suspendedAt: tenants.suspendedAt }).from(tenants).where(eq(tenants.id, user.tenantId));
+  if (t?.suspendedAt) throw new UserError("This clinic account is suspended. Please contact ClinicFlow support.");
   const needsMfa = user.totpEnabled;
   await createSession(user, needsMfa);
   await adminDb().insert(auditLog).values({ tenantId: user.tenantId, userId: user.id, action: "login", entity: "user", entityId: user.id, details: { method, mfa: needsMfa } });

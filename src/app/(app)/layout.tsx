@@ -28,6 +28,7 @@ const NAV: (NavItem & { perm?: Permission; feature?: Feature })[] = [
   { href: "/billing", label: "Billing", icon: "CreditCard", perm: "billing.read", group: "Business" },
   { href: "/insurance", label: "Insurance", icon: "ShieldCheck", perm: "insurance.manage", feature: "insurance", group: "Business" },
   { href: "/messages", label: "Messages", icon: "MessageSquare", perm: "messaging.send", group: "Business" },
+  { href: "/clinic-admin", label: "Admin console", icon: "Building2", perm: "admin.console", group: "Business" },
   { href: "/reports", label: "Reports", icon: "BarChart3", perm: "reports.view", group: "Business" },
   { href: "/settings", label: "Settings", icon: "Settings", perm: "settings.manage", group: "Business" },
 ];

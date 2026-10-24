@@ -10,7 +10,7 @@ const tenantTables = (Object.values(schema) as unknown[]).filter(
 );
 
 // Owner-only tables (no app-role grant) are covered by the "permission denied" test instead.
-const OWNER_ONLY = new Set(["sessions"]);
+const OWNER_ONLY = new Set(["sessions", "platform_log"]);
 
 /** Drizzle wraps driver errors; match against the underlying Postgres message. */
 async function rejectsWith(p: Promise<unknown>, re: RegExp) {
@@ -82,6 +82,12 @@ describe("row-level security", () => {
   it("cannot read sessions or OTP codes at all", async () => {
     await rejectsWith(withTenant(a, (t) => t.select().from(schema.sessions)), /permission denied/);
     await rejectsWith(withTenant(a, (t) => t.select().from(schema.otpCodes)), /permission denied/);
+  });
+
+  it("cannot touch ClinicFlow team tables (admins, admin sessions, admin audit)", async () => {
+    await rejectsWith(withTenant(a, (t) => t.select().from(schema.platformAdmins)), /permission denied/);
+    await rejectsWith(withTenant(a, (t) => t.select().from(schema.platformSessions)), /permission denied/);
+    await rejectsWith(withTenant(a, (t) => t.select().from(schema.platformAudit)), /permission denied/);
   });
 
   it("keeps the audit log append-only", async () => {

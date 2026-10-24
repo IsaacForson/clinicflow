@@ -22,6 +22,8 @@ export type Ctx = {
   branches: { id: string; name: string }[];
   access: "full" | "read_only";
   ip: string | null;
+  /** Set when a ClinicFlow team member is viewing this clinic (always read-only). */
+  impersonatedBy: string | null;
 };
 
 export class AuthError extends Error {}
@@ -62,7 +64,8 @@ export const readSession = cache(async () => {
     .where(eq(sessions.id, id)).limit(1);
   if (!row) return null;
   const now = Date.now();
-  if (row.session.expiresAt.getTime() < now || row.session.lastSeenAt.getTime() < now - IDLE_MINUTES * 60_000 || !row.user.active) {
+  const suspended = !!row.tenant.suspendedAt && !row.session.impersonatedBy;
+  if (row.session.expiresAt.getTime() < now || row.session.lastSeenAt.getTime() < now - IDLE_MINUTES * 60_000 || !row.user.active || suspended) {
     await adminDb().delete(sessions).where(eq(sessions.id, id));
     return null;
   }
@@ -83,7 +86,8 @@ export const getCtx = cache(async (): Promise<Ctx | null> => {
   if (!branch) return null;
   return {
     user: row.user, tenant: row.tenant, sessionId: row.session.id, branchId: branch.id,
-    branches: allowed.map(({ id, name }) => ({ id, name })), access: accessLevel(row.tenant), ip: row.session.ip,
+    branches: allowed.map(({ id, name }) => ({ id, name })), ip: row.session.ip,
+    access: row.session.impersonatedBy ? "read_only" : accessLevel(row.tenant), impersonatedBy: row.session.impersonatedBy,
   };
 });
 
@@ -103,6 +107,7 @@ export async function requireWrite(perm: Permission): Promise<Ctx> {
   const ctx = await getCtx();
   if (!ctx) throw new AuthError("Your session has expired. Please sign in again.");
   if (!can(ctx.user.role, perm)) throw new AuthError("You don't have permission to do that.");
+  if (ctx.impersonatedBy) throw new AuthError("Support view is read-only.");
   if (ctx.access === "read_only") throw new AuthError("This account is read-only until the subscription is renewed.");
   return ctx;
 }
@@ -120,6 +125,7 @@ export async function audit(
 ) {
   await t.insert(auditLog).values({
     tenantId: ctx.tenant.id, userId: ctx.user.id, action, entity, entityId: entityId ?? null,
-    patientId: extra.patientId ?? null, details: extra.details ?? null, ip: ctx.ip,
+    patientId: extra.patientId ?? null, ip: ctx.ip,
+    details: ctx.impersonatedBy ? { ...(extra.details as object | undefined), impersonatedBy: ctx.impersonatedBy, via: "clinicflow_support" } : extra.details ?? null,
   });
 }

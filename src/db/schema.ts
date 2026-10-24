@@ -25,7 +25,8 @@ export const DEFAULT_OPENING_HOURS: OpeningHours = {
 };
 
 // ---------- Enums ----------
-export const roleEnum = pgEnum("role", ["owner", "doctor", "nurse", "front_desk", "cashier", "pharmacist", "lab"]);
+export const roleEnum = pgEnum("role", ["owner", "admin", "doctor", "nurse", "front_desk", "cashier", "pharmacist", "lab"]);
+export const platformRoleEnum = pgEnum("platform_role", ["super_admin", "support", "finance"]);
 export const planEnum = pgEnum("plan", ["solo", "clinic", "group"]);
 export const planStatusEnum = pgEnum("plan_status", ["trialing", "active", "past_due", "read_only", "cancelled"]);
 export const sexEnum = pgEnum("sex", ["female", "male", "other", "unknown"]);
@@ -67,6 +68,9 @@ export const tenants = pgTable("tenants", {
   scribeSeats: integer("scribe_seats").notNull().default(0),
   paystackCustomerCode: text("paystack_customer_code"),
   paystackSubscriptionCode: text("paystack_subscription_code"),
+  suspendedAt: ts("suspended_at"), // platform suspension (abuse/fraud only): staff can't sign in; data kept
+  suspendReason: text("suspend_reason"),
+  adminNotes: text("admin_notes"), // internal notes by the ClinicFlow team
   reminderHours: integer("reminder_hours").array().notNull().default(sql`'{24,2}'::int[]`),
   notifiableIcd: text("notifiable_icd").array().notNull().default(sql`'{}'::text[]`),
   createdAt: createdAt(),
@@ -110,6 +114,7 @@ export const sessions = pgTable("sessions", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   tenantId: tenantId(),
   mfaPending: boolean("mfa_pending").notNull().default(false),
+  impersonatedBy: uuid("impersonated_by"), // platform admin viewing this clinic (read-only support session)
   expiresAt: ts("expires_at").notNull(),
   lastSeenAt: ts("last_seen_at").notNull().defaultNow(),
   ip: text("ip"),
@@ -803,6 +808,31 @@ export const counters = pgTable("counters", {
   value: integer("value").notNull().default(0),
 }, (t) => [primaryKey({ columns: [t.tenantId, t.key] })]);
 
+// ---------- Platform (ClinicFlow team) ----------
+export const platformAdmins = pgTable("platform_admins", {
+  id: id(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  role: platformRoleEnum("role").notNull().default("support"),
+  totpSecret: encrypted("totp_secret"),
+  totpEnabled: boolean("totp_enabled").notNull().default(false),
+  active: boolean("active").notNull().default(true),
+  lastLoginAt: ts("last_login_at"),
+  createdAt: createdAt(),
+});
+
+export const platformSessions = pgTable("platform_sessions", {
+  id: text("id").primaryKey(), // sha256 of cookie token
+  adminId: uuid("admin_id").notNull().references(() => platformAdmins.id, { onDelete: "cascade" }),
+  mfaPending: boolean("mfa_pending").notNull().default(true),
+  expiresAt: ts("expires_at").notNull(),
+  lastSeenAt: ts("last_seen_at").notNull().defaultNow(),
+  ip: text("ip"),
+  userAgent: text("user_agent"),
+  createdAt: createdAt(),
+});
+
 // ---------- Audit (separate schema, append-only) ----------
 export const audit = pgSchema("audit");
 export const auditLog = audit.table("log", {
@@ -818,7 +848,22 @@ export const auditLog = audit.table("log", {
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("audit_tenant_idx").on(t.tenantId, t.at), index("audit_patient_idx").on(t.patientId, t.at)]);
 
+/** Every action taken by the ClinicFlow team (append-only). */
+export const platformAudit = audit.table("platform_log", {
+  id: id(),
+  adminId: uuid("admin_id"),
+  action: text("action").notNull(),
+  tenantId: uuid("tenant_id"),
+  entity: text("entity"),
+  entityId: text("entity_id"),
+  details: jsonb("details"),
+  ip: text("ip"),
+  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("platform_audit_at_idx").on(t.at), index("platform_audit_tenant_idx").on(t.tenantId, t.at)]);
+
 export type Role = (typeof roleEnum.enumValues)[number];
+export type PlatformRole = (typeof platformRoleEnum.enumValues)[number];
+export type PlatformAdmin = typeof platformAdmins.$inferSelect;
 export type Tenant = typeof tenants.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Patient = typeof patients.$inferSelect;

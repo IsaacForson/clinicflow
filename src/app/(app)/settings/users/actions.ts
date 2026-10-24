@@ -17,6 +17,11 @@ const staffSchema = z.object({
   role: z.enum(ROLES), isPractitioner: zBool, title: z.string().optional(), licenseNo: z.string().optional(),
 });
 
+/** Only an owner may create, change, deactivate or reset another owner (clinic admins manage everyone else). */
+function assertOwnerPower(ctx: Ctx, ...roles: (string | undefined)[]) {
+  if (ctx.user.role !== "owner" && roles.includes("owner")) throw new UserError("Only the clinic owner can manage owner accounts.");
+}
+
 function contact(o: { email?: string; phone?: string }, country: string) {
   const email = o.email?.toLowerCase() ?? null, phone = e164(o.phone, country);
   if (!email && !phone) throw new UserError("Enter an email or a phone number they will sign in with");
@@ -47,6 +52,7 @@ export async function addStaffAction(_: ActionState, fd: FormData): Promise<Acti
     const password = tempPassword();
     const passwordHash = await hashPassword(password);
     const branchIds = branchIdsFrom(fd, ctx);
+    assertOwnerPower(ctx, o.role);
     await tx(ctx, async (t) => {
       await assertSeats(t, ctx.tenant, { users: 1, practitioners: o.isPractitioner ? 1 : 0 });
       const [u] = await t.insert(users).values({
@@ -83,6 +89,7 @@ export async function updateStaffAction(_: ActionState, fd: FormData): Promise<A
     if (o.scribeEnabled && !o.isPractitioner) throw new UserError("AI scribe can only be enabled for practitioners");
     await tx(ctx, async (t) => {
       const u = await loadUser(t, id);
+      assertOwnerPower(ctx, u.role, o.role);
       if (u.role === "owner" && o.role !== "owner") {
         if (u.id === ctx.user.id) throw new UserError("You can't remove your own owner role");
         await assertOtherOwner(t, u.id);
@@ -107,6 +114,7 @@ export async function setStaffActiveAction(_: ActionState, fd: FormData): Promis
     if (!active && o.id === ctx.user.id) throw new UserError("You can't deactivate your own account");
     await tx(ctx, async (t) => {
       const u = await loadUser(t, o.id);
+      assertOwnerPower(ctx, u.role);
       if (active && !u.active) await assertSeats(t, ctx.tenant, { users: 1, practitioners: u.isPractitioner ? 1 : 0, scribe: u.scribeEnabled ? 1 : 0 });
       if (!active && u.role === "owner") await assertOtherOwner(t, u.id);
       await t.update(users).set({ active }).where(eq(users.id, o.id));
@@ -126,6 +134,7 @@ export async function resetStaffPasswordAction(_: ActionState, fd: FormData): Pr
     const passwordHash = await hashPassword(password);
     const name = await tx(ctx, async (t) => {
       const u = await loadUser(t, id);
+      assertOwnerPower(ctx, u.role);
       await t.update(users).set({ passwordHash }).where(eq(users.id, id));
       await audit(t, ctx, "reset_password", "user", id);
       return u.name;

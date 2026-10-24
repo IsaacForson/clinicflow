@@ -15,7 +15,7 @@ export const metadata = { title: "Subscription" };
 const STATUS_TONE = { trialing: "blue", active: "green", past_due: "yellow", read_only: "red", cancelled: "gray" } as const;
 
 export default async function SubscriptionPage({ searchParams }: PageProps<"/settings/subscription">) {
-  const ctx = await requireCtx("settings.manage");
+  const ctx = await requireCtx("subscription.manage");
   const t = ctx.tenant;
   const paid = (await searchParams).paid;
   const events = await tx(ctx, (x) => x.select().from(billingEvents).orderBy(desc(billingEvents.createdAt)).limit(50));

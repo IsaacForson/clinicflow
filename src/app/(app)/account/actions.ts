@@ -13,6 +13,7 @@ import { e164 } from "@/lib/format";
 async function me() {
   const ctx = await getCtx();
   if (!ctx) throw new AuthError("Your session has expired. Please sign in again.");
+  if (ctx.impersonatedBy) throw new AuthError("Support view is read-only.");
   return ctx;
 }
 

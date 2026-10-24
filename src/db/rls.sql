@@ -44,3 +44,9 @@ create or replace function audit.block_change() returns trigger language plpgsql
 begin raise exception 'audit.log is append-only'; end $f$;
 drop trigger if exists audit_append_only on audit.log;
 create trigger audit_append_only before update or delete on audit.log for each row execute function audit.block_change();
+
+-- Platform (ClinicFlow team) tables are owner-only: the clinic runtime role can never read them.
+revoke all on public.platform_admins, public.platform_sessions from clinicflow_app;
+revoke all on audit.platform_log from clinicflow_app;
+drop trigger if exists platform_audit_append_only on audit.platform_log;
+create trigger platform_audit_append_only before update or delete on audit.platform_log for each row execute function audit.block_change();

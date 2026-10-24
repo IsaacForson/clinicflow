@@ -12,7 +12,8 @@ import { MIGRATION_TIERS, priceUsd } from "./pricing";
 async function billingCtx() {
   const ctx = await getCtx();
   if (!ctx) throw new AuthError("Your session has expired. Please sign in again.");
-  if (!can(ctx.user.role, "settings.manage")) throw new AuthError("You don't have permission to do that.");
+  if (ctx.impersonatedBy) throw new AuthError("Support view is read-only.");
+  if (!can(ctx.user.role, "subscription.manage")) throw new AuthError("You don't have permission to do that.");
   const email = ctx.user.email ?? ctx.tenant.email;
   if (!email) throw new UserError("Add an email address to your account or clinic profile first — Paystack sends the receipt there.");
   return { ctx, email };

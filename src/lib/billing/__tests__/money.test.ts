@@ -22,7 +22,7 @@ beforeAll(async () => {
   await db.insert(s.insurerTariffs).values({ tenantId: tenant.id, insurerId: ins.id, serviceId: svc.id, priceMinor: 8000 });
   const [p] = await db.insert(s.patients).values({ tenantId: tenant.id, patientNo: "P-1", firstName: "Ama", lastName: "Mensah", insurerId: ins.id, memberNo: "M1" }).returning();
   const [q] = await db.insert(s.patients).values({ tenantId: tenant.id, patientNo: "P-2", firstName: "Kofi", lastName: "Boateng" }).returning();
-  ctx = { tenant, user, branchId: br.id, sessionId: "x", branches: [], access: "full", ip: null };
+  ctx = { tenant, user, branchId: br.id, sessionId: "x", branches: [], access: "full", ip: null, impersonatedBy: null };
   patientId = p.id; selfPayId = q.id; serviceId = svc.id; insurerId = ins.id;
 });
 
