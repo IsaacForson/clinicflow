@@ -6,7 +6,7 @@ import { practitionerName } from "../../appointments/lib";
 import { byNext } from "../lib";
 import { Refresher } from "./refresher";
 
-export const metadata = { title: "Queue display · ClinicFlow" };
+export const metadata = { title: "Queue display" };
 
 /** Full-screen TV board: ticket numbers only (no patient names on a public screen). */
 export default async function QueueDisplayPage() {

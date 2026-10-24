@@ -8,7 +8,7 @@ import { dateTime, fullName } from "@/lib/format";
 import { setLabStatusAction } from "./actions";
 import { LAB_TONE } from "./flag";
 
-export const metadata = { title: "Lab & imaging · ClinicFlow" };
+export const metadata = { title: "Lab & imaging" };
 
 const STATUSES = ["ordered", "collected", "resulted", "notified", "cancelled"] as const;
 

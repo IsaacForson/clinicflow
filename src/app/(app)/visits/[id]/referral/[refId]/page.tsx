@@ -5,7 +5,7 @@ import { audit, requireCtx, tx } from "@/lib/auth";
 import { age, dateOnly, fullName } from "@/lib/format";
 import { PrintDoc } from "../../../letterhead";
 
-export const metadata = { title: "Referral letter · ClinicFlow" };
+export const metadata = { title: "Referral letter" };
 
 export default async function ReferralPage({ params }: PageProps<"/visits/[id]/referral/[refId]">) {
   const { id, refId } = await params;

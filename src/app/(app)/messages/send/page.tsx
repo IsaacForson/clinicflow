@@ -9,7 +9,7 @@ import { DEFAULT_TEMPLATES } from "@/lib/messaging";
 import { sendAdhocAction } from "../actions";
 import { MessageTabs, PURPOSE_LABELS } from "../tabs";
 
-export const metadata = { title: "Send message · ClinicFlow" };
+export const metadata = { title: "Send message" };
 
 export default async function SendPage({ searchParams }: PageProps<"/messages/send">) {
   const ctx = await requireCtx("messaging.send");

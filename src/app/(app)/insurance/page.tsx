@@ -8,7 +8,7 @@ import { CLAIM_TONE } from "../billing/methods";
 import { requireInsurance } from "./guard";
 import { InsurerForm } from "./insurer-form";
 
-export const metadata = { title: "Insurance · ClinicFlow" };
+export const metadata = { title: "Insurance" };
 
 export default async function InsurancePage() {
   const ctx = await requireInsurance();

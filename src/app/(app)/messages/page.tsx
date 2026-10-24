@@ -7,7 +7,7 @@ import { addDays, dateTime, dayRange, fullName, localDay } from "@/lib/format";
 import { PLANS } from "@/lib/plans";
 import { MessageTabs } from "./tabs";
 
-export const metadata = { title: "Messages · ClinicFlow" };
+export const metadata = { title: "Messages" };
 
 const STATUS_TONE = { queued: "gray", sent: "blue", delivered: "teal", read: "green", failed: "red", skipped: "yellow" } as const;
 const day = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined);

@@ -2,11 +2,13 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireCtx } from "@/lib/auth";
 import { can, ROLE_LABELS, type Permission } from "@/lib/permissions";
-import { hasFeature, type Feature } from "@/lib/plans";
+import { hasFeature, trialDaysLeft, type Feature } from "@/lib/plans";
 import { logoutAction } from "../(auth)/actions";
 import { Nav, type NavItem } from "./nav";
 import { switchBranchAction } from "./shell-actions";
-import { OfflineBanner } from "@/components/offline";
+import { OfflineBanner, SignOutButton } from "@/components/offline";
+import { OutboxSync } from "@/components/outbox-sync";
+import { SwRegister } from "@/components/sw-register";
 
 // Every screen here is per-user, per-request data; opt out of instant-navigation validation.
 export const instant = false;
@@ -48,7 +50,7 @@ async function SessionNav() {
         </div>
         <div className="flex gap-3 text-xs">
           <Link href="/account" className="text-slate-600 hover:text-slate-900">My account</Link>
-          <form action={logoutAction}><button className="text-slate-600 hover:text-slate-900">Sign out</button></form>
+          <SignOutButton action={logoutAction} />
         </div>
       </div>
     } />
@@ -57,8 +59,7 @@ async function SessionNav() {
 
 async function Banners() {
   const ctx = await requireCtx();
-  const trialDays = ctx.tenant.planStatus === "trialing" && ctx.tenant.trialEndsAt
-    ? Math.ceil((ctx.tenant.trialEndsAt.getTime() - Date.now()) / 86400_000) : null;
+  const trialDays = trialDaysLeft(ctx.tenant);
   return (
     <>
       {ctx.access === "read_only" && (
@@ -91,6 +92,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Suspense>
       <div className="lg:pl-60">
         <OfflineBanner />
+        <SwRegister />
+        <OutboxSync />
         <Suspense fallback={null}><Banners /></Suspense>
         <main className="mx-auto max-w-7xl px-4 py-6 lg:px-8 print:max-w-none print:p-0">
           <Suspense fallback={PageFallback}>{children}</Suspense>

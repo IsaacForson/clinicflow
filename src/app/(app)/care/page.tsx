@@ -7,7 +7,7 @@ import { addDays, dateOnly, fullName, localDay } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { readingVsTarget } from "./lib";
 
-export const metadata = { title: "Chronic care · ClinicFlow" };
+export const metadata = { title: "Chronic care" };
 
 export default async function CarePage() {
   const ctx = await requireCtx("clinical.read");

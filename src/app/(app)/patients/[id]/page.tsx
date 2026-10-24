@@ -52,7 +52,8 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
         title={<span className="flex items-center gap-2">{fullName(p)} <Badge tone="gray">{p.patientNo}</Badge></span>}
         subtitle={<span className="capitalize">{[p.sex, age(p.dob), p.phone, data.insurer ? `${data.insurer.name} ${p.memberNo ?? ""}` : "Self-pay"].filter(Boolean).join(" · ")}</span>}
         actions={<>
-          {can(ctx.user.role, "queue.manage") && <LinkButton href={`/queue?patient=${p.id}`}>Add to queue</LinkButton>}
+          {can(ctx.user.role, "clinical.write") && <LinkButton href={`/visits/new?patient=${p.id}`}>Start consultation</LinkButton>}
+          {can(ctx.user.role, "queue.manage") && <LinkButton variant={can(ctx.user.role, "clinical.write") ? "secondary" : "primary"} href={`/queue?patient=${p.id}`}>Add to queue</LinkButton>}
           {can(ctx.user.role, "appointments.manage") && <LinkButton variant="secondary" href={`/appointments/new?patient=${p.id}`}>Book appointment</LinkButton>}
           {can(ctx.user.role, "billing.write") && <LinkButton variant="secondary" href={`/billing/new?patient=${p.id}`}>New invoice</LinkButton>}
           {write && <LinkButton variant="secondary" href={`/patients/${p.id}/edit`}>Edit</LinkButton>}

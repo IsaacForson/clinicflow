@@ -7,7 +7,7 @@ import { addDays, dateOnly, dayRange, fullName, localDay, money } from "@/lib/fo
 import { can } from "@/lib/permissions";
 import { STATUS_TONE } from "./methods";
 
-export const metadata = { title: "Billing · ClinicFlow" };
+export const metadata = { title: "Billing" };
 
 const STATUSES = ["draft", "issued", "partially_paid", "paid", "void"] as const;
 

@@ -11,7 +11,7 @@ import { branchPractitioners } from "../data";
 import { practitionerName } from "../lib";
 import { PatientSearch } from "../patient-search";
 
-export const metadata = { title: "Book appointment · ClinicFlow" };
+export const metadata = { title: "Book appointment" };
 
 const str = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
 const UUID = /^[0-9a-f-]{36}$/i;

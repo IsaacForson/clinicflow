@@ -8,7 +8,7 @@ import { localDay, money, toMajor } from "@/lib/format";
 import { deleteExpenseAction, saveExpenseAction } from "../actions";
 import { METHOD_LABEL } from "../methods";
 
-export const metadata = { title: "Expenses · ClinicFlow" };
+export const metadata = { title: "Expenses" };
 const CATEGORIES = ["Rent", "Salaries", "Utilities", "Supplies", "Drugs / stock", "Lab reagents", "Fuel / transport", "Repairs", "Internet / phone", "Cleaning", "Bank charges", "Other"];
 
 export default async function ExpensesPage({ searchParams }: PageProps<"/billing/expenses">) {

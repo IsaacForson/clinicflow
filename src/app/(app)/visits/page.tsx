@@ -8,7 +8,7 @@ import { age, dayRange, fullName, localDay, timeOnly } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { startVisitAction } from "./actions";
 
-export const metadata = { title: "Consultations · ClinicFlow" };
+export const metadata = { title: "Consultations" };
 
 export default async function VisitsPage({ searchParams }: PageProps<"/visits">) {
   const ctx = await requireCtx("clinical.read");

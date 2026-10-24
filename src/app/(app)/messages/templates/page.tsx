@@ -8,7 +8,7 @@ import { can } from "@/lib/permissions";
 import { saveTemplateAction } from "../actions";
 import { MessageTabs } from "../tabs";
 
-export const metadata = { title: "Message templates · ClinicFlow" };
+export const metadata = { title: "Message templates" };
 
 const placeholders = (body: string) => [...new Set([...body.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]))];
 

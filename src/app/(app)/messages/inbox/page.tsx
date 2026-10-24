@@ -8,7 +8,7 @@ import { dateTime, fullName } from "@/lib/format";
 import { quickReplyAction } from "../actions";
 import { MessageTabs } from "../tabs";
 
-export const metadata = { title: "Inbox · ClinicFlow" };
+export const metadata = { title: "Inbox" };
 
 /** WhatsApp's 24h customer-service window for free-text replies. */
 const inReplyWindow = (d: Date) => Date.now() - d.getTime() < 24 * 3600_000;

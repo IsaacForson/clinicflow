@@ -7,7 +7,7 @@ import { dateOnly, dayRange, localDay, money, timeOnly } from "@/lib/format";
 import { saveCashUpAction } from "../actions";
 import { METHOD_LABEL } from "../methods";
 
-export const metadata = { title: "Cash-up · ClinicFlow" };
+export const metadata = { title: "Cash-up" };
 
 export default async function CashUpPage({ searchParams }: PageProps<"/billing/cashup">) {
   const ctx = await requireCtx("cashup");

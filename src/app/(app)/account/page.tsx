@@ -10,7 +10,7 @@ import { dateTime } from "@/lib/format";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { changePasswordAction, confirmTotpAction, disableTotpAction, signOutOthersAction, startTotpAction, updateMyProfileAction } from "./actions";
 
-export const metadata = { title: "My account · ClinicFlow" };
+export const metadata = { title: "My account" };
 
 const device = (ua: string | null) => !ua ? "Unknown device" : `${/Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "Other"} · ${/Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "Browser"}`;
 

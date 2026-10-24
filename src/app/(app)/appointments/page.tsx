@@ -12,7 +12,7 @@ import {
   type ApptStatus,
 } from "./lib";
 
-export const metadata = { title: "Appointments · ClinicFlow" };
+export const metadata = { title: "Appointments" };
 
 const PX_PER_MIN = 1.6; // 15 min = 24px
 const STEP = 15;

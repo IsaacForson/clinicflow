@@ -6,7 +6,7 @@ import { requireCtx, tx } from "@/lib/auth";
 import { dateTime, fullName } from "@/lib/format";
 import { can } from "@/lib/permissions";
 
-export const metadata = { title: "Pharmacy · ClinicFlow" };
+export const metadata = { title: "Pharmacy" };
 
 export default async function PharmacyPage() {
   const ctx = await requireCtx("dispense");

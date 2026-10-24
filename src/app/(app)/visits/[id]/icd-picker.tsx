@@ -10,15 +10,16 @@ export function IcdPicker() {
   const [code, setCode] = useState("");
   const [results, setResults] = useState<Code[]>([]);
 
+  const searching = !code && q.trim().length >= 2;
   useEffect(() => {
-    if (code || q.trim().length < 2) return setResults([]);
+    if (!searching) return;
     const ctl = new AbortController();
     const id = setTimeout(() => {
       fetch(`/api/icd10?q=${encodeURIComponent(q.trim())}`, { signal: ctl.signal })
         .then((r) => (r.ok ? r.json() : [])).then(setResults).catch(() => {});
     }, 200);
     return () => { clearTimeout(id); ctl.abort(); };
-  }, [q, code]);
+  }, [q, searching]);
 
   return (
     <div className="relative flex-1">
@@ -28,7 +29,7 @@ export function IcdPicker() {
         <Input name="description" value={q} onChange={(e) => { setQ(e.target.value); setCode(""); }} required autoComplete="off"
           placeholder="Search ICD-10 (code or words) or type a diagnosis" aria-label="Diagnosis" />
       </div>
-      {results.length > 0 && (
+      {searching && results.length > 0 && (
         <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-md bg-white text-sm shadow-lg ring-1 ring-slate-200">
           {results.map((r) => (
             <li key={r.code}>

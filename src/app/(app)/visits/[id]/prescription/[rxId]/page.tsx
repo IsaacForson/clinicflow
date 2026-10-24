@@ -6,7 +6,7 @@ import { audit, requireCtx, tx } from "@/lib/auth";
 import { age, dateOnly, fullName } from "@/lib/format";
 import { PrintDoc } from "../../../letterhead";
 
-export const metadata = { title: "Prescription · ClinicFlow" };
+export const metadata = { title: "Prescription" };
 
 export default async function PrescriptionPage({ params }: PageProps<"/visits/[id]/prescription/[rxId]">) {
   const { id, rxId } = await params;

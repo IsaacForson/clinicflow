@@ -7,7 +7,7 @@ import { requireCtx, tx } from "@/lib/auth";
 import { fullName } from "@/lib/format";
 import { enrollAction } from "../actions";
 
-export const metadata = { title: "Enroll in chronic care · ClinicFlow" };
+export const metadata = { title: "Enroll in chronic care" };
 
 export default async function EnrollPage({ searchParams }: PageProps<"/care/new">) {
   const ctx = await requireCtx("clinical.write");

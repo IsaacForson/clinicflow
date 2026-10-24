@@ -6,7 +6,7 @@ import { requireCtx, tx } from "@/lib/auth";
 import { blindIndex } from "@/lib/crypto";
 import { age, dateOnly, e164, fullName } from "@/lib/format";
 
-export const metadata = { title: "Patients · ClinicFlow" };
+export const metadata = { title: "Patients" };
 
 export default async function PatientsPage({ searchParams }: PageProps<"/patients">) {
   const ctx = await requireCtx("patients.read");

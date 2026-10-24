@@ -13,7 +13,7 @@ import { PatientSearch } from "../appointments/patient-search";
 import { addToQueueAction, assignTicketAction, callNextAction, moveTicketAction, togglePriorityAction } from "./actions";
 import { averageWaitMinutes, BOARD_COLUMNS, byNext, minutesSince, SHORT_LABEL, type QueueStatus } from "./lib";
 
-export const metadata = { title: "Queue · ClinicFlow" };
+export const metadata = { title: "Queue" };
 
 export default async function QueuePage({ searchParams }: PageProps<"/queue">) {
   const ctx = await requireCtx("queue.manage");

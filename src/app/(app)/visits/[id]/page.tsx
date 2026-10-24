@@ -22,7 +22,7 @@ import { IcdPicker } from "./icd-picker";
 import { NoteEditor } from "./note-editor";
 import { RxLines } from "./rx-lines";
 
-export const metadata = { title: "Consultation · ClinicFlow" };
+export const metadata = { title: "Consultation" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Vitals = typeof vitals.$inferSelect;

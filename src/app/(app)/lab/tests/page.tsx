@@ -7,7 +7,7 @@ import { requireCtx, tx } from "@/lib/auth";
 import { money } from "@/lib/format";
 import { saveLabTestAction } from "../actions";
 
-export const metadata = { title: "Lab test catalogue · ClinicFlow" };
+export const metadata = { title: "Lab test catalogue" };
 
 export default async function LabTestsPage({ searchParams }: PageProps<"/lab/tests">) {
   const ctx = await requireCtx("lab.result");

@@ -5,7 +5,7 @@ import { items, stockBatches } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { addDays, dateOnly, localDay, money } from "@/lib/format";
 
-export const metadata = { title: "Inventory · ClinicFlow" };
+export const metadata = { title: "Inventory" };
 
 export default async function InventoryPage({ searchParams }: PageProps<"/pharmacy/inventory">) {
   const ctx = await requireCtx("inventory.manage");

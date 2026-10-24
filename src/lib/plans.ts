@@ -24,3 +24,9 @@ export function accessLevel(t: Pick<Tenant, "planStatus" | "trialEndsAt" | "curr
   const graceEnd = new Date(end.getTime() + GRACE_DAYS * 86400_000);
   return now > graceEnd ? "read_only" : "full";
 }
+
+/** Whole days left in the trial, or null when not trialing. */
+export function trialDaysLeft(t: Pick<Tenant, "planStatus" | "trialEndsAt">, now = new Date()): number | null {
+  if (t.planStatus !== "trialing" || !t.trialEndsAt) return null;
+  return Math.ceil((t.trialEndsAt.getTime() - now.getTime()) / 86400_000);
+}

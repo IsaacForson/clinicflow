@@ -4,7 +4,7 @@ import { Field, Input, Select } from "@/components/ui";
 import { COUNTRIES } from "@/lib/provision";
 import { signupAction } from "../actions";
 
-export const metadata = { title: "Start your trial · ClinicFlow" };
+export const metadata = { title: "Start your trial" };
 
 export default function SignupPage() {
   return (

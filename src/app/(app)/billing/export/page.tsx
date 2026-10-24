@@ -3,7 +3,7 @@ import { requireCtx } from "@/lib/auth";
 import { localDay } from "@/lib/format";
 import { hasFeature } from "@/lib/plans";
 
-export const metadata = { title: "Accounting export · ClinicFlow" };
+export const metadata = { title: "Accounting export" };
 
 export default async function ExportPage() {
   const ctx = await requireCtx("billing.read");

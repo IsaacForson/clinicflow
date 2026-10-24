@@ -9,7 +9,7 @@ import { CLAIM_TONE } from "../../billing/methods";
 import { createClaimAction } from "../actions";
 import { requireInsurance } from "../guard";
 
-export const metadata = { title: "Claims · ClinicFlow" };
+export const metadata = { title: "Claims" };
 
 export default async function ClaimsPage({ searchParams }: PageProps<"/insurance/claims">) {
   const ctx = await requireInsurance();
