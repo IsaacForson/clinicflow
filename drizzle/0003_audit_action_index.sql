@@ -1,0 +1,1 @@
+CREATE INDEX "audit_action_idx" ON "audit"."log" USING btree ("tenant_id","action","at");

@@ -22,6 +22,13 @@
       "when": 1792858055607,
       "tag": "0002_platform_admin_and_clinic_admin_role",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792858721617,
+      "tag": "0003_audit_action_index",
+      "breakpoints": true
     }
   ]
 }

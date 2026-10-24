@@ -7,7 +7,8 @@ import { getFile, putFile } from "./storage";
 import { createZip } from "./zip";
 
 // Never exported: auth secrets the app role can't read anyway, provider credentials, and internal plumbing.
-const SKIP_TABLES = new Set(["sessions", "otp_codes", "integrations", "portal_tokens", "jobs"]);
+// platform_log is the ClinicFlow team's internal audit trail (not clinic data, and not readable by the clinic role).
+const SKIP_TABLES = new Set(["sessions", "otp_codes", "integrations", "portal_tokens", "jobs", "platform_log"]);
 const SECRET_KEYS = new Set(["passwordHash", "totpSecret", "keyHash", "tokenHash", "secret", "config"]);
 const CSV_TABLES = new Set(["patients", "visits", "diagnoses", "prescriptions", "prescription_items", "invoices", "invoice_lines", "payments", "appointments", "lab_orders", "lab_order_items", "stock_batches", "stock_movements"]);
 

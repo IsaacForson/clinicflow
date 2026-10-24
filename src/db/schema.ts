@@ -846,7 +846,7 @@ export const auditLog = audit.table("log", {
   details: jsonb("details"),
   ip: text("ip"),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [index("audit_tenant_idx").on(t.tenantId, t.at), index("audit_patient_idx").on(t.patientId, t.at)]);
+}, (t) => [index("audit_tenant_idx").on(t.tenantId, t.at), index("audit_patient_idx").on(t.patientId, t.at), index("audit_action_idx").on(t.tenantId, t.action, t.at)]);
 
 /** Every action taken by the ClinicFlow team (append-only). */
 export const platformAudit = audit.table("platform_log", {

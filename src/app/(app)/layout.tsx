@@ -1,4 +1,4 @@
-import { LogOut, Plus, ShieldAlert, Sparkles } from "lucide-react";
+import { Eye, LogOut, Plus, ShieldAlert, Sparkles } from "lucide-react";
 import { Avatar, Callout, LinkButton, StatusDot } from "@/components/ui";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -8,7 +8,7 @@ import { hasFeature, trialDaysLeft, type Feature } from "@/lib/plans";
 import { logoutAction } from "../(auth)/actions";
 import { CommandPalette, CommandTrigger } from "./command-palette";
 import { LogoMark, Nav, type NavItem } from "./nav";
-import { switchBranchAction } from "./shell-actions";
+import { endSupportViewAction, switchBranchAction } from "./shell-actions";
 import { OfflineBanner, SignOutButton } from "@/components/offline";
 import { OutboxSync } from "@/components/outbox-sync";
 import { SwRegister } from "@/components/sw-register";
@@ -100,6 +100,15 @@ async function TopBar() {
 async function Banners() {
   const ctx = await requireCtx();
   const trialDays = trialDaysLeft(ctx.tenant);
+  if (ctx.impersonatedBy) {
+    return (
+      <div className="mx-auto mt-4 max-w-[1400px] px-3 lg:px-6">
+        <Callout tone="red" icon={<Eye />} actions={<form action={endSupportViewAction}><button className="rounded-lg border border-bad/40 px-3 py-1.5 text-xs font-medium text-bad hover:bg-bad/10">End support view</button></form>}>
+          <strong>ClinicFlow support view</strong> of {ctx.tenant.name} — read-only, and every page you open is logged in the clinic&apos;s audit trail.
+        </Callout>
+      </div>
+    );
+  }
   const show = ctx.access === "read_only" || (trialDays !== null && trialDays <= 7) || (ctx.user.role === "owner" && !ctx.user.totpEnabled);
   if (!show) return null;
   return (
