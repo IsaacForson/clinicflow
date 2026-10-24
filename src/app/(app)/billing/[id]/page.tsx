@@ -1,9 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionButton, ActionForm, Submit } from "@/components/form";
 import { AlertTriangle, Ban, CreditCard, FileText, History, Link2, ListPlus, Package, Percent, Plus, Printer, Receipt, Send, ShieldAlert, Stethoscope, Wallet } from "lucide-react";
-import { A, Avatar, Badge, Callout, cx, EmptyState, Field, Input, LinkButton, PageHeader, Panel, Progress, Select } from "@/components/ui";
+import { A, Avatar, Badge, Callout, cx, EmptyState, Field, Input, LinkButton, PageHeader, Panel, Select } from "@/components/ui";
 import { claimItems, claims, insurers, invoiceLines, invoices, items, patients, payments, services, users } from "@/db/schema";
 import { audit, requireCtx, tx } from "@/lib/auth";
 import { patientCredit } from "@/lib/billing";
