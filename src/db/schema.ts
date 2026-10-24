@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
-  boolean, customType, date, index, integer, jsonb, pgEnum, pgSchema, pgTable, primaryKey,
+  boolean, check, customType, date, index, integer, jsonb, pgEnum, pgSchema, pgTable, primaryKey,
   real, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import { decrypt, encrypt } from "@/lib/crypto";
@@ -18,6 +18,11 @@ const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull(
 const updatedAt = () => timestamp("updated_at", { withTimezone: true }).notNull().defaultNow();
 const ts = (name: string) => timestamp(name, { withTimezone: true });
 const money = (name: string) => integer(name).notNull().default(0); // minor units (pesewas, kobo, cents)
+
+export type OpeningHours = Record<"0" | "1" | "2" | "3" | "4" | "5" | "6", [string, string] | null>;
+export const DEFAULT_OPENING_HOURS: OpeningHours = {
+  "0": null, "1": ["08:00", "17:00"], "2": ["08:00", "17:00"], "3": ["08:00", "17:00"], "4": ["08:00", "17:00"], "5": ["08:00", "17:00"], "6": ["08:00", "13:00"],
+};
 
 // ---------- Enums ----------
 export const roleEnum = pgEnum("role", ["owner", "doctor", "nurse", "front_desk", "cashier", "pharmacist", "lab"]);
@@ -75,6 +80,8 @@ export const branches = pgTable("branches", {
   phone: text("phone"),
   isMain: boolean("is_main").notNull().default(false),
   active: boolean("active").notNull().default(true),
+  /** Weekly opening hours keyed by weekday 0 (Sun)–6 (Sat): ["08:00","17:00"], or null when closed. */
+  openingHours: jsonb("opening_hours").$type<OpeningHours>().notNull().default(DEFAULT_OPENING_HOURS),
   createdAt: createdAt(),
 });
 
@@ -451,6 +458,10 @@ export const invoices = pgTable("invoices", {
   patientPortionMinor: money("patient_portion_minor"),
   paidMinor: money("paid_minor"), // patient payments only
   insurerPaidMinor: money("insurer_paid_minor"),
+  /** Part of the insurer share the insurer rejected/underpaid, moved onto the patient's balance. */
+  insurerShortfallMinor: money("insurer_shortfall_minor"),
+  /** Part of the insurer share the clinic chose to absorb instead of billing the patient. */
+  insurerWriteoffMinor: money("insurer_writeoff_minor"),
   notes: text("notes"),
   voidReason: text("void_reason"),
   issuedAt: ts("issued_at"),
@@ -488,7 +499,11 @@ export const payments = pgTable("payments", {
   receivedBy: uuid("received_by"),
   receivedAt: ts("received_at").notNull().defaultNow(),
   clientId: text("client_id").unique(), // idempotency key from offline outbox
-}, (t) => [index("payments_day_idx").on(t.tenantId, t.branchId, t.receivedAt)]);
+  refundedAt: ts("refunded_at"),
+  refundedBy: uuid("refunded_by"),
+  refundReason: text("refund_reason"),
+  refundProviderRef: text("refund_provider_ref"),
+}, (t) => [index("payments_day_idx").on(t.tenantId, t.branchId, t.receivedAt), index("payments_refund_idx").on(t.tenantId, t.branchId, t.refundedAt)]);
 
 export const cashUps = pgTable("cash_ups", {
   id: id(),
@@ -568,11 +583,11 @@ export const stockBatches = pgTable("stock_batches", {
   branchId: uuid("branch_id").notNull().references(() => branches.id),
   batchNo: text("batch_no"),
   expiry: date("expiry"),
-  qtyOnHand: integer("qty_on_hand").notNull().default(0),
+  qtyOnHand: integer("qty_on_hand").notNull().default(0), // CHECK (qty_on_hand >= 0) below
   costMinor: money("cost_minor"),
   supplier: text("supplier"),
   receivedAt: ts("received_at").notNull().defaultNow(),
-}, (t) => [index("batches_item_idx").on(t.itemId, t.branchId, t.expiry)]);
+}, (t) => [index("batches_item_idx").on(t.itemId, t.branchId, t.expiry), check("stock_batches_qty_nonnegative", sql`${t.qtyOnHand} >= 0`)]);
 
 export const stockMovements = pgTable("stock_movements", {
   id: id(),

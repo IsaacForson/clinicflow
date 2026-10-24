@@ -4,7 +4,8 @@ import { Badge, Card, Field, Input } from "@/components/ui";
 import { branches } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { hasFeature, PLANS } from "@/lib/plans";
-import { makeMainBranchAction, saveBranchAction } from "../actions";
+import { describeHours, WEEKDAYS } from "@/lib/hours";
+import { makeMainBranchAction, saveBranchAction, saveOpeningHoursAction } from "../actions";
 
 export default async function BranchesPage() {
   const ctx = await requireCtx("settings.manage");
@@ -28,6 +29,27 @@ export default async function BranchesPage() {
               <div className="mt-1 flex gap-2">
                 {b.isMain ? <Badge tone="teal">Main branch</Badge> : b.active && <ActionButton action={makeMainBranchAction} fields={{ id: b.id }}>Make main</ActionButton>}
               </div>
+              <details className="mt-2 rounded-md bg-slate-50 p-3">
+                <summary className="cursor-pointer text-sm font-medium text-slate-700">
+                  Opening hours <span className="font-normal text-slate-500">· {WEEKDAYS.map((d, i) => `${d.slice(0, 3)} ${describeHours(b.openingHours[String(i) as keyof typeof b.openingHours])}`).join(", ")}</span>
+                </summary>
+                <ActionForm action={saveOpeningHoursAction} className="mt-3 space-y-2">
+                  <input type="hidden" name="id" value={b.id} />
+                  <p className="text-xs text-slate-500">Used to lay out the appointment calendar, warn front desk about bookings outside hours, and offer slots in the patient portal.</p>
+                  {WEEKDAYS.map((d, i) => {
+                    const h = b.openingHours[String(i) as keyof typeof b.openingHours];
+                    return (
+                      <div key={d} className="grid grid-cols-[6rem_1fr_1fr_auto] items-center gap-2 text-sm">
+                        <span>{d}</span>
+                        <Input type="time" name={`open_${i}`} defaultValue={h?.[0] ?? "08:00"} aria-label={`${d} opens`} />
+                        <Input type="time" name={`close_${i}`} defaultValue={h?.[1] ?? "17:00"} aria-label={`${d} closes`} />
+                        <label className="flex items-center gap-1 text-xs"><input type="checkbox" name={`closed_${i}`} defaultChecked={!h} /> Closed</label>
+                      </div>
+                    );
+                  })}
+                  <Submit variant="secondary">Save opening hours</Submit>
+                </ActionForm>
+              </details>
             </div>
           ))}
         </div>

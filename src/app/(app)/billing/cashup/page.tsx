@@ -5,6 +5,7 @@ import { branches, cashUps, expenses, invoices, payments, users } from "@/db/sch
 import { requireCtx, tx } from "@/lib/auth";
 import { dateOnly, dayRange, localDay, money, timeOnly } from "@/lib/format";
 import { saveCashUpAction } from "../actions";
+import { dayMoney } from "@/lib/billing/cashup";
 import { METHOD_LABEL } from "../methods";
 
 export const metadata = { title: "Cash-up" };
@@ -19,12 +20,10 @@ export default async function CashUpPage({ searchParams }: PageProps<"/billing/c
   const inDay = (col: typeof payments.receivedAt | typeof invoices.issuedAt) => sql`${col} >= ${start.toISOString()} and ${col} < ${end.toISOString()}`;
 
   const d = await tx(ctx, async (t) => {
-    const payWhere = and(eq(payments.branchId, ctx.branchId), eq(payments.status, "succeeded"), inDay(payments.receivedAt), cashier ? eq(payments.receivedBy, cashier) : undefined);
     const invWhere = and(eq(invoices.branchId, ctx.branchId), inDay(invoices.issuedAt), sql`${invoices.status} <> 'void'`);
     return {
       branch: (await t.select({ name: branches.name }).from(branches).where(eq(branches.id, ctx.branchId)))[0]?.name,
-      byMethod: await t.select({ method: payments.method, total: sql<number>`sum(${payments.amountMinor})::int`, n: sql<number>`count(*)::int` })
-        .from(payments).where(payWhere).groupBy(payments.method),
+      money: await dayMoney(t, { branchId: ctx.branchId, start, end, cashier }),
       cashiers: await t.selectDistinct({ id: users.id, name: users.name }).from(payments).innerJoin(users, eq(users.id, payments.receivedBy))
         .where(and(eq(payments.branchId, ctx.branchId), inDay(payments.receivedAt))),
       issued: (await t.select({
@@ -37,11 +36,12 @@ export default async function CashUpPage({ searchParams }: PageProps<"/billing/c
         .where(and(eq(cashUps.branchId, ctx.branchId), eq(cashUps.day, day))).orderBy(desc(cashUps.createdAt)),
     };
   });
-  const get = (m: string) => d.byMethod.find((r) => r.method === m)?.total ?? 0;
+  const byMethod = d.money.received;
+  const refundedTotal = d.money.refunded.filter((r) => r.method !== "deposit" && r.method !== "insurance").reduce((s, r) => s + r.total, 0);
   const cashExpenses = d.expenses.filter((e) => e.method === "cash").reduce((s, e) => s + e.amountMinor, 0);
   const allExpenses = d.expenses.reduce((s, e) => s + e.amountMinor, 0);
-  const newMoney = d.byMethod.filter((r) => r.method !== "deposit" && r.method !== "insurance").reduce((s, r) => s + r.total, 0);
-  const expectedCash = get("cash") - cashExpenses;
+  const newMoney = byMethod.filter((r) => r.method !== "deposit" && r.method !== "insurance").reduce((s, r) => s + r.total, 0) - refundedTotal;
+  const expectedCash = d.money.cashIn - d.money.cashRefunded - cashExpenses;
 
   return (
     <>
@@ -56,15 +56,16 @@ export default async function CashUpPage({ searchParams }: PageProps<"/billing/c
         <Button type="submit" variant="secondary">Show</Button>
       </form>
       <div className="mb-4 grid gap-3 sm:grid-cols-4">
-        <Stat label="Money received" value={money(newMoney, cur)} sub="excl. credit applied & insurer" />
+        <Stat label="Money received" value={money(newMoney, cur)} sub={refundedTotal ? `after ${money(refundedTotal, cur)} refunds` : "excl. credit applied & insurer"} />
         <Stat label="Invoices issued" value={money(d.issued.total, cur)} sub={`${d.issued.n} invoices`} />
         <Stat label="Outstanding from today" value={money(d.issued.outstanding, cur)} sub={`+ ${money(d.issued.insurer, cur)} insurer`} />
-        <Stat label="Net cash" value={money(expectedCash, cur)} sub="cash in − cash expenses" />
+        <Stat label="Net cash" value={money(expectedCash, cur)} sub="cash in − cash refunds − cash expenses" />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Payments by method">
           <Table head={["Method", "Count", "Total"]} empty="No payments today.">
-            {d.byMethod.map((r) => <tr key={r.method}><Td>{METHOD_LABEL[r.method]}</Td><Td>{r.n}</Td><Td>{money(r.total, cur)}</Td></tr>)}
+            {byMethod.map((r) => <tr key={r.method}><Td>{METHOD_LABEL[r.method]}</Td><Td>{r.n}</Td><Td>{money(r.total, cur)}</Td></tr>)}
+            {d.money.refunded.map((r) => <tr key={`r-${r.method}`} className="text-red-700"><Td>Refunded · {METHOD_LABEL[r.method]}</Td><Td>{r.n}</Td><Td>−{money(r.total, cur)}</Td></tr>)}
           </Table>
         </Card>
         <Card title="Expenses">

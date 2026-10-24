@@ -5,8 +5,9 @@ import { z } from "zod";
 import { cashUps, claimItems, expenses, invoiceLines, invoices, patients, payments } from "@/db/schema";
 import { formObject, run, UserError, zInt, zMoney, type ActionState } from "@/lib/action";
 import { audit, requireWrite, tx } from "@/lib/auth";
-import { activeInsurer, addLine, createInvoice, issueInvoice, recalcInvoice, recordPayment } from "@/lib/billing";
+import { activeInsurer, addLine, createInvoice, issueInvoice, recalcInvoice, recordPayment, reversePayment, settleInsurerShortfall } from "@/lib/billing";
 import { dayRange, money } from "@/lib/format";
+import { dayMoney } from "@/lib/billing/cashup";
 import { queuePatientMessage } from "@/lib/messaging";
 import { initializePayment } from "@/lib/paystack";
 
@@ -200,15 +201,14 @@ export async function saveCashUpAction(_: ActionState, fd: FormData): Promise<Ac
     const o = z.object({ day, counted: zMoney, notes: z.string().max(1000).optional() }).parse(formObject(fd));
     await tx(ctx, async (t) => {
       const { start, end } = dayRange(o.day, ctx.tenant.timezone);
-      const rows = await t.select({ method: payments.method, total: sql<number>`sum(${payments.amountMinor})::int` }).from(payments)
-        .where(and(eq(payments.branchId, ctx.branchId), eq(payments.status, "succeeded"), sql`${payments.receivedAt} >= ${start.toISOString()} and ${payments.receivedAt} < ${end.toISOString()}`))
-        .groupBy(payments.method);
+      const m = await dayMoney(t, { branchId: ctx.branchId, start, end });
       const [{ cashOut }] = await t.select({ cashOut: sql<number>`coalesce(sum(${expenses.amountMinor}), 0)::int` }).from(expenses)
         .where(and(eq(expenses.branchId, ctx.branchId), eq(expenses.day, o.day), eq(expenses.method, "cash")));
-      const expected = Object.fromEntries(rows.map((r) => [r.method, r.total]));
-      const expectedCash = (expected.cash ?? 0) - cashOut;
+      const expected = Object.fromEntries(m.received.map((r) => [r.method, r.total]));
+      const refunds = Object.fromEntries(m.refunded.map((r) => [`refunded_${r.method}`, r.total]));
+      const expectedCash = m.cashIn - m.cashRefunded - cashOut;
       const [c] = await t.insert(cashUps).values({
-        tenantId: ctx.tenant.id, branchId: ctx.branchId, day: o.day, userId: ctx.user.id, expected: { ...expected, cash_expenses: cashOut },
+        tenantId: ctx.tenant.id, branchId: ctx.branchId, day: o.day, userId: ctx.user.id, expected: { ...expected, ...refunds, cash_expenses: cashOut },
         countedCashMinor: o.counted, varianceMinor: o.counted - expectedCash, notes: o.notes ?? null,
       }).returning({ id: cashUps.id });
       await audit(t, ctx, "create", "cash_up", c.id, { details: { day: o.day, variance: o.counted - expectedCash } });
@@ -252,5 +252,30 @@ export async function deleteExpenseAction(_: ActionState, fd: FormData): Promise
       await audit(t, ctx, "delete", "expense", id);
     });
     revalidatePath("/billing/expenses");
+  });
+}
+
+/** Refund / reverse a payment (billing.void). Paystack payments can be refunded through Paystack. */
+export async function reversePaymentAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const ctx = await requireWrite("billing.void");
+    const o = z.object({ paymentId: z.string().uuid(), reason: z.string().min(3, "Enter the reason for the refund").max(300), viaProvider: z.string().optional() }).parse(formObject(fd));
+    const p = await tx(ctx, (t) => reversePayment(t, ctx, { paymentId: o.paymentId, reason: o.reason, viaProvider: o.viaProvider === "on" }));
+    revalidatePath("/billing");
+    if (p.invoiceId) revalidatePath(`/billing/${p.invoiceId}`);
+    revalidatePath(`/billing/receipt/${p.id}`);
+    return { ok: true, message: "Payment reversed." };
+  });
+}
+
+/** Move the unpaid insurer share to the patient's balance, or write it off. */
+export async function insurerShortfallAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const ctx = await requireWrite("billing.void");
+    const o = z.object({ invoiceId: z.string().uuid(), mode: z.enum(["bill_patient", "write_off"]), amount: zMoney.optional(), reason: z.string().max(300).optional() }).parse(formObject(fd));
+    const moved = await tx(ctx, (t) => settleInsurerShortfall(t, ctx, { invoiceId: o.invoiceId, mode: o.mode, amountMinor: o.amount, reason: o.reason }));
+    if (!moved) throw new UserError("Nothing is owed by the insurer on this invoice");
+    revalidatePath(`/billing/${o.invoiceId}`);
+    return { ok: true, message: o.mode === "bill_patient" ? "Moved to the patient's balance." : "Written off." };
   });
 }

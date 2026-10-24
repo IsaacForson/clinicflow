@@ -54,3 +54,11 @@ export function verifyWebhookSignature(rawBody: string, signature: string | null
   const expected = createHmac("sha512", secretKey).update(rawBody).digest("hex");
   return expected.length === signature.length && timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
+
+/** Full or partial refund of a Paystack transaction. Returns Paystack's refund id. */
+export async function refundTransaction(tenantId: string | null, reference: string, amountMinor: number): Promise<string> {
+  const key = await paystackKey(tenantId);
+  if (!key) throw new Error("Paystack is not configured, so this payment can't be refunded automatically");
+  const data = await call<{ id?: number | string }>(key, "/refund", { transaction: reference, amount: amountMinor });
+  return String(data?.id ?? reference);
+}

@@ -2,7 +2,8 @@ import { and, asc, eq, gte, lt } from "drizzle-orm";
 import Link from "next/link";
 import { ActionButton } from "@/components/form";
 import { Badge, Card, Input, LinkButton, PageHeader, Select, Table, Tabs, Td, cx } from "@/components/ui";
-import { appointments, intakeForms, patients, services } from "@/db/schema";
+import { appointments, branches, intakeForms, patients, services, type OpeningHours } from "@/db/schema";
+import { hoursOn, toMinutes } from "@/lib/hours";
 import { requireCtx, tx } from "@/lib/auth";
 import { addDays, dateOnly, dayRange, fullName, localDay, timeOnly } from "@/lib/format";
 import { setAppointmentStatusAction } from "./actions";
@@ -35,7 +36,8 @@ export default async function AppointmentsPage({ searchParams }: PageProps<"/app
   const to = view === "week" ? addDays(from, 7) : addDays(day, 1);
   const range = { start: dayRange(from, tz).start, end: dayRange(to, tz).start };
 
-  const { rows, practitioners, pendingIntakes } = await tx(ctx, async (t) => ({
+  const { rows, practitioners, pendingIntakes, hours } = await tx(ctx, async (t) => ({
+    hours: (await t.select({ h: branches.openingHours }).from(branches).where(eq(branches.id, ctx.branchId)))[0]?.h ?? null,
     rows: await t.select({
       a: appointments, p: { firstName: patients.firstName, lastName: patients.lastName, otherNames: patients.otherNames }, service: services.name,
     }).from(appointments).innerJoin(patients, eq(patients.id, appointments.patientId)).leftJoin(services, eq(services.id, appointments.serviceId))
@@ -89,7 +91,8 @@ export default async function AppointmentsPage({ searchParams }: PageProps<"/app
         </form>
       </div>
 
-      {view === "day" && <DayGrid rows={rows} practitioners={practitioners} day={day} tz={tz} />}
+      {view === "day" && !hoursOn(hours, day) && <p className="mb-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">This branch is closed on {dateOnly(dayRange(day, tz).start, tz)}. Change opening hours in Settings → Branches.</p>}
+      {view === "day" && <DayGrid rows={rows} practitioners={practitioners} day={day} tz={tz} hours={hours} />}
 
       {view === "week" && (
         <div className="grid gap-2 md:grid-cols-7">
@@ -146,9 +149,10 @@ export default async function AppointmentsPage({ searchParams }: PageProps<"/app
 type Row = { a: typeof appointments.$inferSelect; p: { firstName: string; lastName: string; otherNames: string | null }; service: string | null };
 
 /** Columns = practitioners, rows = 15-minute slots in clinic time. Empty slots link to a prefilled booking. */
-function DayGrid({ rows, practitioners, day, tz }: { rows: Row[]; practitioners: { id: string; name: string; title: string | null }[]; day: string; tz: string }) {
+function DayGrid({ rows, practitioners, day, tz, hours }: { rows: Row[]; practitioners: { id: string; name: string; title: string | null }[]; day: string; tz: string; hours: OpeningHours | null }) {
   const live = rows.filter((r) => r.a.status !== "cancelled").map((r) => ({ ...r, start: localMinutes(r.a.startsAt, tz), end: localMinutes(r.a.startsAt, tz) + Math.max(STEP, Math.round((r.a.endsAt.getTime() - r.a.startsAt.getTime()) / 60_000)) }));
-  const win = dayWindow(live);
+  const open = hoursOn(hours, day);
+  const win = open ? dayWindow(live, toMinutes(open[0]), toMinutes(open[1])) : dayWindow(live);
   const slots = timeSlots(win.start, win.end, STEP);
   const height = (win.end - win.start) * PX_PER_MIN;
   const cols = [...practitioners.map((d) => ({ id: d.id as string | null, label: practitionerName(d) }))];

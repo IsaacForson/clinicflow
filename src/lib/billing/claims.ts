@@ -2,7 +2,7 @@ import { and, eq, gt, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import type { Tx } from "@/db";
 import { claimItems, claims, diagnoses, insurers, invoiceLines, invoices, patients, payments } from "@/db/schema";
 import { UserError } from "../action";
-import { recordPayment } from "../billing";
+import { recordPayment, settleInsurerShortfall } from "../billing";
 import { nextNumber } from "../numbers";
 
 type SysCtx = Parameters<typeof recordPayment>[1];
@@ -40,6 +40,8 @@ export async function buildClaim(t: Tx, ctx: SysCtx, o: { insurerId: string; per
  */
 export async function settleClaimItem(t: Tx, ctx: SysCtx, o: {
   itemId: string; outcome: "paid" | "partially_paid" | "rejected"; amountMinor?: number; reason?: string | null; clientId?: string | null;
+  /** What happens to the part the insurer didn't pay: move to the patient's bill, write off, or decide later. */
+  shortfall?: "bill_patient" | "write_off" | "later";
 }) {
   const [row] = await t.select().from(claimItems).innerJoin(invoices, eq(invoices.id, claimItems.invoiceId)).where(eq(claimItems.id, o.itemId));
   if (!row) throw new UserError("Claim item not found");
@@ -65,6 +67,9 @@ export async function settleClaimItem(t: Tx, ctx: SysCtx, o: {
       amountPaidMinor: paid, status: paid >= item.amountClaimedMinor || o.outcome === "paid" ? "paid" : "partially_paid",
       rejectionReason: o.reason ?? item.rejectionReason,
     }).where(eq(claimItems.id, item.id));
+  }
+  if (o.outcome !== "paid" && o.shortfall && o.shortfall !== "later") {
+    await settleInsurerShortfall(t, ctx, { invoiceId: item.invoiceId, mode: o.shortfall, reason: o.reason ?? null });
   }
   return refreshClaim(t, item.claimId);
 }

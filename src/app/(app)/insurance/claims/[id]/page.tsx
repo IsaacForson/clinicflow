@@ -72,6 +72,11 @@ export default async function ClaimPage({ params }: PageProps<"/insurance/claims
                       <Input name="amount" inputMode="decimal" defaultValue={toMajor(item.amountClaimedMinor - item.amountPaidMinor)} className="w-24 py-1 text-xs" aria-label="Amount paid" />
                     </div>
                     <Input name="reason" placeholder="Rejection / shortfall reason" className="py-1 text-xs" />
+                    <Select name="shortfall" defaultValue="later" className="py-1 text-xs" aria-label="Unpaid part">
+                      <option value="later">Unpaid part: decide later</option>
+                      <option value="bill_patient">Unpaid part: move to patient&apos;s bill</option>
+                      <option value="write_off">Unpaid part: write off (clinic absorbs)</option>
+                    </Select>
                     <Submit variant="secondary" className="px-2 py-1 text-xs">Record</Submit>
                   </ActionForm>
                 )}

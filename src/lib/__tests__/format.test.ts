@@ -37,3 +37,23 @@ describe("isPrivateAddress", () => {
     for (const ip of ["8.8.8.8", "172.32.0.1", "2001:4860::8888"]) expect(isPrivateAddress(ip)).toBe(false);
   });
 });
+
+import { hoursOn, parseHoursForm, weekdayOf, withinHours } from "../hours";
+describe("opening hours", () => {
+  it("reads the right weekday and window", () => {
+    expect(weekdayOf("2026-10-24")).toBe("6"); // Saturday
+    expect(hoursOn(undefined, "2026-10-25")).toBeNull(); // Sunday closed by default
+    expect(withinHours(undefined, "2026-10-24", 8 * 60, 9 * 60)).toBe(true);
+    expect(withinHours(undefined, "2026-10-24", 12 * 60 + 45, 13 * 60 + 15)).toBe(false); // Saturday closes 13:00
+    expect(withinHours(undefined, "2026-10-25", 9 * 60, 10 * 60)).toBe(false);
+  });
+  it("validates the settings form", () => {
+    const f: Record<string, string> = {};
+    for (let d = 0; d < 7; d++) Object.assign(f, { [`open_${d}`]: "08:00", [`close_${d}`]: "16:30" });
+    f.closed_0 = "on";
+    const h = parseHoursForm(f);
+    expect(h["0"]).toBeNull();
+    expect(h["3"]).toEqual(["08:00", "16:30"]);
+    expect(() => parseHoursForm({ ...f, close_2: "07:00" })).toThrow(/Tuesday/);
+  });
+});

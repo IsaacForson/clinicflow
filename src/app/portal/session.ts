@@ -4,6 +4,7 @@ import { adminDb, type Tx } from "@/db";
 import { appointments, auditLog, branches, patients, portalTokens, tenants, users } from "@/db/schema";
 import { sha256 } from "@/lib/crypto";
 import { dayRange } from "@/lib/format";
+import { hoursOn } from "@/lib/hours";
 import { freeSlots, type Busy } from "./slots";
 
 export type PortalSession = NonNullable<Awaited<ReturnType<typeof resolvePortal>>>;
@@ -41,9 +42,13 @@ export async function availableSlots(t: Tx, o: { tenantId: string; tz: string; d
   const pracs = o.practitionerId
     ? [o.practitionerId]
     : (await t.select({ id: users.id }).from(users).where(and(eq(users.tenantId, o.tenantId), eq(users.isPractitioner, true), eq(users.active, true)))).map((u) => u.id);
+  const branchId = await mainBranchId(t, o.tenantId);
+  const [b] = branchId ? await t.select({ hours: branches.openingHours }).from(branches).where(and(eq(branches.id, branchId), eq(branches.tenantId, o.tenantId))) : [];
+  const open = hoursOn(b?.hours, o.day);
+  if (!open) return [];
   const slots = new Map<number, string>();
   for (const id of pracs) {
-    for (const s of freeSlots({ day: o.day, tz: o.tz, durationMin: o.durationMin, busy: await busyFor(t, o.tenantId, id, o.day, o.tz, o.exceptApptId) })) {
+    for (const s of freeSlots({ day: o.day, tz: o.tz, durationMin: o.durationMin, open: open[0], close: open[1], busy: await busyFor(t, o.tenantId, id, o.day, o.tz, o.exceptApptId) })) {
       if (!slots.has(s.getTime())) slots.set(s.getTime(), id);
     }
   }

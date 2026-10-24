@@ -9,8 +9,10 @@ import { patientCredit } from "@/lib/billing";
 import { dateTime, fullName, money, toMajor } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import {
-  addLineAction, discountAction, issueInvoiceAction, removeLineAction, sendInvoiceAction, sendPaymentLinkAction, takePaymentAction, voidInvoiceAction,
+  addLineAction, discountAction, insurerShortfallAction, issueInvoiceAction, removeLineAction, reversePaymentAction, sendInvoiceAction, sendPaymentLinkAction,
+  takePaymentAction, voidInvoiceAction,
 } from "../actions";
+import { ReversePayment } from "../reverse-payment";
 import { METHOD_LABEL, STATUS_TONE } from "../methods";
 import { PaymentForm } from "../payment-form";
 
@@ -97,13 +99,38 @@ export default async function InvoicePage({ params }: PageProps<"/billing/[id]">
               {data.payments.map(({ pay, by }) => (
                 <tr key={pay.id}>
                   <Td className="font-mono text-xs">{pay.receiptNo}</Td><Td>{dateTime(pay.receivedAt, tz)}</Td>
-                  <Td>{METHOD_LABEL[pay.method]} {pay.status !== "succeeded" && <Badge tone="yellow">{pay.status}</Badge>}</Td>
-                  <Td>{pay.reference}</Td><Td>{money(pay.amountMinor, cur)}</Td><Td>{by ?? (pay.provider === "paystack" ? "Online" : "")}</Td>
-                  <Td><Link className="text-teal-800 hover:underline" href={`/billing/receipt/${pay.id}`}>Receipt</Link></Td>
+                  <Td>{METHOD_LABEL[pay.method]} {pay.status !== "succeeded" && <Badge tone={pay.status === "refunded" ? "red" : "yellow"}>{pay.status}</Badge>}
+                    {pay.refundReason && <div className="text-xs text-slate-500">Refunded {dateTime(pay.refundedAt, tz)}: {pay.refundReason}</div>}</Td>
+                  <Td>{pay.reference}</Td><Td className={pay.status === "refunded" ? "line-through" : undefined}>{money(pay.amountMinor, cur)}</Td><Td>{by ?? (pay.provider === "paystack" ? "Online" : "")}</Td>
+                  <Td className="space-x-2">
+                    <Link className="text-teal-800 hover:underline" href={`/billing/receipt/${pay.id}`}>Receipt</Link>
+                    {canVoid && pay.status === "succeeded" && !(pay.method === "insurance" && pay.reference?.startsWith("Claim")) && (
+                      <ReversePayment action={reversePaymentAction} paymentId={pay.id} viaPaystack={pay.provider === "paystack" && !!pay.providerRef} />
+                    )}
+                  </Td>
                 </tr>
               ))}
             </Table>
           </Card>
+
+          {canVoid && i.insurerId && insurerDue > 0 && i.status !== "draft" && (
+            <Card title="Insurer hasn't paid">
+              <p className="mb-2 text-sm text-slate-600">
+                {money(insurerDue, cur)} of the insurer&apos;s share is unpaid{data.claim ? ` (claim ${data.claim.batchNo}: ${data.claim.status.replace("_", " ")})` : ""}.
+                If the insurer rejected or underpaid it, move it to the patient&apos;s bill or write it off.
+              </p>
+              <ActionForm action={insurerShortfallAction} className="flex flex-wrap items-end gap-2 space-y-0">
+                <input type="hidden" name="invoiceId" value={i.id} />
+                <Input name="amount" inputMode="decimal" defaultValue={toMajor(insurerDue)} className="w-28" aria-label="Amount" />
+                <Input name="reason" placeholder="Reason (e.g. not covered)" className="w-56" />
+                <Select name="mode" defaultValue="bill_patient" className="w-56" aria-label="What to do">
+                  <option value="bill_patient">Move to patient&apos;s bill</option>
+                  <option value="write_off">Write off (clinic absorbs)</option>
+                </Select>
+                <Submit variant="secondary">Apply</Submit>
+              </ActionForm>
+            </Card>
+          )}
 
           {canPay && methods.length > 0 && (
             <Card title="Take payment">
@@ -119,6 +146,8 @@ export default async function InvoicePage({ params }: PageProps<"/billing/[id]">
               ["Subtotal", money(i.subtotalMinor, cur)], ["Discount", i.discountMinor ? `− ${money(i.discountMinor, cur)}` : null],
               ["Total", money(i.totalMinor, cur)],
               ...(data.insurer ? [[`${data.insurer.name} pays`, `${money(i.insurerPortionMinor, cur)} (paid ${money(i.insurerPaidMinor, cur)})`] as [string, string]] : []),
+              ...(i.insurerShortfallMinor ? [["Moved to patient (insurer didn't pay)", money(i.insurerShortfallMinor, cur)] as [string, string]] : []),
+              ...(i.insurerWriteoffMinor ? [["Written off (insurer didn't pay)", money(i.insurerWriteoffMinor, cur)] as [string, string]] : []),
               ["Patient pays", money(i.patientPortionMinor, cur)], ["Patient paid", money(i.paidMinor, cur)],
             ]} />
             <div className="mt-3 rounded-md bg-slate-50 p-3 text-center">

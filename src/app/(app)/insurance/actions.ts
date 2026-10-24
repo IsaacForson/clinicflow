@@ -109,12 +109,13 @@ export async function settleClaimItemAction(_: ActionState, fd: FormData): Promi
     const o = z.object({
       claimId: uuid, itemId: uuid, outcome: z.enum(["paid", "partially_paid", "rejected"]), amount: zMoney.optional(),
       reason: z.string().max(300).optional(), clientId: z.string().min(8),
+      shortfall: z.enum(["later", "bill_patient", "write_off"]).default("later"),
     }).parse(formObject(fd));
     await tx(ctx, async (t) => {
       const [c] = await t.select({ status: claims.status }).from(claims).where(eq(claims.id, o.claimId));
       if (c?.status === "draft") throw new UserError("Mark the claim as submitted first");
-      await settleClaimItem(t, ctx, { itemId: o.itemId, outcome: o.outcome, amountMinor: o.amount, reason: o.reason, clientId: o.clientId });
-      await audit(t, ctx, "settle", "claim_item", o.itemId, { details: { outcome: o.outcome, amountMinor: o.amount } });
+      await settleClaimItem(t, ctx, { itemId: o.itemId, outcome: o.outcome, amountMinor: o.amount, reason: o.reason, clientId: o.clientId, shortfall: o.shortfall });
+      await audit(t, ctx, "settle", "claim_item", o.itemId, { details: { outcome: o.outcome, amountMinor: o.amount, shortfall: o.shortfall } });
     });
     revalidatePath(`/insurance/claims/${o.claimId}`);
   });

@@ -31,7 +31,9 @@ Clinic operating system for 1–15 practitioner private clinics (Ghana/Nigeria/K
 - Front-desk users are busy: large click targets, few fields, sensible defaults, keyboard friendly.
 
 ## Shared domain libs (reuse, don't duplicate)
-- `@/lib/billing`: createInvoice, ensureVisitInvoice, addLine, recalcInvoice, issueInvoice, recordPayment, patientCredit, outstandingForPatient.
+- `@/lib/billing`: createInvoice, ensureVisitInvoice, addLine, recalcInvoice, issueInvoice, recordPayment, reversePayment (refunds keep the row as status "refunded"), settleInsurerShortfall (move unpaid insurer share to patient or write off), patientCredit, outstandingForPatient. `@/lib/billing/cashup`: dayMoney (refunds count on the refund day).
+- `@/lib/hours`: branch opening hours (hoursOn, withinHours); bookings outside hours or in the past need "Book anyway".
+- Stock can never go negative: guarded in `@/lib/inventory` and by the `stock_batches_qty_nonnegative` CHECK.
 - `@/lib/messaging`: queuePatientMessage (consent-checked, templated, logged, queued), sendNow, DEFAULT_TEMPLATES, render.
 - `@/lib/reminders`: scheduleAppointmentReminders. `@/lib/jobs`: enqueue + job type list. `@/lib/events`: emit (outgoing webhooks).
 - `@/lib/storage`: putFile/getFile (tenant-prefixed keys). `@/lib/crypto`: encrypt, blindIndex, tokens, TOTP.

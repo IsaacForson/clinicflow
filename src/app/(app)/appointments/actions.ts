@@ -3,7 +3,7 @@ import { and, eq, gt, lt, ne, notInArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { Tx } from "@/db";
-import { allergies, appointments, consents, intakeForms, invoices, patients, services, users } from "@/db/schema";
+import { allergies, appointments, branches, consents, intakeForms, invoices, patients, services, users } from "@/db/schema";
 import { formObject, run, UserError, zBool, type ActionState } from "@/lib/action";
 import { audit, requireWrite, tx, type Ctx } from "@/lib/auth";
 import { addLine, createInvoice, issueInvoice } from "@/lib/billing";
@@ -16,7 +16,8 @@ import { can } from "@/lib/permissions";
 import { scheduleAppointmentReminders } from "@/lib/reminders";
 import { intakeSchema, parseAllergies } from "@/app/intake/schema";
 import { createTicket } from "../queue/tickets";
-import { canReschedule, canTransition, practitionerName, type ApptStatus } from "./lib";
+import { canReschedule, canTransition, localMinutes, practitionerName, type ApptStatus } from "./lib";
+import { describeHours, hoursOn, withinHours } from "@/lib/hours";
 
 type Appt = typeof appointments.$inferSelect;
 const APP_URL = () => process.env.APP_URL ?? "http://localhost:3000";
@@ -41,6 +42,19 @@ async function assertFree(t: Tx, ctx: Ctx, practitioner: { id: string; name: str
       lt(appointments.startsAt, end), gt(appointments.endsAt, start), exceptId ? ne(appointments.id, exceptId) : undefined,
     )).limit(1);
   if (c) throw new UserError(`${practitionerName(practitioner)} already has ${c.firstName} ${c.lastName} at ${timeOnly(c.startsAt, ctx.tenant.timezone)}. Pick another time or tick "Book anyway".`);
+}
+
+/** Throws when [start, end) is in the past or outside the branch's opening hours ("Book anyway" skips both checks). */
+async function assertBookable(t: Tx, ctx: Ctx, branchId: string, start: Date, end: Date) {
+  const tz = ctx.tenant.timezone;
+  if (start.getTime() < Date.now() - 5 * 60_000) throw new UserError(`That time has already passed. Pick a future time or tick "Book anyway".`);
+  const [b] = await t.select({ name: branches.name, hours: branches.openingHours }).from(branches).where(eq(branches.id, branchId));
+  const day = localDay(tz, start);
+  const startMin = localMinutes(start, tz);
+  const endMin = localDay(tz, end) === day ? localMinutes(end, tz) : 24 * 60;
+  if (!withinHours(b?.hours, day, startMin, endMin)) {
+    throw new UserError(`${b?.name ?? "The clinic"} is ${describeHours(hoursOn(b?.hours, day)) === "closed" ? "closed that day" : `open ${describeHours(hoursOn(b?.hours, day))} that day`}. Pick a time within opening hours or tick "Book anyway".`);
+  }
 }
 
 async function notifyBooked(t: Tx, ctx: Ctx, appt: Appt, practitioner: { name: string; title: string | null } | null) {
@@ -75,7 +89,10 @@ export async function createAppointmentAction(_: ActionState, fd: FormData): Pro
       if (o.serviceId && !svc) throw new UserError("Service not found");
       const startsAt = zonedToUtc(o.date, o.time, ctx.tenant.timezone);
       const endsAt = new Date(startsAt.getTime() + (svc?.durationMin ?? 15) * 60_000);
-      if (!o.force) await assertFree(t, ctx, doc, startsAt, endsAt);
+      if (!o.force) {
+        await assertBookable(t, ctx, ctx.branchId, startsAt, endsAt);
+        await assertFree(t, ctx, doc, startsAt, endsAt);
+      }
       let prepaidInvoiceId: string | null = null;
       if (o.prepay && svc) {
         const inv = await createInvoice(t, ctx, { patientId: p.id });
@@ -110,7 +127,10 @@ export async function rescheduleAppointmentAction(_: ActionState, fd: FormData):
       const doc = await getPractitioner(t, o.practitionerId);
       const startsAt = zonedToUtc(o.date, o.time, ctx.tenant.timezone);
       const endsAt = new Date(startsAt.getTime() + (a.endsAt.getTime() - a.startsAt.getTime()));
-      if (!o.force) await assertFree(t, ctx, doc, startsAt, endsAt, a.id);
+      if (!o.force) {
+        await assertBookable(t, ctx, a.branchId, startsAt, endsAt);
+        await assertFree(t, ctx, doc, startsAt, endsAt, a.id);
+      }
       const [appt] = await t.update(appointments).set({ startsAt, endsAt, practitionerId: doc.id, status: "scheduled" }).where(eq(appointments.id, a.id)).returning();
       await notifyBooked(t, ctx, appt, doc);
       await audit(t, ctx, "update", "appointment", a.id, { patientId: a.patientId, details: { rescheduledFrom: a.startsAt.toISOString(), to: startsAt.toISOString() } });

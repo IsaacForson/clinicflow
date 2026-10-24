@@ -1,4 +1,5 @@
 "use server";
+import { parseHoursForm } from "@/lib/hours";
 import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -74,6 +75,24 @@ export async function saveBranchAction(_: ActionState, fd: FormData): Promise<Ac
     });
     revalidatePath("/settings/branches");
     return { ok: true, message: "Branch saved." };
+  });
+}
+
+export async function saveOpeningHoursAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const ctx = await requireWrite("settings.manage");
+    const f = formObject(fd);
+    const id = z.string().uuid().parse(f.id);
+    let hours;
+    try { hours = parseHoursForm(f); } catch (e) { throw new UserError((e as Error).message); }
+    await tx(ctx, async (t) => {
+      const [b] = await t.update(branches).set({ openingHours: hours }).where(eq(branches.id, id)).returning({ id: branches.id });
+      if (!b) throw new UserError("Branch not found");
+      await audit(t, ctx, "update", "branch", id, { details: { openingHours: hours } });
+    });
+    revalidatePath("/settings/branches");
+    revalidatePath("/appointments");
+    return { ok: true, message: "Opening hours saved." };
   });
 }
 

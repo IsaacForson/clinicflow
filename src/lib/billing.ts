@@ -1,11 +1,12 @@
 import { and, eq, ne, sql } from "drizzle-orm";
 import type { Tx } from "@/db";
-import { insurers, insurerTariffs, invoiceLines, invoices, items, patients, payments, services } from "@/db/schema";
+import { auditLog, insurers, insurerTariffs, invoiceLines, invoices, items, patients, payments, services } from "@/db/schema";
 import { UserError } from "./action";
 import type { Ctx } from "./auth";
 import { audit } from "./auth";
 import { emit } from "./events";
 import { nextNumber } from "./numbers";
+import { refundTransaction } from "./paystack";
 
 type Invoice = typeof invoices.$inferSelect;
 
@@ -74,13 +75,17 @@ export async function recalcInvoice(t: Tx, invoiceId: string): Promise<Invoice> 
   const lines = await t.select().from(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceId));
   const subtotal = lines.reduce((s, l) => s + l.totalMinor, 0);
   const coveredSum = lines.filter((l) => l.insurerCovered).reduce((s, l) => s + l.totalMinor, 0);
-  let insurerPortion = 0;
+  let coverage = 0;
   if (inv.insurerId) {
     const [ins] = await t.select({ pct: insurers.coveragePercent }).from(insurers).where(eq(insurers.id, inv.insurerId));
-    insurerPortion = Math.round((coveredSum * (ins?.pct ?? 100)) / 100);
+    coverage = Math.round((coveredSum * (ins?.pct ?? 100)) / 100);
   }
-  const discount = Math.min(inv.discountMinor, subtotal - insurerPortion);
-  const total = subtotal - discount;
+  // Insurer rejections/underpayments: a shortfall moves onto the patient, a write-off is absorbed by the clinic.
+  const shortfall = Math.min(inv.insurerShortfallMinor, coverage);
+  const writeoff = Math.min(inv.insurerWriteoffMinor, coverage - shortfall);
+  const insurerPortion = coverage - shortfall - writeoff;
+  const discount = Math.min(inv.discountMinor, subtotal - coverage);
+  const total = subtotal - discount - writeoff;
   const patientPortion = total - insurerPortion;
   const [{ paid }] = await t.select({ paid: sql<number>`coalesce(sum(${payments.amountMinor}), 0)::int` }).from(payments)
     .where(and(eq(payments.invoiceId, invoiceId), eq(payments.status, "succeeded"), ne(payments.method, "insurance")));
@@ -91,6 +96,7 @@ export async function recalcInvoice(t: Tx, invoiceId: string): Promise<Invoice> 
   const [updated] = await t.update(invoices).set({
     subtotalMinor: subtotal, discountMinor: discount, totalMinor: total, insurerPortionMinor: insurerPortion,
     patientPortionMinor: patientPortion, paidMinor: paid, insurerPaidMinor: insPaid, status,
+    insurerShortfallMinor: shortfall, insurerWriteoffMinor: writeoff,
   }).where(eq(invoices.id, invoiceId)).returning();
   return updated;
 }
@@ -149,6 +155,56 @@ export async function recordPayment(t: Tx, ctx: { tenant: Pick<Ctx["tenant"], "i
   }).returning();
   if (o.invoiceId) await recalcInvoice(t, o.invoiceId);
   if (p.status === "succeeded") await emit(t, ctx.tenant.id, "payment.received", { id: p.id, invoiceId: p.invoiceId, amountMinor: p.amountMinor, method: p.method });
+  return p;
+}
+
+/**
+ * Moves the unpaid part of an invoice's insurer share (rejected or underpaid claim) to the patient's balance,
+ * or writes it off when the clinic decides not to bill the patient. Returns the amount moved.
+ */
+export async function settleInsurerShortfall(t: Tx, ctx: { tenant: Pick<Ctx["tenant"], "id">; user: { id: string | null } | null; ip?: string | null },
+  o: { invoiceId: string; amountMinor?: number; mode: "bill_patient" | "write_off"; reason?: string | null }) {
+  const [inv] = await t.select().from(invoices).where(eq(invoices.id, o.invoiceId)).for("update");
+  if (!inv || inv.status === "void") throw new UserError("Invoice not found");
+  const unpaid = inv.insurerPortionMinor - inv.insurerPaidMinor;
+  const amount = Math.min(o.amountMinor ?? unpaid, unpaid);
+  if (amount <= 0) return 0;
+  await t.update(invoices).set(o.mode === "bill_patient"
+    ? { insurerShortfallMinor: inv.insurerShortfallMinor + amount }
+    : { insurerWriteoffMinor: inv.insurerWriteoffMinor + amount }).where(eq(invoices.id, inv.id));
+  await recalcInvoice(t, inv.id);
+  await t.insert(auditLog).values({
+    tenantId: ctx.tenant.id, userId: ctx.user?.id ?? null, action: o.mode === "bill_patient" ? "insurer_shortfall" : "insurer_writeoff",
+    entity: "invoice", entityId: inv.id, patientId: inv.patientId, details: { amountMinor: amount, reason: o.reason ?? null }, ip: ctx.ip ?? null,
+  });
+  return amount;
+}
+
+/**
+ * Reverses (refunds) a payment. The row is kept with status "refunded" for the audit trail; invoice totals are recomputed.
+ * Card/mobile-money payments taken through Paystack are refunded through Paystack when `viaProvider` is set;
+ * cash and manual payments are recorded as refunded (money handed back at the desk).
+ */
+export async function reversePayment(t: Tx, ctx: Ctx, o: { paymentId: string; reason: string; viaProvider?: boolean }) {
+  const [p] = await t.select().from(payments).where(eq(payments.id, o.paymentId)).for("update");
+  if (!p) throw new UserError("Payment not found");
+  if (p.status !== "succeeded") throw new UserError("Only completed payments can be reversed");
+  if (p.method === "insurance" && p.reference?.startsWith("Claim")) throw new UserError("Insurer claim payments are corrected on the claim, not reversed here.");
+  if (!p.invoiceId && p.patientId && (await patientCredit(t, p.patientId)) < p.amountMinor) {
+    throw new UserError("Part of this deposit has already been used on an invoice. Reverse that deposit payment first.");
+  }
+  let refundProviderRef: string | null = null;
+  if (o.viaProvider && p.provider === "paystack" && p.providerRef) {
+    try {
+      refundProviderRef = await refundTransaction(ctx.tenant.id, p.providerRef, p.amountMinor);
+    } catch (e) {
+      throw new UserError(`Paystack refund failed, nothing was changed: ${(e as Error).message}`);
+    }
+  }
+  await t.update(payments).set({ status: "refunded", refundedAt: new Date(), refundedBy: ctx.user.id, refundReason: o.reason, refundProviderRef })
+    .where(eq(payments.id, p.id));
+  if (p.invoiceId) await recalcInvoice(t, p.invoiceId);
+  await audit(t, ctx, "refund", "payment", p.id, { patientId: p.patientId, details: { amountMinor: p.amountMinor, method: p.method, reason: o.reason, refundProviderRef } });
   return p;
 }
 

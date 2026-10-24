@@ -6,6 +6,9 @@ import { patientCredit } from "@/lib/billing";
 import { dateTime, fullName, money } from "@/lib/format";
 import { PrintDoc } from "../../letterhead";
 import { METHOD_LABEL } from "../../methods";
+import { can } from "@/lib/permissions";
+import { reversePaymentAction } from "../../actions";
+import { ReversePayment } from "../../reverse-payment";
 
 export default async function ReceiptPage({ params }: PageProps<"/billing/receipt/[paymentId]">) {
   const { paymentId } = await params;
@@ -21,6 +24,7 @@ export default async function ReceiptPage({ params }: PageProps<"/billing/receip
   if (!data) notFound();
   const { pay, p, i } = data;
   const cur = ctx.tenant.currency;
+  const canReverse = ctx.access === "full" && can(ctx.user.role, "billing.void") && pay.status === "succeeded" && !(pay.method === "insurance" && pay.reference?.startsWith("Claim"));
   return (
     <PrintDoc tenant={ctx.tenant} title="Receipt" back={i ? `/billing/${i.id}` : `/patients/${p.id}`}>
       <dl className="grid grid-cols-2 gap-y-2 text-sm">
@@ -35,6 +39,8 @@ export default async function ReceiptPage({ params }: PageProps<"/billing/receip
         {data.by && <><dt className="text-slate-500">Received by</dt><dd>{data.by}</dd></>}
       </dl>
       {pay.status !== "succeeded" && <p className="mt-4 font-semibold uppercase text-red-700">Payment {pay.status}</p>}
+      {pay.refundedAt && <p className="text-sm text-red-700">Refunded {dateTime(pay.refundedAt, ctx.tenant.timezone)}: {pay.refundReason}</p>}
+      {canReverse && <div className="mt-4"><ReversePayment action={reversePaymentAction} paymentId={pay.id} viaPaystack={pay.provider === "paystack" && !!pay.providerRef} label="Refund / reverse this payment" /></div>}
       <p className="mt-10 text-center text-xs text-slate-500">Thank you. Keep this receipt for your records.</p>
     </PrintDoc>
   );
