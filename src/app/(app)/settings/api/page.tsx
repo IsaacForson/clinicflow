@@ -11,6 +11,8 @@ import { hasFeature } from "@/lib/plans";
 import { SecretActionForm } from "../secret-form";
 import { createApiKeyAction, revokeApiKeyAction } from "./actions";
 
+
+export const metadata = { title: "API keys" };
 export default async function ApiKeysPage() {
   const ctx = await requireCtx("api.manage");
   const keys = await tx(ctx, (t) => t.select().from(apiKeys).orderBy(desc(apiKeys.createdAt)));

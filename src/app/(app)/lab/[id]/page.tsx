@@ -11,6 +11,8 @@ import { notifyPatientAction, saveResultAction, setExternalLabAction, setLabStat
 import { FLAG_TONE, FLAGS, LAB_TONE, suggestFlag } from "../flag";
 import { RangeBar } from "../range-bar";
 
+
+export const metadata = { title: "Lab order" };
 const FLAG_ICON = { low: <ArrowDown />, high: <ArrowUp />, critical: <AlertTriangle />, normal: <CheckCircle2 /> } as const;
 const FLAG_EDGE = { low: "before:bg-warn", high: "before:bg-warn", critical: "before:bg-bad", normal: "before:bg-ok" } as const;
 

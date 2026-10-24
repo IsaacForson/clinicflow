@@ -9,6 +9,8 @@ import { CLINICAL_TEMPLATES } from "@/lib/clinical-templates";
 import { age, fullName } from "@/lib/format";
 import { startVisitAction } from "../actions";
 
+
+export const metadata = { title: "New consultation" };
 /** Confirm step (no side effects on GET, so link prefetching can't create visits). */
 export default async function NewVisitPage({ searchParams }: PageProps<"/visits/new">) {
   const ctx = await requireCtx("clinical.write");

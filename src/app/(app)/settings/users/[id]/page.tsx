@@ -12,6 +12,8 @@ import { resetStaffPasswordAction, setStaffActiveAction, updateStaffAction } fro
 import { ROLE_TONE } from "../roles";
 import { StaffFields } from "../staff-fields";
 
+
+export const metadata = { title: "Staff member" };
 export default async function EditStaffPage({ params }: PageProps<"/settings/users/[id]">) {
   const { id } = await params;
   const ctx = await requireCtx("users.manage");

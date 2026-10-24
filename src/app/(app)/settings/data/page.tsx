@@ -8,6 +8,8 @@ import { requireCtx, tx } from "@/lib/auth";
 import { dateOnly } from "@/lib/format";
 import { cancelDeletionAction, requestDeletionAction } from "./actions";
 
+
+export const metadata = { title: "Your data" };
 export default async function DataOwnershipPage() {
   const ctx = await requireCtx("settings.manage");
   const [last] = await tx(ctx, (t) => t.select().from(auditLog)

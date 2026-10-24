@@ -10,6 +10,8 @@ import { fullName, money } from "@/lib/format";
 import { createInvoiceAction } from "../actions";
 import { PatientPicker } from "../patient-picker";
 
+
+export const metadata = { title: "New invoice" };
 export default async function NewInvoicePage({ searchParams }: PageProps<"/billing/new">) {
   const ctx = await requireCtx("billing.write");
   const sp = await searchParams;

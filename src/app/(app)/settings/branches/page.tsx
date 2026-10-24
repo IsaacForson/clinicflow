@@ -8,6 +8,8 @@ import { hasFeature, PLANS } from "@/lib/plans";
 import { describeHours, toMinutes, WEEKDAYS, type OpeningHours } from "@/lib/hours";
 import { makeMainBranchAction, saveBranchAction, saveOpeningHoursAction } from "../actions";
 
+
+export const metadata = { title: "Branches" };
 const ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon → Sun
 const SPAN: [number, number] = [6 * 60, 22 * 60]; // visual window 06:00–22:00
 

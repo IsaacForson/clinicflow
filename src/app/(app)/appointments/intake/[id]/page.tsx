@@ -10,6 +10,8 @@ import { can } from "@/lib/permissions";
 import { intakeSchema, parseAllergies } from "@/app/intake/schema";
 import { applyIntakeAction } from "../../actions";
 
+
+export const metadata = { title: "Intake" };
 export default async function IntakeReviewPage({ params }: PageProps<"/appointments/intake/[id]">) {
   const { id } = await params;
   const ctx = await requireCtx("patients.read");

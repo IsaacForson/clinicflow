@@ -5,6 +5,8 @@ import { dateOnly, fullName, money } from "@/lib/format";
 import { PrintDoc } from "../../../../billing/letterhead";
 import { requireInsurance } from "../../../guard";
 
+
+export const metadata = { title: "Print claim" };
 export default async function ClaimPrintPage({ params }: PageProps<"/insurance/claims/[id]/print">) {
   const { id } = await params;
   const ctx = await requireInsurance();

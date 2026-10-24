@@ -3,6 +3,8 @@ import { LinkButton, PageHeader, Panel } from "@/components/ui";
 import { requireCtx } from "@/lib/auth";
 import { ItemForm } from "../item-form";
 
+
+export const metadata = { title: "New stock item" };
 export default async function NewItemPage() {
   await requireCtx("inventory.manage");
   return (

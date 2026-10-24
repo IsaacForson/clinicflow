@@ -10,6 +10,8 @@ import { allocateFefo } from "@/lib/inventory";
 import { dispenseAction } from "../actions";
 import { QtyStepper } from "../qty-stepper";
 
+
+export const metadata = { title: "Prescription" };
 export default async function DispensePage({ params }: PageProps<"/pharmacy/[id]">) {
   const { id } = await params;
   const ctx = await requireCtx("dispense");

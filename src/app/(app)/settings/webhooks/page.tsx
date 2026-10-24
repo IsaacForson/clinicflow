@@ -9,6 +9,8 @@ import { dateTime } from "@/lib/format";
 import { SecretActionForm } from "../secret-form";
 import { createWebhookAction, deleteWebhookAction, testWebhookAction, updateWebhookAction } from "./actions";
 
+
+export const metadata = { title: "Webhooks" };
 function EventBoxes({ selected }: { selected?: string[] }) {
   return (
     <fieldset>

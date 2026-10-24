@@ -7,6 +7,8 @@ import { requireCtx, tx } from "@/lib/auth";
 import { removeIntegrationAction, saveIntegrationAction, testSendAction } from "./actions";
 import { mask, PROVIDERS } from "./providers";
 
+
+export const metadata = { title: "Integrations" };
 const ICON: Record<string, ReactNode> = { whatsapp: <MessageCircle />, africastalking: <MessageSquareText />, twilio: <MessageSquareText />, paystack: <CreditCard />, deepgram: <AudioLines /> };
 
 export default async function IntegrationsPage() {

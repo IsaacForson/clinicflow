@@ -7,6 +7,8 @@ import { requireCtx, tx } from "@/lib/auth";
 import { dateTime } from "@/lib/format";
 import { requestExportAction } from "./actions";
 
+
+export const metadata = { title: "Export" };
 const TONE = { pending: "gray", running: "blue", done: "green", failed: "red" } as const;
 
 export default async function ExportPage() {

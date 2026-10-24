@@ -8,6 +8,8 @@ import { money, toMajor } from "@/lib/format";
 import { requireCtx, tx } from "@/lib/auth";
 import { saveServiceAction } from "../actions";
 
+
+export const metadata = { title: "Services" };
 const CATEGORIES = ["consultation", "lab", "imaging", "procedure", "drug", "other"] as const;
 const CAT_ICON: Record<string, ReactNode> = { consultation: <Stethoscope />, lab: <FlaskConical />, imaging: <ScanLine />, procedure: <Scissors />, drug: <Pill />, other: <Package /> };
 

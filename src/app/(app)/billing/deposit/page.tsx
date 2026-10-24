@@ -10,6 +10,8 @@ import { depositAction } from "../actions";
 import { PatientPicker } from "../patient-picker";
 import { PaymentForm } from "../payment-form";
 
+
+export const metadata = { title: "Deposit" };
 export default async function DepositPage({ searchParams }: PageProps<"/billing/deposit">) {
   const ctx = await requireCtx("payments.receive");
   const sp = await searchParams;

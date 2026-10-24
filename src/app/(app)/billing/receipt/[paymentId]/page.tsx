@@ -13,6 +13,8 @@ import { can } from "@/lib/permissions";
 import { reversePaymentAction } from "../../actions";
 import { ReversePayment } from "../../reverse-payment";
 
+
+export const metadata = { title: "Receipt" };
 export default async function ReceiptPage({ params }: PageProps<"/billing/receipt/[paymentId]">) {
   const { paymentId } = await params;
   const ctx = await requireCtx("billing.read");

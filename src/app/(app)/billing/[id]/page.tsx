@@ -16,6 +16,8 @@ import { ReversePayment } from "../reverse-payment";
 import { METHOD_ICON, METHOD_LABEL, STATUS_TONE } from "../methods";
 import { PaymentForm } from "../payment-form";
 
+
+export const metadata = { title: "Invoice" };
 export default async function InvoicePage({ params }: PageProps<"/billing/[id]">) {
   const { id } = await params;
   const ctx = await requireCtx("billing.read");

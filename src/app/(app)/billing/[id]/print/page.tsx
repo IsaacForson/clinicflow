@@ -6,6 +6,8 @@ import { dateOnly, fullName, money } from "@/lib/format";
 import { PrintDoc } from "../../letterhead";
 import { METHOD_LABEL } from "../../methods";
 
+
+export const metadata = { title: "Print invoice" };
 export default async function InvoicePrintPage({ params }: PageProps<"/billing/[id]/print">) {
   const { id } = await params;
   const ctx = await requireCtx("billing.read");

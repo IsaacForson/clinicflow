@@ -1,6 +1,6 @@
 import { SettingsHeader, SettingsTabs } from "./tabs";
 
-export const metadata = { title: "Settings" };
+export const metadata = { title: { template: "%s · Settings · ClinicFlow", default: "Settings" } };
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (

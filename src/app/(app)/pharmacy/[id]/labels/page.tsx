@@ -7,6 +7,8 @@ import { patients, prescriptionItems, prescriptions } from "@/db/schema";
 import { audit, requireCtx, tx } from "@/lib/auth";
 import { dateOnly, fullName } from "@/lib/format";
 
+
+export const metadata = { title: "Labels" };
 /** One label per dispensed line, sized to cut from A4 or print on a label printer. */
 export default async function DrugLabels({ params }: PageProps<"/pharmacy/[id]/labels">) {
   const { id } = await params;

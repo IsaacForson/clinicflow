@@ -8,6 +8,8 @@ import { fullName } from "@/lib/format";
 import { updatePatientAction } from "../../actions";
 import { PatientForm } from "../../patient-form";
 
+
+export const metadata = { title: "Edit patient" };
 export default async function EditPatientPage({ params }: PageProps<"/patients/[id]/edit">) {
   const { id } = await params;
   const ctx = await requireCtx("patients.write");

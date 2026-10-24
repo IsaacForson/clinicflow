@@ -15,6 +15,8 @@ import { Toggle } from "../bits";
 import { branchPractitioners } from "../data";
 import { ACTION_LABEL, canReschedule, hhmm, localMinutes, nextStatuses, practitionerName, STATUS_LABEL, STATUS_TONE } from "../lib";
 
+
+export const metadata = { title: "Appointment" };
 export default async function AppointmentPage({ params }: PageProps<"/appointments/[id]">) {
   const { id } = await params;
   const ctx = await requireCtx("appointments.manage");

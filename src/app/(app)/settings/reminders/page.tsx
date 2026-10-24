@@ -4,6 +4,8 @@ import { Badge, Field, Input, Panel, Textarea } from "@/components/ui";
 import { requireCtx } from "@/lib/auth";
 import { saveRemindersAction } from "../actions";
 
+
+export const metadata = { title: "Reminders" };
 export default async function RemindersPage() {
   const ctx = await requireCtx("settings.manage");
   const hours = [...ctx.tenant.reminderHours].sort((a, b) => b - a);

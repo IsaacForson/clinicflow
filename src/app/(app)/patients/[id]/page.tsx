@@ -17,6 +17,8 @@ import { age, dateOnly, dateTime, fullName, money } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { addAllergyAction, addGuardianAction, recordConsentAction, removeAllergyAction, uploadDocumentAction } from "../actions";
 
+
+export const metadata = { title: "Patient" };
 /** Collapsible inline "add" form so panels lead with data, not inputs. */
 function AddForm({ label, children }: { label: string; children: ReactNode }) {
   return (

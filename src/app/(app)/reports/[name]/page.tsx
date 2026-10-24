@@ -9,6 +9,7 @@ import { resolveRange } from "../range";
 import { groupMeta } from "../icons";
 import { BarChart, RangePicker, rangeQuery } from "../ui";
 
+
 export async function generateMetadata({ params }: PageProps<"/reports/[name]">) {
   return { title: getReport((await params).name)?.title ?? "Report" };
 }

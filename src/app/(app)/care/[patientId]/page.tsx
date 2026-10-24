@@ -11,6 +11,8 @@ import { deactivatePlanAction, startScheduleAction, updateScheduleItemAction } f
 import { readingVsTarget } from "../lib";
 import { TrendChart } from "../trend-chart";
 
+
+export const metadata = { title: "Care plan" };
 export default async function PatientCarePage({ params }: PageProps<"/care/[patientId]">) {
   const { patientId } = await params;
   const ctx = await requireCtx("clinical.read");

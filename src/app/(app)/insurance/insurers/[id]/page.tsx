@@ -10,6 +10,8 @@ import { saveTariffAction } from "../../actions";
 import { requireInsurance } from "../../guard";
 import { InsurerForm } from "../../insurer-form";
 
+
+export const metadata = { title: "Insurer" };
 export default async function InsurerPage({ params }: PageProps<"/insurance/insurers/[id]">) {
   const { id } = await params;
   const ctx = await requireInsurance();

@@ -8,6 +8,8 @@ import { requireCtx, tx } from "@/lib/auth";
 import { age, fullName } from "@/lib/format";
 import { mergePatientsAction } from "../../actions";
 
+
+export const metadata = { title: "Merge duplicates" };
 export default async function MergePage({ params, searchParams }: PageProps<"/patients/[id]/merge">) {
   const { id } = await params;
   const q = String((await searchParams).q ?? "");

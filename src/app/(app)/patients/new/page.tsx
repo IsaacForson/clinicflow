@@ -6,6 +6,8 @@ import { requireCtx, tx } from "@/lib/auth";
 import { createPatientAction } from "../actions";
 import { PatientForm } from "../patient-form";
 
+
+export const metadata = { title: "New patient" };
 export default async function NewPatientPage() {
   const ctx = await requireCtx("patients.write");
   const ins = await tx(ctx, (t) => t.select({ id: insurers.id, name: insurers.name }).from(insurers).where(eq(insurers.active, true)).orderBy(insurers.name));

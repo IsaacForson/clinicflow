@@ -6,6 +6,8 @@ import { COUNTRIES } from "@/lib/provision";
 import { updateProfileAction } from "./actions";
 import { LogoPicker } from "./logo-picker";
 
+
+export const metadata = { title: "Settings" };
 export default async function ClinicProfilePage() {
   const ctx = await requireCtx("settings.manage");
   const t = ctx.tenant;

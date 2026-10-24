@@ -214,7 +214,7 @@ function DayGrid({ rows, practitioners, day, tz, hours }: { rows: Row[]; practit
 
   return (
     <div className="glass max-h-[calc(100vh-11rem)] overflow-auto animate-rise">
-      <div className="flex min-w-max">
+      <div className="flex min-w-full w-max">
         {/* Time gutter */}
         <div className="sticky left-0 z-30 w-16 shrink-0 border-r border-line bg-solid/90 backdrop-blur-xl">
           <div className="sticky top-0 z-10 h-14 border-b border-line bg-solid/90" />
@@ -230,7 +230,7 @@ function DayGrid({ rows, practitioners, day, tz, hours }: { rows: Row[]; practit
         {cols.map((c) => {
           const mine = live.filter((r) => c.id ? r.a.practitionerId === c.id : !r.a.practitionerId || !practitioners.some((d) => d.id === r.a.practitionerId));
           return (
-            <div key={c.id ?? "other"} className="w-52 shrink-0 border-r border-line last:border-r-0 sm:w-60">
+            <div key={c.id ?? "other"} className="min-w-52 flex-1 border-r border-line last:border-r-0 sm:min-w-60">
               <div className="sticky top-0 z-20 flex h-14 items-center gap-2.5 border-b border-line bg-solid/90 px-3 backdrop-blur-xl">
                 <Avatar name={c.label} size="sm" />
                 <span className="min-w-0 flex-1">

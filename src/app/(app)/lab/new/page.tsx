@@ -8,6 +8,8 @@ import { requireCtx, tx } from "@/lib/auth";
 import { age, e164, fullName, money } from "@/lib/format";
 import { createLabOrderAction } from "../actions";
 
+
+export const metadata = { title: "New lab order" };
 export default async function NewLabOrderPage({ searchParams }: PageProps<"/lab/new">) {
   const ctx = await requireCtx("lab.result");
   const sp = await searchParams;

@@ -10,6 +10,8 @@ import { deleteClaimAction, settleClaimItemAction, submitClaimAction } from "../
 import { requireInsurance } from "../../guard";
 import { SettleForm } from "./settle-form";
 
+
+export const metadata = { title: "Claim" };
 export default async function ClaimPage({ params }: PageProps<"/insurance/claims/[id]">) {
   const { id } = await params;
   const ctx = await requireInsurance();

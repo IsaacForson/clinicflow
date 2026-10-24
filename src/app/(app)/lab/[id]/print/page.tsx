@@ -5,6 +5,8 @@ import { labOrderItems, labOrders, patients, users } from "@/db/schema";
 import { audit, requireCtx, tx } from "@/lib/auth";
 import { age, dateOnly, dateTime, fullName } from "@/lib/format";
 
+
+export const metadata = { title: "Print lab order" };
 export default async function LabReportPrint({ params }: PageProps<"/lab/[id]/print">) {
   const { id } = await params;
   const ctx = await requireCtx("lab.result");

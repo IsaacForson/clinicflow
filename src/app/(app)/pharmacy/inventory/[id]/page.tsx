@@ -10,6 +10,8 @@ import { addDays, dateOnly, dateTime, dayRange, localDay, money } from "@/lib/fo
 import { adjustStockAction, expireBatchAction, receiveStockAction, transferStockAction } from "../../actions";
 import { ItemForm } from "../item-form";
 
+
+export const metadata = { title: "Stock item" };
 const isDay = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
 export default async function ItemPage({ params, searchParams }: PageProps<"/pharmacy/inventory/[id]">) {

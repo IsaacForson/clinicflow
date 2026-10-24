@@ -5,6 +5,8 @@ import { auditLog, patients, users } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { dateTime, dayRange, fullName } from "@/lib/format";
 
+
+export const metadata = { title: "Audit log" };
 const PER_PAGE = 50;
 const ACTION_TONE: Record<string, Tone> = { view: "gray", create: "green", update: "blue", delete: "red", void: "red", sign: "purple", export: "yellow", download: "yellow", login: "teal", print: "gray", send: "blue", merge: "purple" };
 const day = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");

@@ -10,6 +10,8 @@ import { checkoutAction, migrationCheckoutAction } from "./actions";
 import { PlanGrid } from "./plans";
 import { MIGRATION_TIERS, priceUsd } from "./pricing";
 
+
+export const metadata = { title: "Subscription" };
 const STATUS_TONE = { trialing: "blue", active: "green", past_due: "yellow", read_only: "red", cancelled: "gray" } as const;
 
 export default async function SubscriptionPage({ searchParams }: PageProps<"/settings/subscription">) {

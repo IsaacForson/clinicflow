@@ -13,6 +13,8 @@ import { addStaffAction } from "./actions";
 import { ROLE_TONE } from "./roles";
 import { StaffFields } from "./staff-fields";
 
+
+export const metadata = { title: "Staff" };
 function Seat({ icon, label, used, of }: { icon: React.ReactNode; label: string; used: number; of: number }) {
   const full = used >= of;
   return (
