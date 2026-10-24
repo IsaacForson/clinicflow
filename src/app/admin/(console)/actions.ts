@@ -1,6 +1,4 @@
 "use server";
-import { rm } from "node:fs/promises";
-import path from "node:path";
 import { and, eq, isNull, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
@@ -14,6 +12,7 @@ import { platformLog, requireAdminAction } from "@/lib/platform-auth";
 import { CURRENCIES } from "@/lib/countries";
 import { refreshRates } from "@/lib/fx";
 import { deletionRequests } from "@/lib/platform-metrics";
+import { deleteTenantFiles } from "@/lib/storage";
 
 const uuid = z.string().uuid();
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -117,7 +116,7 @@ export async function deleteClinicAction(_: ActionState, fd: FormData): Promise<
     if (req.deleteAfter && new Date(req.deleteAfter) > new Date()) throw new UserError(`The 30-day waiting period ends on ${req.deleteAfter.slice(0, 10)}.`);
     await platformLog(ctx, "clinic_delete", { tenantId: t.id, entity: "tenant", entityId: t.id, details: { name: t.name, requestedAt: req.requestedAt } });
     await adminDb().delete(tenants).where(eq(tenants.id, t.id));
-    await rm(path.resolve(process.env.STORAGE_DIR || ".storage", t.id), { recursive: true, force: true });
+    await deleteTenantFiles(t.id);
     redirect("/admin/clinics?deleted=1");
   });
 }

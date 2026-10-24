@@ -157,7 +157,7 @@ export async function uploadDocumentAction(_: ActionState, fd: FormData): Promis
     if (!(file instanceof File) || file.size === 0) throw new UserError("Choose a file");
     if (file.size > MAX_UPLOAD_BYTES) throw new UserError("File is larger than 15 MB");
     if (!ALLOWED_MIME.test(file.type)) throw new UserError("Only images, PDF, text and CSV files are allowed");
-    const key = await putFile(ctx.tenant.id, file.name, Buffer.from(await file.arrayBuffer()));
+    const key = await putFile(ctx.tenant.id, file.name, Buffer.from(await file.arrayBuffer()), file.type);
     await tx(ctx, async (t) => {
       const [d] = await t.insert(documents).values({ tenantId: ctx.tenant.id, patientId, name: file.name, mime: file.type, size: file.size, storageKey: key, category, uploadedBy: ctx.user.id }).returning({ id: documents.id });
       if (category === "photo") await t.update(patients).set({ photoKey: key }).where(eq(patients.id, patientId));

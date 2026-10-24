@@ -91,7 +91,7 @@ export async function saveResultAction(_: ActionState, fd: FormData): Promise<Ac
       if (!/^(image\/|application\/pdf)/.test(file.type) || !ALLOWED_MIME.test(file.type)) throw new UserError("Upload a PDF or image");
     }
     if (!o.resultValue && !o.resultText && !hasFile) throw new UserError("Enter a value, a comment or attach the result");
-    const key = hasFile ? await putFile(ctx.tenant.id, file.name, Buffer.from(await file.arrayBuffer())) : null;
+    const key = hasFile ? await putFile(ctx.tenant.id, file.name, Buffer.from(await file.arrayBuffer()), file.type) : null;
     const orderId = await tx(ctx, async (t) => {
       const [item] = await t.select().from(labOrderItems).where(eq(labOrderItems.id, o.itemId));
       if (!item) throw new UserError("Test not found");

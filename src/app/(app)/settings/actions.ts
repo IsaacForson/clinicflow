@@ -31,7 +31,7 @@ export async function updateProfileAction(_: ActionState, fd: FormData): Promise
     if (logo instanceof File && logo.size > 0) {
       if (!/^image\/(png|jpe?g|webp)$/.test(logo.type)) throw new UserError("Logo must be a PNG, JPG or WebP image");
       if (logo.size > 2 * 1024 * 1024) throw new UserError("Logo must be smaller than 2 MB");
-      logoKey = await putFile(ctx.tenant.id, logo.name, Buffer.from(await logo.arrayBuffer()));
+      logoKey = await putFile(ctx.tenant.id, logo.name, Buffer.from(await logo.arrayBuffer()), logo.type);
     }
     await tx(ctx, async (t) => {
       let logoUrl: string | undefined;

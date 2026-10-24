@@ -36,7 +36,7 @@ Clinic operating system for 1–15 practitioner private clinics (Ghana/Nigeria/K
 - Stock can never go negative: guarded in `@/lib/inventory` and by the `stock_batches_qty_nonnegative` CHECK.
 - `@/lib/messaging`: queuePatientMessage (consent-checked, templated, logged, queued), sendNow, DEFAULT_TEMPLATES, render.
 - `@/lib/reminders`: scheduleAppointmentReminders. `@/lib/jobs`: enqueue + job type list. `@/lib/events`: emit (outgoing webhooks).
-- `@/lib/storage`: putFile/getFile (tenant-prefixed keys). `@/lib/crypto`: encrypt, blindIndex, tokens, TOTP.
+- `@/lib/storage`: putFile/getFile/deleteTenantFiles (tenant-prefixed keys); Supabase Storage when SUPABASE_URL is set, else local disk. Deploying: `docs/DEPLOY-SUPABASE.md`. `@/lib/crypto`: encrypt, blindIndex, tokens, TOTP.
 
 ## Product rules
 - Reminders, backups and data export are never paid add-ons. Unpaid accounts become read-only, never locked out of their data.

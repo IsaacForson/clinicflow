@@ -13,7 +13,8 @@
     "migrate:test": "tsx scripts/migrate.mts --test",
     "worker": "tsx scripts/worker.mts",
     "typecheck": "next typegen && tsc --noEmit",
-    "seed:demo": "tsx scripts/seed-demo.mts"
+    "seed:demo": "tsx scripts/seed-demo.mts",
+    "supabase:setup": "tsx scripts/supabase-setup.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

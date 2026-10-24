@@ -53,3 +53,22 @@ create trigger platform_audit_append_only before update or delete on audit.platf
 
 -- Platform-wide reference data: clinics may read rates and prices, only the ClinicFlow team changes them.
 revoke insert, update, delete on public.fx_rates, public.price_book from clinicflow_app;
+
+-- Supabase: its Data API (PostgREST) roles get default privileges on new tables. ClinicFlow never uses the Data API,
+-- so those roles must not be able to read or write anything (OTP codes, admin accounts and price tables have no RLS).
+do $$
+declare r text;
+begin
+  foreach r in array array['anon', 'authenticated'] loop
+    if exists (select 1 from pg_roles where rolname = r) then
+      execute format('revoke all on all tables in schema public from %I', r);
+      execute format('revoke all on all sequences in schema public from %I', r);
+      execute format('revoke all on all functions in schema public from %I', r);
+      execute format('revoke usage on schema audit from %I', r);
+      execute format('revoke all on all tables in schema audit from %I', r);
+      execute format('alter default privileges in schema public revoke all on tables from %I', r);
+      execute format('alter default privileges in schema public revoke all on sequences from %I', r);
+      execute format('alter default privileges in schema public revoke all on functions from %I', r);
+    end if;
+  end loop;
+end $$;

@@ -90,6 +90,12 @@ describe("row-level security", () => {
     await rejectsWith(withTenant(a, (t) => t.select().from(schema.platformAudit)), /permission denied/);
   });
 
+  it("gives Supabase's Data API roles (anon, authenticated) no access to any table", async () => {
+    const rows = await adminDb().execute<{ n: number }>(sql`
+      select count(*)::int as n from information_schema.role_table_grants where grantee in ('anon', 'authenticated') and table_schema in ('public', 'audit')`);
+    expect(rows[0].n).toBe(0);
+  });
+
   it("keeps the audit log append-only", async () => {
     await rejectsWith(withTenant(a, (t) => t.update(schema.auditLog).set({ action: "x" })), /permission denied|append-only/);
     await rejectsWith(adminDb().delete(schema.auditLog).where(eq(schema.auditLog.tenantId, a)), /append-only/);

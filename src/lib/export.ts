@@ -71,7 +71,7 @@ export async function buildTenantExport(tenantId: string, exportJobId: string): 
     });
     const at = new Date();
     files.unshift({ name: "README.txt", data: README(tenantName, at) });
-    const key = await putFile(tenantId, `export-${at.toISOString().slice(0, 10)}.zip`, createZip(files, at));
+    const key = await putFile(tenantId, `export-${at.toISOString().slice(0, 10)}.zip`, createZip(files, at), "application/zip");
     await withTenant(tenantId, async (t) => {
       await t.update(exportJobs).set({ status: "done", storageKey: key, completedAt: new Date(), error: null }).where(eq(exportJobs.id, exportJobId));
       await t.insert(auditLog).values({ tenantId, userId: requestedBy, action: "export", entity: "export_job", entityId: exportJobId, details: { files: files.length } });
