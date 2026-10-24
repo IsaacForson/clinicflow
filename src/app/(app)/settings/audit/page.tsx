@@ -55,16 +55,16 @@ export default async function AuditPage({ searchParams }: PageProps<"/settings/a
             <Td>{userName ?? (a.userId ? "Unknown" : (a.details as { apiKeyId?: string } | null)?.apiKeyId ? "API key" : "System")}</Td>
             <Td>{a.action}</Td>
             <Td>{a.entity}{a.entityId && <span className="ml-1 font-mono text-xs text-slate-400">{a.entityId.slice(0, 8)}</span>}</Td>
-            <Td>{p?.patientNo && <Link href={`/patients/${a.patientId}`} className="text-teal-800 hover:underline">{fullName(p)} ({p.patientNo})</Link>}</Td>
+            <Td>{p?.patientNo && <Link href={`/patients/${a.patientId}`} className="text-brand-800 hover:underline">{fullName(p)} ({p.patientNo})</Link>}</Td>
             <Td className="max-w-xs truncate font-mono text-xs" title={a.details ? JSON.stringify(a.details) : ""}>{a.details ? JSON.stringify(a.details) : ""}</Td>
             <Td className="text-xs">{a.ip}</Td>
           </tr>
         ))}
       </Table>
       <div className="mt-3 flex justify-between text-sm">
-        {pageNo > 1 ? <Link href={qs(pageNo - 1)} className="text-teal-800 hover:underline">← Newer</Link> : <span />}
+        {pageNo > 1 ? <Link href={qs(pageNo - 1)} className="text-brand-800 hover:underline">← Newer</Link> : <span />}
         <span className="text-slate-500">Page {pageNo}</span>
-        {rows.length > PER_PAGE ? <Link href={qs(pageNo + 1)} className="text-teal-800 hover:underline">Older →</Link> : <span />}
+        {rows.length > PER_PAGE ? <Link href={qs(pageNo + 1)} className="text-brand-800 hover:underline">Older →</Link> : <span />}
       </div>
     </Card>
   );

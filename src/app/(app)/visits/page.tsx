@@ -60,7 +60,7 @@ export default async function VisitsPage({ searchParams }: PageProps<"/visits">)
             {rows.map(({ v, p, doctor }) => (
               <tr key={v.id} className="hover:bg-slate-50">
                 <Td>{timeOnly(v.startedAt, tz)}</Td>
-                <Td><Link href={`/visits/${v.id}`} className="font-medium text-teal-800 hover:underline">{fullName(p)}</Link> <span className="text-xs text-slate-500">{p.patientNo}</span></Td>
+                <Td><Link href={`/visits/${v.id}`} className="font-medium text-brand-800 hover:underline">{fullName(p)}</Link> <span className="text-xs text-slate-500">{p.patientNo}</span></Td>
                 <Td>{doctor}</Td>
                 <Td className="max-w-xs truncate">{v.complaint}</Td>
                 <Td><Badge tone={v.status === "signed" ? "green" : "yellow"}>{v.status}</Badge></Td>

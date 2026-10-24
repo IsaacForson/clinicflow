@@ -55,7 +55,7 @@ export default async function InvoicePage({ params }: PageProps<"/billing/[id]">
     <>
       <PageHeader
         title={<span className="flex items-center gap-2">Invoice {i.invoiceNo} <Badge tone={STATUS_TONE[i.status]}>{i.status.replace("_", " ")}</Badge></span>}
-        subtitle={<><Link className="text-teal-800 hover:underline" href={`/patients/${p.id}`}>{fullName(p)}</Link> · {p.patientNo} · {dateTime(i.createdAt, tz)}</>}
+        subtitle={<><Link className="text-brand-800 hover:underline" href={`/patients/${p.id}`}>{fullName(p)}</Link> · {p.patientNo} · {dateTime(i.createdAt, tz)}</>}
         actions={<>
           <LinkButton variant="secondary" href={`/billing/${i.id}/print`}>Print</LinkButton>
           {canWrite && i.status !== "draft" && i.status !== "void" && <ActionButton action={sendInvoiceAction} fields={{ invoiceId: i.id }}>Send to patient</ActionButton>}
@@ -103,7 +103,7 @@ export default async function InvoicePage({ params }: PageProps<"/billing/[id]">
                     {pay.refundReason && <div className="text-xs text-slate-500">Refunded {dateTime(pay.refundedAt, tz)}: {pay.refundReason}</div>}</Td>
                   <Td>{pay.reference}</Td><Td className={pay.status === "refunded" ? "line-through" : undefined}>{money(pay.amountMinor, cur)}</Td><Td>{by ?? (pay.provider === "paystack" ? "Online" : "")}</Td>
                   <Td className="space-x-2">
-                    <Link className="text-teal-800 hover:underline" href={`/billing/receipt/${pay.id}`}>Receipt</Link>
+                    <Link className="text-brand-800 hover:underline" href={`/billing/receipt/${pay.id}`}>Receipt</Link>
                     {canVoid && pay.status === "succeeded" && !(pay.method === "insurance" && pay.reference?.startsWith("Claim")) && (
                       <ReversePayment action={reversePaymentAction} paymentId={pay.id} viaPaystack={pay.provider === "paystack" && !!pay.providerRef} />
                     )}
@@ -154,7 +154,7 @@ export default async function InvoicePage({ params }: PageProps<"/billing/[id]">
               <div className="text-xs uppercase tracking-wide text-slate-500">Patient balance</div>
               <div className="text-2xl font-semibold text-slate-900">{money(i.status === "void" ? 0 : balance, cur)}</div>
             </div>
-            {data.insurer && <p className="mt-2 text-xs text-slate-500">Member no. {p.memberNo ?? "—"} · {data.claim ? <Link className="text-teal-800 hover:underline" href={`/insurance/claims/${data.claim.id}`}>Claim {data.claim.batchNo} ({data.claim.status})</Link> : "not yet claimed"}</p>}
+            {data.insurer && <p className="mt-2 text-xs text-slate-500">Member no. {p.memberNo ?? "—"} · {data.claim ? <Link className="text-brand-800 hover:underline" href={`/insurance/claims/${data.claim.id}`}>Claim {data.claim.batchNo} ({data.claim.status})</Link> : "not yet claimed"}</p>}
             {data.credit > 0 && <p className="mt-2 text-sm text-emerald-700">Account credit available: {money(data.credit, cur)}</p>}
           </Card>
 

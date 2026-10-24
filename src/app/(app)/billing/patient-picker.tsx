@@ -19,7 +19,7 @@ export async function PatientPicker({ ctx, q, href }: { ctx: Ctx; q: string; hre
           {rows.map((p) => (
             <tr key={p.id} className="hover:bg-slate-50">
               <Td className="font-mono text-xs">{p.patientNo}</Td>
-              <Td><Link className="font-medium text-teal-800 hover:underline" href={`${href}?patient=${p.id}`}>{fullName(p)}</Link></Td>
+              <Td><Link className="font-medium text-brand-800 hover:underline" href={`${href}?patient=${p.id}`}>{fullName(p)}</Link></Td>
               <Td>{p.phone}</Td>
             </tr>
           ))}

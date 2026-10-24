@@ -29,11 +29,11 @@ export default async function QueueDisplayPage() {
       </header>
       <div className="grid flex-1 gap-8 lg:grid-cols-3">
         <section className="lg:col-span-2">
-          <h2 className="mb-4 text-2xl font-medium uppercase tracking-widest text-teal-300">Now serving</h2>
+          <h2 className="mb-4 text-2xl font-medium uppercase tracking-widest text-brand-300">Now serving</h2>
           {serving.length ? (
             <ul className="grid gap-4 sm:grid-cols-2">
               {serving.map(({ q, doc }, i) => (
-                <li key={q.id} className={i === 0 ? "rounded-2xl bg-teal-600 p-6 sm:col-span-2" : "rounded-2xl bg-slate-800 p-6"}>
+                <li key={q.id} className={i === 0 ? "rounded-2xl bg-brand-600 p-6 sm:col-span-2" : "rounded-2xl bg-slate-800 p-6"}>
                   <div className={i === 0 ? "text-[9rem] font-bold leading-none tabular-nums" : "text-7xl font-bold leading-none tabular-nums"}>{q.ticketNo}</div>
                   <div className="mt-3 text-3xl text-slate-100">{doc ? practitionerName(doc) : "Please proceed"}</div>
                 </li>

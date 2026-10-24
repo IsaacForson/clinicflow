@@ -39,7 +39,7 @@ export default async function ClaimPage({ params }: PageProps<"/insurance/claims
         <Stat label="Paid" value={money(c.totalPaidMinor, cur)} />
         <Stat label="Outstanding" value={money(c.totalClaimedMinor - c.totalPaidMinor, cur)} />
       </div>
-      {insurer.claimEmail && c.status === "draft" && <p className="mb-3 text-sm text-slate-600">Send the claim form and CSV to <a className="text-teal-800 underline" href={`mailto:${insurer.claimEmail}?subject=${encodeURIComponent(`Claim ${c.batchNo} from ${ctx.tenant.name}`)}`}>{insurer.claimEmail}</a>, then mark it submitted.</p>}
+      {insurer.claimEmail && c.status === "draft" && <p className="mb-3 text-sm text-slate-600">Send the claim form and CSV to <a className="text-brand-800 underline" href={`mailto:${insurer.claimEmail}?subject=${encodeURIComponent(`Claim ${c.batchNo} from ${ctx.tenant.name}`)}`}>{insurer.claimEmail}</a>, then mark it submitted.</p>}
       <Card>
         <ul className="divide-y divide-slate-100">
           {d.items.map(({ item, inv, p, services, diagnoses }) => (
@@ -47,7 +47,7 @@ export default async function ClaimPage({ params }: PageProps<"/insurance/claims
               <div className="lg:col-span-3">
                 <div className="font-medium">{fullName(p)}</div>
                 <div className="text-xs text-slate-500">{p.patientNo} · Member {p.memberNo ?? "—"}</div>
-                <Link className="font-mono text-xs text-teal-800 hover:underline" href={`/billing/${inv.id}`}>{inv.invoiceNo}</Link> <span className="text-xs text-slate-500">{dateOnly(inv.issuedAt ?? inv.createdAt, tz)}</span>
+                <Link className="font-mono text-xs text-brand-800 hover:underline" href={`/billing/${inv.id}`}>{inv.invoiceNo}</Link> <span className="text-xs text-slate-500">{dateOnly(inv.issuedAt ?? inv.createdAt, tz)}</span>
               </div>
               <div className="text-xs text-slate-600 lg:col-span-4">
                 <div><span className="font-medium">Dx:</span> {diagnoses.map((x) => x.icd10Code ?? x.description).join(", ") || "—"}</div>

@@ -33,7 +33,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
           {rows.map((p) => (
             <tr key={p.id} className="hover:bg-slate-50">
               <Td className="font-mono text-xs">{p.patientNo}</Td>
-              <Td><Link href={`/patients/${p.id}`} className="font-medium text-teal-800 hover:underline">{fullName(p)}</Link></Td>
+              <Td><Link href={`/patients/${p.id}`} className="font-medium text-brand-800 hover:underline">{fullName(p)}</Link></Td>
               <Td className="capitalize">{p.sex} {age(p.dob) && `· ${age(p.dob)}`}</Td>
               <Td>{p.phone}</Td>
               <Td>{dateOnly(p.createdAt, ctx.tenant.timezone)}</Td>

@@ -32,7 +32,7 @@ export default async function LabTestsPage({ searchParams }: PageProps<"/lab/tes
                 <Td className="font-medium">{x.name} {!x.active && <Badge>inactive</Badge>}</Td>
                 <Td>{x.code}</Td><Td className="capitalize">{x.kind}</Td><Td>{x.unit}</Td><Td>{x.refRange}</Td>
                 <Td>{service ? `${service} · ${money(price, cur)}` : <span className="text-slate-400">not billed</span>}</Td>
-                <Td><Link href={`/lab/tests?edit=${x.id}`} className="text-teal-800 hover:underline">Edit</Link></Td>
+                <Td><Link href={`/lab/tests?edit=${x.id}`} className="text-brand-800 hover:underline">Edit</Link></Td>
               </tr>
             ))}
           </Table>

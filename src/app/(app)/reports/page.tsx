@@ -19,7 +19,7 @@ export default async function ReportsPage() {
               {list.map(([name, r]) => (
                 <li key={name}>
                   <Link href={`/reports/${name}`} className="block rounded px-2 py-2.5 hover:bg-slate-50">
-                    <span className="font-medium text-teal-800">{r.title}</span>
+                    <span className="font-medium text-brand-800">{r.title}</span>
                     <span className="block text-sm text-slate-500">{r.description}</span>
                   </Link>
                 </li>

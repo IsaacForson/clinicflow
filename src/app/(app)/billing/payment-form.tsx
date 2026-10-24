@@ -22,7 +22,7 @@ export function PaymentForm({ action, patientId, invoiceId, balanceMinor, credit
       <input type="hidden" name="clientId" value={clientId} />
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Method">
         {methods.map((m) => (
-          <label key={m} className={`cursor-pointer rounded-md px-3 py-2 text-sm ring-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-teal-600 ${m === method ? "bg-teal-700 text-white ring-teal-700" : "bg-white text-slate-700 ring-slate-300"}`}>
+          <label key={m} className={`cursor-pointer rounded-md px-3 py-2 text-sm ring-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand-600 ${m === method ? "bg-brand-700 text-white ring-brand-700" : "bg-white text-slate-700 ring-slate-300"}`}>
             <input type="radio" name="method" value={m} checked={m === method} onChange={() => setMethod(m)} className="sr-only" />
             {METHOD_LABEL[m]}
           </label>

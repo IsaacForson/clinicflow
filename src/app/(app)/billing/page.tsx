@@ -76,7 +76,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
         <Table head={["Invoice", "Date", "Patient", "Total", "Insurer", "Patient balance", "Status"]} empty="No invoices match.">
           {rows.map(({ i, p }) => (
             <tr key={i.id} className="hover:bg-slate-50">
-              <Td><Link href={`/billing/${i.id}`} className="font-mono text-xs text-teal-800 hover:underline">{i.invoiceNo}</Link></Td>
+              <Td><Link href={`/billing/${i.id}`} className="font-mono text-xs text-brand-800 hover:underline">{i.invoiceNo}</Link></Td>
               <Td>{dateOnly(i.createdAt, tz)}</Td>
               <Td><Link href={`/patients/${p.id}`} className="hover:underline">{fullName(p)}</Link> <span className="text-xs text-slate-400">{p.patientNo}</span></Td>
               <Td>{money(i.totalMinor, cur)}</Td>

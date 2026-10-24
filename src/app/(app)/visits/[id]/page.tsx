@@ -156,7 +156,7 @@ export default async function VisitPage({ params }: PageProps<"/visits/[id]">) {
               <div key={rx.id} className="mb-3 rounded-md ring-1 ring-slate-200">
                 <div className="flex items-center justify-between border-b border-slate-100 px-3 py-1.5 text-xs text-slate-500">
                   <span>{dateTime(rx.createdAt, tz)} · {name(rx.prescriberId)} · <Badge>{rx.status.replace("_", " ")}</Badge></span>
-                  <Link className="font-medium text-teal-800 hover:underline" href={`/visits/${v.id}/prescription/${rx.id}`}>Print</Link>
+                  <Link className="font-medium text-brand-800 hover:underline" href={`/visits/${v.id}/prescription/${rx.id}`}>Print</Link>
                 </div>
                 <ul className="px-3 py-2 text-sm">
                   {data.rxItems.filter((i) => i.prescriptionId === rx.id).map((i) => (
@@ -209,14 +209,14 @@ export default async function VisitPage({ params }: PageProps<"/visits/[id]">) {
               {data.referrals.map((r) => (
                 <li key={r.id} className="flex justify-between gap-2">
                   <span>{r.toFacility}{r.specialty && ` · ${r.specialty}`} <Badge tone={r.urgency === "routine" ? "gray" : "red"}>{r.urgency}</Badge></span>
-                  <Link className="text-teal-800 hover:underline" href={`/visits/${v.id}/referral/${r.id}`}>Print letter</Link>
+                  <Link className="text-brand-800 hover:underline" href={`/visits/${v.id}/referral/${r.id}`}>Print letter</Link>
                 </li>
               ))}
               {data.referrals.length === 0 && <li className="text-slate-500">No referrals.</li>}
             </ul>
             {full && can(role, "clinical.write") && (
               <details className="border-t border-slate-100 pt-3">
-                <summary className="cursor-pointer text-sm font-medium text-teal-800">Write a referral letter</summary>
+                <summary className="cursor-pointer text-sm font-medium text-brand-800">Write a referral letter</summary>
                 <ActionForm action={addReferralAction} onSuccessHref={`/visits/${v.id}/referral/{id}`} className="mt-3">
                   <input type="hidden" name="visitId" value={v.id} />
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -276,7 +276,7 @@ export default async function VisitPage({ params }: PageProps<"/visits/[id]">) {
             <ul className="space-y-2 text-sm">
               {data.prev.map((x) => (
                 <li key={x.id} className="border-b border-slate-100 pb-2 last:border-0">
-                  <Link href={`/visits/${x.id}`} className="font-medium text-teal-800 hover:underline">{dateOnly(x.startedAt, tz)}</Link>
+                  <Link href={`/visits/${x.id}`} className="font-medium text-brand-800 hover:underline">{dateOnly(x.startedAt, tz)}</Link>
                   <span className="text-xs text-slate-500"> · {name(x.practitionerId)}</span>
                   <div className="truncate text-slate-700">{x.complaint || "—"}</div>
                   {data.prevDiagnoses.filter((d) => d.visitId === x.id).map((d) => <div key={d.id} className="text-xs text-slate-500">Dx: {d.icd10Code} {d.description}</div>)}

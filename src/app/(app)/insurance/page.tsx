@@ -40,9 +40,9 @@ export default async function InsurancePage() {
             <Table head={["Insurer", "Coverage", "Outstanding", "Unclaimed", ""]} empty="No insurers yet. Add one to start billing insurance.">
               {d.insurers.map(({ i, outstanding, unclaimed }) => (
                 <tr key={i.id}>
-                  <Td><Link className="font-medium text-teal-800 hover:underline" href={`/insurance/insurers/${i.id}`}>{i.name}</Link> {!i.active && <Badge>inactive</Badge>}</Td>
+                  <Td><Link className="font-medium text-brand-800 hover:underline" href={`/insurance/insurers/${i.id}`}>{i.name}</Link> {!i.active && <Badge>inactive</Badge>}</Td>
                   <Td>{i.coveragePercent}%</Td><Td>{money(outstanding, cur)}</Td><Td>{money(unclaimed, cur)}</Td>
-                  <Td>{unclaimed > 0 && <Link className="text-xs text-teal-800 hover:underline" href={`/insurance/claims?insurer=${i.id}`}>Create claim</Link>}</Td>
+                  <Td>{unclaimed > 0 && <Link className="text-xs text-brand-800 hover:underline" href={`/insurance/claims?insurer=${i.id}`}>Create claim</Link>}</Td>
                 </tr>
               ))}
             </Table>
@@ -51,7 +51,7 @@ export default async function InsurancePage() {
             <Table head={["Batch", "Insurer", "Period", "Claimed", "Paid", "Status"]} empty="No claims yet.">
               {d.recent.map(({ c, insurer }) => (
                 <tr key={c.id}>
-                  <Td><Link className="font-mono text-xs text-teal-800 hover:underline" href={`/insurance/claims/${c.id}`}>{c.batchNo}</Link></Td>
+                  <Td><Link className="font-mono text-xs text-brand-800 hover:underline" href={`/insurance/claims/${c.id}`}>{c.batchNo}</Link></Td>
                   <Td>{insurer}</Td><Td>{dateOnly(c.periodStart, "UTC")} – {dateOnly(c.periodEnd, "UTC")}</Td>
                   <Td>{money(c.totalClaimedMinor, cur)}</Td><Td>{money(c.totalPaidMinor, cur)}</Td><Td><Badge tone={CLAIM_TONE[c.status]}>{c.status.replace("_", " ")}</Badge></Td>
                 </tr>

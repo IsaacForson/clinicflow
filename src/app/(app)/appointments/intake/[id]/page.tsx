@@ -32,8 +32,8 @@ export default async function IntakeReviewPage({ params }: PageProps<"/appointme
         subtitle={f.submittedAt ? `Submitted ${dateTime(f.submittedAt, tz)}` : "Not submitted yet"}
         actions={<>
           <Badge tone={f.status === "reviewed" ? "green" : f.status === "submitted" ? "yellow" : "gray"}>{f.status}</Badge>
-          {f.appointmentId && <Link href={`/appointments/${f.appointmentId}`} className="text-sm text-teal-800 underline">Appointment</Link>}
-          <Link href={`/patients/${p.id}`} className="text-sm text-teal-800 underline">Patient record</Link>
+          {f.appointmentId && <Link href={`/appointments/${f.appointmentId}`} className="text-sm text-brand-800 underline">Appointment</Link>}
+          <Link href={`/patients/${p.id}`} className="text-sm text-brand-800 underline">Patient record</Link>
         </>} />
       {!d ? <Card><p className="text-sm text-slate-500">The patient hasn&apos;t submitted this form yet.</p></Card> : (
         <div className="grid gap-4 lg:grid-cols-3">

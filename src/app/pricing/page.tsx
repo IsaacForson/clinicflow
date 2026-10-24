@@ -36,7 +36,7 @@ export default function PricingPage() {
   const plans = Object.entries(PLANS) as [PlanKey, (typeof PLANS)[PlanKey]][];
   return (
     <SitePage>
-      <section className="bg-gradient-to-b from-teal-50/80 to-white">
+      <section className="bg-gradient-to-b from-brand-50/80 to-white">
         <div className="mx-auto max-w-6xl px-4 pb-6 pt-14 text-center sm:px-6 sm:pt-20">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Simple, honest pricing</h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
@@ -44,7 +44,7 @@ export default function PricingPage() {
           </p>
           <p className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-700">
             {[`${TRIAL_DAYS}-day free trial, no card`, "Annual: 2 months free", "30-day money-back guarantee", "Read-only, never locked out"].map((x) => (
-              <span key={x} className="flex items-center gap-1.5"><Check className="h-4 w-4 text-teal-700" aria-hidden />{x}</span>
+              <span key={x} className="flex items-center gap-1.5"><Check className="h-4 w-4 text-brand-700" aria-hidden />{x}</span>
             ))}
           </p>
         </div>
@@ -55,8 +55,8 @@ export default function PricingPage() {
           {plans.map(([key, p]) => {
             const featured = key === "clinic";
             return (
-              <div key={key} className={cx("relative flex flex-col rounded-2xl bg-white p-6 ring-1", featured ? "shadow-xl shadow-teal-900/10 ring-2 ring-teal-600" : "ring-slate-200")}>
-                {featured && <span className="absolute -top-3 left-6 rounded-full bg-teal-700 px-3 py-0.5 text-xs font-medium text-white">Most popular</span>}
+              <div key={key} className={cx("relative flex flex-col rounded-2xl bg-white p-6 ring-1", featured ? "shadow-xl shadow-brand-900/10 ring-2 ring-brand-600" : "ring-slate-200")}>
+                {featured && <span className="absolute -top-3 left-6 rounded-full bg-brand-700 px-3 py-0.5 text-xs font-medium text-white">Most popular</span>}
                 <h2 className="text-lg font-semibold text-slate-900">{p.name}</h2>
                 <p className="mt-1 text-sm text-slate-600">{BLURB[key]}</p>
                 <p className="mt-5"><span className="text-4xl font-semibold tracking-tight text-slate-900">${p.priceUsd}</span><span className="text-slate-500">/month</span></p>
@@ -67,9 +67,9 @@ export default function PricingPage() {
                   <li>{p.branches === 1 ? "1 location" : `Up to ${p.branches} branches`}</li>
                 </ul>
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-slate-700">
-                  {p.features.map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" aria-hidden />{FEATURE_LABELS[f] ?? f}</li>)}
+                  {p.features.map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" aria-hidden />{FEATURE_LABELS[f] ?? f}</li>)}
                 </ul>
-                <Link href={`/signup?plan=${key}`} className={cx("mt-6 rounded-lg px-4 py-2.5 text-center font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600", featured ? "bg-teal-700 text-white hover:bg-teal-800" : "bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50")}>
+                <Link href={`/signup?plan=${key}`} className={cx("mt-6 rounded-lg px-4 py-2.5 text-center font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600", featured ? "bg-brand-700 text-white hover:bg-brand-800" : "bg-white text-slate-900 ring-1 ring-slate-300 hover:bg-slate-50")}>
                   Start free trial<span className="sr-only"> of {p.name}</span>
                 </Link>
               </div>

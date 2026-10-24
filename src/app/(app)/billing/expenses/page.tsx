@@ -41,7 +41,7 @@ export default async function ExpensesPage({ searchParams }: PageProps<"/billing
                   <Td>{e.day}</Td><Td>{e.category}</Td><Td className="max-w-xs truncate">{e.description}</Td><Td>{e.paidTo}</Td>
                   <Td>{METHOD_LABEL[e.method]}</Td><Td>{money(e.amountMinor, cur)}</Td>
                   <Td className="space-x-1">
-                    <Link className="text-xs text-teal-800 hover:underline" href={`/billing/expenses?month=${month}&edit=${e.id}`}>Edit</Link>
+                    <Link className="text-xs text-brand-800 hover:underline" href={`/billing/expenses?month=${month}&edit=${e.id}`}>Edit</Link>
                     <ActionButton action={deleteExpenseAction} fields={{ id: e.id }} variant="ghost" confirm="Delete this expense?">Delete</ActionButton>
                   </Td>
                 </tr>

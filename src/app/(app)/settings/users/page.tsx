@@ -25,7 +25,7 @@ export default async function StaffPage() {
         <Table head={["Name", "Role", "Login", "Last sign-in", ""]}>
           {rows.map((u) => (
             <tr key={u.id} className={u.active ? "" : "opacity-50"}>
-              <Td><Link href={`/settings/users/${u.id}`} className="font-medium text-teal-800 hover:underline">{[u.title, u.name].filter(Boolean).join(" ")}</Link></Td>
+              <Td><Link href={`/settings/users/${u.id}`} className="font-medium text-brand-800 hover:underline">{[u.title, u.name].filter(Boolean).join(" ")}</Link></Td>
               <Td>{ROLE_LABELS[u.role]} {u.isPractitioner && <Badge tone="blue">Practitioner</Badge>} {u.scribeEnabled && <Badge tone="purple">Scribe</Badge>}</Td>
               <Td>{u.email ?? u.phone}</Td>
               <Td>{dateTime(u.lastLoginAt, ctx.tenant.timezone)}</Td>

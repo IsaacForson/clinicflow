@@ -46,7 +46,7 @@ export default async function InventoryPage({ searchParams }: PageProps<"/pharma
               return (
                 <tr key={i.id} className={i.active ? "hover:bg-slate-50" : "text-slate-400"}>
                   <Td>
-                    <Link href={`/pharmacy/inventory/${i.id}`} className="font-medium text-teal-800 hover:underline">{i.favorite && "★ "}{i.name}</Link>
+                    <Link href={`/pharmacy/inventory/${i.id}`} className="font-medium text-brand-800 hover:underline">{i.favorite && "★ "}{i.name}</Link>
                     {i.genericName && <span className="ml-1 text-xs text-slate-500">{i.genericName}</span>} {!i.active && <Badge>inactive</Badge>}
                   </Td>
                   <Td>{[i.form, i.strength].filter(Boolean).join(" · ")}</Td>
@@ -62,7 +62,7 @@ export default async function InventoryPage({ searchParams }: PageProps<"/pharma
         <div className="space-y-4">
           <Card title="Low stock">
             <ul className="space-y-1 text-sm">
-              {low.map((i) => <li key={i.id} className="flex justify-between"><Link href={`/pharmacy/inventory/${i.id}`} className="text-teal-800 hover:underline">{i.name}</Link><span className="text-red-700">{byItem.get(i.id)?.qty ?? 0} / {i.reorderLevel}</span></li>)}
+              {low.map((i) => <li key={i.id} className="flex justify-between"><Link href={`/pharmacy/inventory/${i.id}`} className="text-brand-800 hover:underline">{i.name}</Link><span className="text-red-700">{byItem.get(i.id)?.qty ?? 0} / {i.reorderLevel}</span></li>)}
               {low.length === 0 && <li className="text-slate-500">Nothing below reorder level.</li>}
             </ul>
           </Card>
@@ -70,7 +70,7 @@ export default async function InventoryPage({ searchParams }: PageProps<"/pharma
             <ul className="space-y-1 text-sm">
               {expiring.map(({ b, name }) => (
                 <li key={b.id} className="flex justify-between gap-2">
-                  <Link href={`/pharmacy/inventory/${b.itemId}`} className="truncate text-teal-800 hover:underline">{name} <span className="text-xs text-slate-500">{b.batchNo}</span></Link>
+                  <Link href={`/pharmacy/inventory/${b.itemId}`} className="truncate text-brand-800 hover:underline">{name} <span className="text-xs text-slate-500">{b.batchNo}</span></Link>
                   <span className={b.expiry! < today ? "shrink-0 text-red-700" : "shrink-0 text-amber-700"}>{b.qtyOnHand} · {dateOnly(b.expiry, "UTC")}</span>
                 </li>
               ))}

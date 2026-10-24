@@ -30,7 +30,7 @@ export default async function ExportPage() {
               <Td><Badge tone={TONE[j.status as keyof typeof TONE] ?? "gray"}>{j.status}</Badge> {j.error && <span className="text-xs text-red-600">{j.error}</span>}</Td>
               <Td>{dateTime(j.completedAt, ctx.tenant.timezone)}</Td>
               <Td>{j.status === "done" && j.storageKey && (ctx.user.role === "owner"
-                ? <a href={`/api/exports/${j.id}`} className="font-medium text-teal-800 hover:underline">Download .zip</a>
+                ? <a href={`/api/exports/${j.id}`} className="font-medium text-brand-800 hover:underline">Download .zip</a>
                 : <span className="text-xs text-slate-500">Owner can download</span>)}</Td>
             </tr>
           ))}

@@ -32,7 +32,7 @@ export default async function TemplatesPage({ searchParams }: PageProps<"/messag
         <Card title="Templates">
           <ul className="space-y-0.5 text-sm">
             {keys.map((k) => (
-              <li key={k}><Link href={`/messages/templates?key=${k}`} className={cx("flex justify-between rounded px-2 py-1.5", k === key ? "bg-teal-50 text-teal-800" : "hover:bg-slate-50")}>
+              <li key={k}><Link href={`/messages/templates?key=${k}`} className={cx("flex justify-between rounded px-2 py-1.5", k === key ? "bg-brand-50 text-brand-800" : "hover:bg-slate-50")}>
                 <span>{k.replace(/_/g, " ")}</span>
                 {rows.some((r) => r.key === k && r.waTemplateName) && <Badge tone="green">WA</Badge>}
               </Link></li>
@@ -40,7 +40,7 @@ export default async function TemplatesPage({ searchParams }: PageProps<"/messag
           </ul>
         </Card>
         <Card title={`${key.replace(/_/g, " ")} · ${lang}`} className="lg:col-span-2"
-          actions={<div className="flex gap-1">{langs.map((l) => <Link key={l} href={`/messages/templates?key=${key}&lang=${l}`} className={cx("rounded px-2 py-0.5 text-xs", l === lang ? "bg-teal-700 text-white" : "bg-slate-100")}>{l}</Link>)}</div>}>
+          actions={<div className="flex gap-1">{langs.map((l) => <Link key={l} href={`/messages/templates?key=${key}&lang=${l}`} className={cx("rounded px-2 py-0.5 text-xs", l === lang ? "bg-brand-700 text-white" : "bg-slate-100")}>{l}</Link>)}</div>}>
           <ActionForm action={saveTemplateAction} key={`${key}-${lang}`}>
             <input type="hidden" name="key" value={key} />
             <input type="hidden" name="language" value={lang} />

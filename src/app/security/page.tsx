@@ -20,7 +20,7 @@ export default function SecurityPage() {
       <div className="grid gap-6 sm:grid-cols-2">
         {ITEMS.map((i) => (
           <section key={i.title} className="rounded-xl p-5 ring-1 ring-slate-200">
-            <i.icon className="h-6 w-6 text-teal-700" aria-hidden />
+            <i.icon className="h-6 w-6 text-brand-700" aria-hidden />
             <h2 className="mt-3 !text-base">{i.title}</h2>
             <p className="text-sm">{i.body}</p>
           </section>

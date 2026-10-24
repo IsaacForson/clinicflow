@@ -83,7 +83,7 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
               <Table head={["Date", "Practitioner", "Complaint", "Status"]} empty="No consultations yet.">
                 {data.visits.map(({ v, doctor }) => (
                   <tr key={v.id}>
-                    <Td><Link className="text-teal-800 hover:underline" href={`/visits/${v.id}`}>{dateTime(v.startedAt, tz)}</Link></Td>
+                    <Td><Link className="text-brand-800 hover:underline" href={`/visits/${v.id}`}>{dateTime(v.startedAt, tz)}</Link></Td>
                     <Td>{doctor}</Td><Td className="max-w-xs truncate">{v.complaint}</Td>
                     <Td><Badge tone={v.status === "signed" ? "green" : "yellow"}>{v.status}</Badge></Td>
                   </tr>
@@ -105,7 +105,7 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
               <Table head={["Invoice", "Date", "Total", "Balance", "Status"]} empty="No invoices.">
                 {data.invoices.map((i) => (
                   <tr key={i.id}>
-                    <Td><Link className="font-mono text-xs text-teal-800 hover:underline" href={`/billing/${i.id}`}>{i.invoiceNo}</Link></Td>
+                    <Td><Link className="font-mono text-xs text-brand-800 hover:underline" href={`/billing/${i.id}`}>{i.invoiceNo}</Link></Td>
                     <Td>{dateOnly(i.createdAt, tz)}</Td><Td>{money(i.totalMinor, cur)}</Td>
                     <Td>{money(i.patientPortionMinor - i.paidMinor, cur)}</Td><Td><Badge>{i.status.replace("_", " ")}</Badge></Td>
                   </tr>
@@ -142,7 +142,7 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
           <Card title="Guardians & family">
             <ul className="mb-3 space-y-1 text-sm">
               {data.guardians.map((g) => (
-                <li key={g.id}>{g.guardianPatientId ? <Link href={`/patients/${g.guardianPatientId}`} className="text-teal-800 hover:underline">{g.name}</Link> : g.name} <span className="text-slate-500">({g.relationship}) {g.phone}</span></li>
+                <li key={g.id}>{g.guardianPatientId ? <Link href={`/patients/${g.guardianPatientId}`} className="text-brand-800 hover:underline">{g.name}</Link> : g.name} <span className="text-slate-500">({g.relationship}) {g.phone}</span></li>
               ))}
               {data.guardians.length === 0 && <li className="text-slate-500">None recorded.</li>}
             </ul>
@@ -185,7 +185,7 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
           <Card title="Documents">
             <ul className="mb-3 space-y-1 text-sm">
               {data.documents.map((d) => (
-                <li key={d.id} className="flex justify-between gap-2"><a href={`/api/files/${d.id}`} target="_blank" className="truncate text-teal-800 hover:underline">{d.name}</a><span className="shrink-0 text-xs text-slate-500">{d.category.replace("_", " ")}</span></li>
+                <li key={d.id} className="flex justify-between gap-2"><a href={`/api/files/${d.id}`} target="_blank" className="truncate text-brand-800 hover:underline">{d.name}</a><span className="shrink-0 text-xs text-slate-500">{d.category.replace("_", " ")}</span></li>
               ))}
               {data.documents.length === 0 && <li className="text-slate-500">No documents.</li>}
             </ul>

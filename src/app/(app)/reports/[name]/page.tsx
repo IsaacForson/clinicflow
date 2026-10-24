@@ -41,7 +41,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
       <PageHeader title={report.title} subtitle={<>{report.description} <span className="whitespace-nowrap">{dateOnly(range.start, tz)} – {dateOnly(new Date(range.end.getTime() - 1), tz)}</span></>}
         actions={<>
           <Link href="/reports" className="text-sm text-slate-600 hover:text-slate-900">All reports</Link>
-          <a href={`/api/reports/${name}?${rangeQuery(range)}`} download className="inline-flex items-center rounded-md bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800">Download CSV</a>
+          <a href={`/api/reports/${name}?${rangeQuery(range)}`} download className="inline-flex items-center rounded-md bg-brand-700 px-3 py-2 text-sm font-medium text-white hover:bg-brand-800">Download CSV</a>
         </>} />
       <RangePicker range={range} path={`/reports/${name}`} />
       {name === "notifiable" && ctx.tenant.notifiableIcd.length === 0 && (

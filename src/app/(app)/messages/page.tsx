@@ -52,7 +52,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/message
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <Stat label="Sent this month" value={used} sub={`of ${allowance} included in ${PLANS[ctx.tenant.plan].name}`} />
         <div className="rounded-lg bg-white p-4 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 sm:col-span-2">
-          <div className="mb-2 h-2 overflow-hidden rounded bg-slate-100"><div className={over > 0 ? "h-full bg-amber-500" : "h-full bg-teal-600"} style={{ width: `${Math.min(100, (used / Math.max(allowance, 1)) * 100)}%` }} /></div>
+          <div className="mb-2 h-2 overflow-hidden rounded bg-slate-100"><div className={over > 0 ? "h-full bg-amber-500" : "h-full bg-brand-600"} style={{ width: `${Math.min(100, (used / Math.max(allowance, 1)) * 100)}%` }} /></div>
           {over > 0
             ? <>You are {over} messages over your monthly allowance. Extra messages are billed at provider cost on your next invoice; reminders are never paused.</>
             : <>{allowance - used} included messages left this month. Reminders keep sending even above the allowance (billed at provider cost).</>}
@@ -71,7 +71,7 @@ export default async function MessagesPage({ searchParams }: PageProps<"/message
           {rows.map(({ m, p }) => (
             <tr key={m.id} className="align-top">
               <Td className="text-xs">{dateTime(m.createdAt, tz)}</Td>
-              <Td>{p ? <Link href={`/patients/${p.id}`} className="text-teal-800 hover:underline">{fullName(p)}</Link> : <span className="text-slate-500">{m.to}</span>}</Td>
+              <Td>{p ? <Link href={`/patients/${p.id}`} className="text-brand-800 hover:underline">{fullName(p)}</Link> : <span className="text-slate-500">{m.to}</span>}</Td>
               <Td><Badge tone={m.direction === "in" ? "purple" : "gray"}>{m.direction === "in" ? "in" : "out"}</Badge></Td>
               <Td className="capitalize">{m.channel}</Td>
               <Td>{m.purpose}</Td>

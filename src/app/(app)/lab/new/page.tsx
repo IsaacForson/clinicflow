@@ -32,7 +32,7 @@ export default async function NewLabOrderPage({ searchParams }: PageProps<"/lab/
         <Card title="1. Find the patient">
           <form className="mb-3"><Input name="q" defaultValue={q} placeholder="Name, phone or patient number…" autoFocus /></form>
           {q && (
-            <Table head={["Patient no.", "Name", "Age", "Phone", ""]} empty={<>No match. <Link className="text-teal-800 underline" href="/patients/new">Register the patient</Link> first.</>}>
+            <Table head={["Patient no.", "Name", "Age", "Phone", ""]} empty={<>No match. <Link className="text-brand-800 underline" href="/patients/new">Register the patient</Link> first.</>}>
               {data.found.map((p) => (
                 <tr key={p.id}>
                   <Td className="font-mono text-xs">{p.patientNo}</Td><Td>{fullName(p)}</Td><Td>{age(p.dob)}</Td><Td>{p.phone}</Td>
@@ -43,9 +43,9 @@ export default async function NewLabOrderPage({ searchParams }: PageProps<"/lab/
           )}
         </Card>
       ) : (
-        <Card title={<>2. Tests for {fullName(patient)} <span className="font-mono text-xs text-slate-500">{patient.patientNo}</span></>} actions={<Link href="/lab/new" className="text-sm text-teal-800 hover:underline">Change patient</Link>}>
+        <Card title={<>2. Tests for {fullName(patient)} <span className="font-mono text-xs text-slate-500">{patient.patientNo}</span></>} actions={<Link href="/lab/new" className="text-sm text-brand-800 hover:underline">Change patient</Link>}>
           {data.tests.length === 0 ? (
-            <Empty title="No tests in the catalogue yet"><Link className="text-teal-800 underline" href="/lab/tests">Add tests</Link></Empty>
+            <Empty title="No tests in the catalogue yet"><Link className="text-brand-800 underline" href="/lab/tests">Add tests</Link></Empty>
           ) : (
             <ActionForm action={createLabOrderAction} onSuccessHref="/lab/{id}">
               <input type="hidden" name="patientId" value={patient.id} />

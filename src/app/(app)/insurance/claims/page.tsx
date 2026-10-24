@@ -30,7 +30,7 @@ export default async function ClaimsPage({ searchParams }: PageProps<"/insurance
           <Table head={["Batch", "Insurer", "Period", "Claimed", "Paid", "Status"]} empty="No claims yet.">
             {d.claims.map(({ c, insurer }) => (
               <tr key={c.id}>
-                <Td><Link className="font-mono text-xs text-teal-800 hover:underline" href={`/insurance/claims/${c.id}`}>{c.batchNo}</Link></Td>
+                <Td><Link className="font-mono text-xs text-brand-800 hover:underline" href={`/insurance/claims/${c.id}`}>{c.batchNo}</Link></Td>
                 <Td>{insurer}</Td><Td>{dateOnly(c.periodStart, "UTC")} – {dateOnly(c.periodEnd, "UTC")}</Td>
                 <Td>{money(c.totalClaimedMinor, cur)}</Td><Td>{money(c.totalPaidMinor, cur)}</Td>
                 <Td><Badge tone={CLAIM_TONE[c.status]}>{c.status.replace("_", " ")}</Badge></Td>

@@ -29,7 +29,7 @@ export default async function PharmacyPage() {
           {rows.map(({ rx, p, prescriber }) => (
             <tr key={rx.id} className="hover:bg-slate-50">
               <Td>{dateTime(rx.createdAt, tz)}</Td>
-              <Td><Link href={`/pharmacy/${rx.id}`} className="font-medium text-teal-800 hover:underline">{fullName(p)}</Link> <span className="font-mono text-xs text-slate-500">{p.patientNo}</span></Td>
+              <Td><Link href={`/pharmacy/${rx.id}`} className="font-medium text-brand-800 hover:underline">{fullName(p)}</Link> <span className="font-mono text-xs text-slate-500">{p.patientNo}</span></Td>
               <Td>{prescriber ?? "—"}</Td>
               <Td className="max-w-sm truncate">{lines.filter((l) => l.prescriptionId === rx.id).map((l) => `${l.drugName} ×${l.quantity}`).join(", ")}</Td>
               <Td><Badge tone={rx.status === "issued" ? "yellow" : "blue"}>{rx.status.replace("_", " ")}</Badge></Td>
@@ -42,8 +42,8 @@ export default async function PharmacyPage() {
         <Table head={["Prescribed", "Patient", ""]} empty="None yet.">
           {recent.map(({ rx, p }) => (
             <tr key={rx.id}>
-              <Td>{dateTime(rx.createdAt, tz)}</Td><Td><Link href={`/pharmacy/${rx.id}`} className="text-teal-800 hover:underline">{fullName(p)}</Link></Td>
-              <Td className="text-right"><Link href={`/pharmacy/${rx.id}/labels`} className="text-xs text-teal-800 hover:underline">Labels</Link></Td>
+              <Td>{dateTime(rx.createdAt, tz)}</Td><Td><Link href={`/pharmacy/${rx.id}`} className="text-brand-800 hover:underline">{fullName(p)}</Link></Td>
+              <Td className="text-right"><Link href={`/pharmacy/${rx.id}/labels`} className="text-xs text-brand-800 hover:underline">Labels</Link></Td>
             </tr>
           ))}
         </Table>

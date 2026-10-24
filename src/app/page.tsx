@@ -42,10 +42,10 @@ export default function LandingPage() {
   return (
     <SitePage>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-teal-50/80 to-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/80 to-white">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-2 lg:pt-20">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-teal-800 ring-1 ring-teal-200">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-brand-800 ring-1 ring-brand-200">
               For private clinics in Ghana, Nigeria & Kenya
             </p>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Run your clinic without paper</h1>
@@ -54,7 +54,7 @@ export default function LandingPage() {
               and it keeps working when the internet doesn&apos;t.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" className="rounded-lg bg-teal-700 px-5 py-3 font-medium text-white shadow-sm hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+              <Link href="/signup" className="rounded-lg bg-brand-700 px-5 py-3 font-medium text-white shadow-sm hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
                 Start your {TRIAL_DAYS}-day free trial
               </Link>
               <Link href="/pricing" className="rounded-lg bg-white px-5 py-3 font-medium text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50">See pricing</Link>
@@ -70,7 +70,7 @@ export default function LandingPage() {
         <div className="grid gap-6 md:grid-cols-3">
           {HOOKS.map((h) => (
             <div key={h.title} className="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
-              <h.icon className="h-6 w-6 text-teal-700" aria-hidden />
+              <h.icon className="h-6 w-6 text-brand-700" aria-hidden />
               <h2 className="mt-4 text-lg font-semibold text-slate-900">{h.title}</h2>
               <p className="mt-2 text-slate-600">{h.body}</p>
             </div>
@@ -86,7 +86,7 @@ export default function LandingPage() {
           <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="flex gap-4">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-teal-700 text-white"><f.icon className="h-5 w-5" aria-hidden /></span>
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-700 text-white"><f.icon className="h-5 w-5" aria-hidden /></span>
                 <div>
                   <h3 className="font-semibold text-slate-900">{f.title}</h3>
                   <p className="mt-1 text-slate-600">{f.body}</p>
@@ -101,7 +101,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="grid items-center gap-10 rounded-3xl bg-slate-900 p-8 text-white sm:p-12 lg:grid-cols-2">
           <div>
-            <CloudOff className="h-8 w-8 text-teal-300" aria-hidden />
+            <CloudOff className="h-8 w-8 text-brand-300" aria-hidden />
             <h2 className="mt-4 text-3xl font-semibold tracking-tight">Light goes off. Network drops. Your clinic keeps going.</h2>
             <p className="mt-4 text-slate-300">
               Install ClinicFlow on any phone, tablet or laptop. Pages you&apos;ve opened stay readable offline, and consultation notes and payments are
@@ -110,7 +110,7 @@ export default function LandingPage() {
           </div>
           <ul className="space-y-3 text-slate-200">
             {["Works on low-cost Android phones and old laptops", "Uses very little data — no heavy downloads", "Notes merge safely if two people edited offline", "Payments are recorded once, even if sync retries"].map((x) => (
-              <li key={x} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0 text-teal-300" aria-hidden />{x}</li>
+              <li key={x} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0 text-brand-300" aria-hidden />{x}</li>
             ))}
           </ul>
         </div>
@@ -123,13 +123,13 @@ export default function LandingPage() {
         <div className="mt-8 overflow-x-auto rounded-2xl ring-1 ring-slate-200">
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50">
-              <tr><th scope="col" className="px-4 py-3 font-semibold text-slate-900"><span className="sr-only">Feature</span></th><th scope="col" className="px-4 py-3 font-semibold text-teal-800">ClinicFlow</th><th scope="col" className="px-4 py-3 font-semibold text-slate-600">Typical enterprise system</th></tr>
+              <tr><th scope="col" className="px-4 py-3 font-semibold text-slate-900"><span className="sr-only">Feature</span></th><th scope="col" className="px-4 py-3 font-semibold text-brand-800">ClinicFlow</th><th scope="col" className="px-4 py-3 font-semibold text-slate-600">Typical enterprise system</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {COMPARE.map(([k, us, them]) => (
                 <tr key={k}>
                   <th scope="row" className="px-4 py-3 font-medium text-slate-900">{k}</th>
-                  <td className="px-4 py-3 text-slate-900"><span className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-teal-700" aria-hidden />{us}</span></td>
+                  <td className="px-4 py-3 text-slate-900"><span className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />{us}</span></td>
                   <td className="px-4 py-3 text-slate-600"><span className="flex gap-2"><X className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />{them}</span></td>
                 </tr>
               ))}
@@ -139,15 +139,15 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing teaser + CTA */}
-      <section className="bg-teal-700">
+      <section className="bg-brand-700">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-14 text-white sm:px-6 md:flex-row md:items-center">
           <div>
             <h2 className="text-3xl font-semibold tracking-tight">Simple pricing from ${PLANS.solo.priceUsd}/month</h2>
-            <p className="mt-2 text-teal-100">{TRIAL_DAYS}-day free trial, no card. 30-day money-back guarantee. Reminders and backups always included.</p>
+            <p className="mt-2 text-brand-100">{TRIAL_DAYS}-day free trial, no card. 30-day money-back guarantee. Reminders and backups always included.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/signup" className="rounded-lg bg-white px-5 py-3 font-medium text-teal-800 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Start free trial</Link>
-            <Link href="/pricing" className="rounded-lg px-5 py-3 font-medium text-white ring-1 ring-white/60 hover:bg-teal-600">Compare plans</Link>
+            <Link href="/signup" className="rounded-lg bg-white px-5 py-3 font-medium text-brand-800 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Start free trial</Link>
+            <Link href="/pricing" className="rounded-lg px-5 py-3 font-medium text-white ring-1 ring-white/60 hover:bg-brand-600">Compare plans</Link>
           </div>
         </div>
       </section>
@@ -159,7 +159,7 @@ export default function LandingPage() {
 function ProductPreview() {
   const bars = [40, 62, 48, 75, 58, 90, 70];
   return (
-    <div aria-hidden className="rounded-2xl bg-white p-4 shadow-xl shadow-teal-900/10 ring-1 ring-slate-200 sm:p-6">
+    <div aria-hidden className="rounded-2xl bg-white p-4 shadow-xl shadow-brand-900/10 ring-1 ring-slate-200 sm:p-6">
       <div className="flex items-center justify-between">
         <div><p className="text-xs text-slate-500">Today · Main branch</p><p className="font-semibold text-slate-900">Good morning, Dr. Mensah</p></div>
         <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">Synced</span>
@@ -170,10 +170,10 @@ function ProductPreview() {
         ))}
       </div>
       <div className="mt-4 flex h-28 items-end gap-2 rounded-lg bg-slate-50 p-3">
-        {bars.map((h, i) => <div key={i} className="flex-1 rounded-t bg-teal-600" style={{ height: `${h}%` }} />)}
+        {bars.map((h, i) => <div key={i} className="flex-1 rounded-t bg-brand-600" style={{ height: `${h}%` }} />)}
       </div>
       <ul className="mt-4 divide-y divide-slate-100 text-sm">
-        {[["#12", "Ama Owusu", "With doctor", "bg-teal-50 text-teal-800"], ["#13", "Chinedu Okafor", "Waiting", "bg-slate-100 text-slate-700"], ["#14", "Wanjiru Kamau", "Billing", "bg-amber-50 text-amber-800"]].map(([n, name, s, c]) => (
+        {[["#12", "Ama Owusu", "With doctor", "bg-brand-50 text-brand-800"], ["#13", "Chinedu Okafor", "Waiting", "bg-slate-100 text-slate-700"], ["#14", "Wanjiru Kamau", "Billing", "bg-amber-50 text-amber-800"]].map(([n, name, s, c]) => (
           <li key={n} className="flex items-center justify-between py-2"><span><span className="mr-2 font-mono text-xs text-slate-400">{n}</span>{name}</span><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${c}`}>{s}</span></li>
         ))}
       </ul>

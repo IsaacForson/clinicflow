@@ -134,7 +134,7 @@ export default async function ItemPage({ params, searchParams }: PageProps<"/pha
           )}
           {write && (
             <Card title="Item details">
-              <details><summary className="cursor-pointer text-sm text-teal-800">Edit item</summary><div className="mt-3"><ItemForm item={item} /></div></details>
+              <details><summary className="cursor-pointer text-sm text-brand-800">Edit item</summary><div className="mt-3"><ItemForm item={item} /></div></details>
             </Card>
           )}
         </div>

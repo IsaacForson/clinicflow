@@ -40,7 +40,7 @@ export default async function CarePage() {
               const vs = readingVsTarget(r, plan.targets);
               return (
                 <tr key={plan.id} className="hover:bg-slate-50">
-                  <Td><Link href={`/care/${p.id}`} className="font-medium text-teal-800 hover:underline">{fullName(p)}</Link> <span className="text-xs text-slate-500">{p.patientNo}</span></Td>
+                  <Td><Link href={`/care/${p.id}`} className="font-medium text-brand-800 hover:underline">{fullName(p)}</Link> <span className="text-xs text-slate-500">{p.patientNo}</span></Td>
                   <Td className="capitalize">{plan.condition}</Td>
                   <Td>{plan.nextDueAt ? <span className={overdue ? "font-medium text-red-700" : ""}>{dateOnly(`${plan.nextDueAt}T12:00:00Z`, tz)}{overdue && " · overdue"}</span> : "—"}</Td>
                   <Td>{r ? <>
@@ -60,7 +60,7 @@ export default async function CarePage() {
             {data.due.map(({ s, p }) => (
               <tr key={s.id}>
                 <Td className={s.dueDate < today ? "font-medium text-red-700" : ""}>{dateOnly(`${s.dueDate}T12:00:00Z`, tz)}{s.dueDate < today && " · overdue"}</Td>
-                <Td><Link href={`/care/${p.id}`} className="text-teal-800 hover:underline">{fullName(p)}</Link></Td>
+                <Td><Link href={`/care/${p.id}`} className="text-brand-800 hover:underline">{fullName(p)}</Link></Td>
                 <Td>{s.name}</Td><Td className="capitalize">{s.kind}</Td>
               </tr>
             ))}

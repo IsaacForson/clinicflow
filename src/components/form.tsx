@@ -26,15 +26,15 @@ export function ActionForm({
   return (
     <form ref={ref} action={formAction} className={cx("space-y-3", className)}>
       {children}
-      {state?.error && <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {state?.ok && (state.message || successMessage) && <p role="status" className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{state.message || successMessage}</p>}
+      {state?.error && <p role="alert" className="flex items-start gap-2 rounded-xl bg-rose-500/10 px-3.5 py-2.5 text-sm text-rose-700 ring-1 ring-inset ring-rose-500/20">{state.error}</p>}
+      {state?.ok && (state.message || successMessage) && <p role="status" className="flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3.5 py-2.5 text-sm text-emerald-700 ring-1 ring-inset ring-emerald-500/20">{state.message || successMessage}</p>}
     </form>
   );
 }
 
 export function Submit({ children, variant, className, ...p }: ComponentProps<"button"> & { variant?: BtnVariant }) {
   const { pending } = useFormStatus();
-  return <Button type="submit" variant={variant} disabled={pending || p.disabled} className={className} {...p}>{pending ? "Saving…" : children}</Button>;
+  return <Button type="submit" variant={variant} disabled={pending || p.disabled} className={className} {...p}>{pending ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />Saving…</> : children}</Button>;
 }
 
 /** One-click action button (e.g. status changes) with optional confirm. */

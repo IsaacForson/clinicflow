@@ -50,7 +50,7 @@ export default async function PatientCarePage({ params }: PageProps<"/care/[pati
           <Card title="Trends">
             <div className="space-y-5">
               <TrendChart title="Blood pressure" unit="mmHg" tz={tz} dates={bp.map((r) => r.recordedAt)}
-                series={[{ label: "Systolic", color: "#0f766e", values: bp.map((r) => r.bpSys) }, { label: "Diastolic", color: "#0284c7", values: bp.map((r) => r.bpDia) }]}
+                series={[{ label: "Systolic", color: "#5d47ea", values: bp.map((r) => r.bpSys) }, { label: "Diastolic", color: "#22d3ee", values: bp.map((r) => r.bpDia) }]}
                 targets={[...(tg.bpSys ? [{ label: "sys", value: tg.bpSys }] : []), ...(tg.bpDia ? [{ label: "dia", value: tg.bpDia }] : [])]} />
               <TrendChart title="Blood glucose" unit="mmol/L" tz={tz} dates={sugar.map((r) => r.recordedAt)}
                 series={[{ label: "Glucose", color: "#7c3aed", values: sugar.map((r) => r.glucose) }]}
@@ -112,7 +112,7 @@ export default async function PatientCarePage({ params }: PageProps<"/care/[pati
 
         <div className="space-y-4">
           <Card title="Care plans">
-            {data.plans.length === 0 && <p className="text-sm text-slate-500">Not enrolled. <Link className="text-teal-800 underline" href={`/care/new?patient=${p.id}`}>Enroll</Link></p>}
+            {data.plans.length === 0 && <p className="text-sm text-slate-500">Not enrolled. <Link className="text-brand-800 underline" href={`/care/new?patient=${p.id}`}>Enroll</Link></p>}
             <ul className="space-y-3 text-sm">
               {data.plans.map((pl) => (
                 <li key={pl.id} className="rounded-md border border-slate-200 p-3">

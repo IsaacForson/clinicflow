@@ -45,7 +45,7 @@ export function SignaturePad({ name }: { name: string }) {
       <input type="hidden" name={name} value={value} />
       <div className="flex justify-between text-xs text-slate-500">
         <span>{value ? "Signed" : "Sign above with your finger"}</span>
-        <button type="button" onClick={clear} className="text-teal-800 underline">Clear</button>
+        <button type="button" onClick={clear} className="text-brand-800 underline">Clear</button>
       </div>
     </div>
   );

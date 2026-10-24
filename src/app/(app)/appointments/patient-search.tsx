@@ -28,14 +28,14 @@ export async function PatientSearch({ ctx, q, action, keep = {}, hrefFor }: {
         <ul className="divide-y divide-slate-100 rounded-md ring-1 ring-slate-200">
           {rows.map((p) => (
             <li key={p.id}>
-              <Link href={hrefFor(p.id)} className="flex items-center justify-between gap-3 px-3 py-3 hover:bg-teal-50">
+              <Link href={hrefFor(p.id)} className="flex items-center justify-between gap-3 px-3 py-3 hover:bg-brand-50">
                 <span className="font-medium text-slate-900">{fullName(p)}</span>
                 <span className="text-xs text-slate-500">{[p.patientNo, p.sex, age(p.dob), p.phone].filter(Boolean).join(" · ")}</span>
               </Link>
             </li>
           ))}
         </ul>
-      ) : <p className="text-sm text-slate-500">No patient matches. <Link href="/patients/new" className="text-teal-800 underline">Register a new patient</Link>.</p>)}
+      ) : <p className="text-sm text-slate-500">No patient matches. <Link href="/patients/new" className="text-brand-800 underline">Register a new patient</Link>.</p>)}
     </div>
   );
 }

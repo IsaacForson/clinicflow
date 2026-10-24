@@ -23,7 +23,7 @@ export function LoginForms() {
           <Submit className="w-full">Sign in</Submit>
         </ActionForm>
       ) : <OtpForm />}
-      <p className="mt-4 text-center text-sm text-slate-600">New clinic? <Link href="/signup" className="font-medium text-teal-700">Start a free 14-day trial</Link></p>
+      <p className="mt-4 text-center text-sm text-slate-600">New clinic? <Link href="/signup" className="font-medium text-brand-700">Start a free 14-day trial</Link></p>
     </>
   );
 }

@@ -24,11 +24,11 @@ export default function SignupPage() {
         <Field label="Password" hint="At least 10 characters"><Input name="password" type="password" autoComplete="new-password" minLength={10} required /></Field>
         <label className="flex items-start gap-2 text-sm text-slate-600">
           <input type="checkbox" name="terms" className="mt-1" required />
-          <span>I agree to the <Link href="/terms" className="text-teal-700 underline">terms</Link> and <Link href="/privacy" className="text-teal-700 underline">privacy policy</Link>, including the data processing agreement.</span>
+          <span>I agree to the <Link href="/terms" className="text-brand-700 underline">terms</Link> and <Link href="/privacy" className="text-brand-700 underline">privacy policy</Link>, including the data processing agreement.</span>
         </label>
         <Submit className="w-full">Create clinic account</Submit>
       </ActionForm>
-      <p className="mt-4 text-center text-sm text-slate-600">Already have an account? <Link href="/login" className="font-medium text-teal-700">Sign in</Link></p>
+      <p className="mt-4 text-center text-sm text-slate-600">Already have an account? <Link href="/login" className="font-medium text-brand-700">Sign in</Link></p>
     </>
   );
 }

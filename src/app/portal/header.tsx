@@ -5,7 +5,7 @@ export function ClinicHeader({ tenant, patientName }: { tenant: Tenant; patientN
     <header className="mb-4 flex items-center gap-3 rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200">
       {tenant.logoUrl
         ? <img src={tenant.logoUrl} alt="" className="h-12 w-12 rounded object-contain" />
-        : <span className="grid h-12 w-12 place-items-center rounded-md bg-teal-700 text-lg font-semibold text-white">{tenant.name[0]}</span>}
+        : <span className="grid h-12 w-12 place-items-center rounded-md bg-brand-700 text-lg font-semibold text-white">{tenant.name[0]}</span>}
       <div className="min-w-0">
         <h1 className="truncate text-lg font-semibold text-slate-900">{tenant.name}</h1>
         <p className="text-sm text-slate-500">Hello {patientName}{tenant.phone ? ` · ${tenant.phone}` : ""}</p>

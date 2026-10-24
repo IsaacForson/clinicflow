@@ -64,7 +64,7 @@ export default async function BranchesPage() {
             <Submit>Add branch</Submit>
           </ActionForm>
         ) : (
-          <p className="text-sm text-slate-600">Your plan includes {limit} branch{limit === 1 ? "" : "es"}. Multiple branches with shared patient records are on the <a href="/settings/subscription" className="font-medium text-teal-800 underline">Group plan</a>.</p>
+          <p className="text-sm text-slate-600">Your plan includes {limit} branch{limit === 1 ? "" : "es"}. Multiple branches with shared patient records are on the <a href="/settings/subscription" className="font-medium text-brand-800 underline">Group plan</a>.</p>
         )}
       </Card>
     </div>

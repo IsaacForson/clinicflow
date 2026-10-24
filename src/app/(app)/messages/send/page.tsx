@@ -35,7 +35,7 @@ export default async function SendPage({ searchParams }: PageProps<"/messages/se
         <Card title="Choose a patient" className="max-w-2xl">
           <form className="mb-3"><Input name="q" defaultValue={q} placeholder="Name, patient number or phone…" autoFocus /></form>
           <ul className="divide-y divide-slate-100 text-sm">
-            {matches.map((p) => <li key={p.id} className="py-2"><Link className="font-medium text-teal-800 hover:underline" href={`/messages/send?patient=${p.id}`}>{fullName(p)}</Link> <span className="text-slate-500">{p.patientNo} · {p.phone}</span></li>)}
+            {matches.map((p) => <li key={p.id} className="py-2"><Link className="font-medium text-brand-800 hover:underline" href={`/messages/send?patient=${p.id}`}>{fullName(p)}</Link> <span className="text-slate-500">{p.patientNo} · {p.phone}</span></li>)}
             {q && matches.length === 0 && <li className="py-2 text-slate-500">No patients match.</li>}
           </ul>
         </Card>

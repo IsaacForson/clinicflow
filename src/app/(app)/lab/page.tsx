@@ -41,7 +41,7 @@ export default async function LabPage({ searchParams }: PageProps<"/lab">) {
             <tr key={o.id} className="hover:bg-slate-50">
               <Td>{dateTime(o.createdAt, tz)}</Td>
               <Td>{ageOf(o.createdAt)}</Td>
-              <Td><Link href={`/lab/${o.id}`} className="font-medium text-teal-800 hover:underline">{fullName(p)}</Link> <span className="font-mono text-xs text-slate-500">{p.patientNo}</span></Td>
+              <Td><Link href={`/lab/${o.id}`} className="font-medium text-brand-800 hover:underline">{fullName(p)}</Link> <span className="font-mono text-xs text-slate-500">{p.patientNo}</span></Td>
               <Td>{doctor ?? "—"}</Td>
               <Td className="max-w-xs truncate">{items.filter((i) => i.orderId === o.id).map((i) => i.name).join(", ")}</Td>
               <Td><Badge tone={LAB_TONE[o.status]}>{o.status}</Badge>{o.externalLab && <span className="ml-1 text-xs text-slate-500">→ {o.externalLab}</span>}</Td>

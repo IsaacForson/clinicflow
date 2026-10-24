@@ -53,9 +53,9 @@ export default async function QueuePage({ searchParams }: PageProps<"/queue">) {
             {picked ? (
               <ActionForm action={addToQueueAction} onSuccessHref="/queue" successMessage="Added to the queue.">
                 <input type="hidden" name="patientId" value={picked.id} />
-                <div className="flex items-center justify-between rounded-md bg-teal-50 px-3 py-2">
-                  <span className="font-medium text-teal-900">{fullName(picked)} <span className="text-xs text-teal-700">{picked.patientNo}</span></span>
-                  <Link href="/queue" className="text-sm text-teal-800 underline">Change</Link>
+                <div className="flex items-center justify-between rounded-md bg-brand-50 px-3 py-2">
+                  <span className="font-medium text-brand-900">{fullName(picked)} <span className="text-xs text-brand-700">{picked.patientNo}</span></span>
+                  <Link href="/queue" className="text-sm text-brand-800 underline">Change</Link>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3">
                   <Field label="Practitioner">

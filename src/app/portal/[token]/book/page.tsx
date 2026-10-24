@@ -71,7 +71,7 @@ export default async function BookPage({ params, searchParams }: PageProps<"/por
           </div>
         </Card>
       )}
-      <p className="text-center text-sm"><Link href={base} className="text-teal-800 underline">Back to my portal</Link></p>
+      <p className="text-center text-sm"><Link href={base} className="text-brand-800 underline">Back to my portal</Link></p>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export const metadata = { title: "Appointments" };
 const PX_PER_MIN = 1.6; // 15 min = 24px
 const STEP = 15;
 const BLOCK_TONE: Record<ApptStatus, string> = {
-  scheduled: "bg-sky-50 ring-sky-300 text-sky-950", confirmed: "bg-teal-50 ring-teal-400 text-teal-950", arrived: "bg-amber-50 ring-amber-400 text-amber-950",
+  scheduled: "bg-sky-50 ring-sky-300 text-sky-950", confirmed: "bg-brand-50 ring-brand-400 text-brand-950", arrived: "bg-amber-50 ring-amber-400 text-amber-950",
   completed: "bg-emerald-50 ring-emerald-300 text-emerald-950", cancelled: "bg-slate-50 ring-slate-200 text-slate-400", no_show: "bg-red-50 ring-red-300 text-red-900",
 };
 
@@ -99,7 +99,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps<"/app
           {Array.from({ length: 7 }, (_, i) => addDays(from, i)).map((d) => {
             const items = rows.filter((r) => localDay(tz, r.a.startsAt) === d && r.a.status !== "cancelled");
             return (
-              <section key={d} className={cx("rounded-lg p-2 ring-1", d === today ? "bg-teal-50/50 ring-teal-200" : "bg-white ring-slate-200")}>
+              <section key={d} className={cx("rounded-lg p-2 ring-1", d === today ? "bg-brand-50/50 ring-brand-200" : "bg-white ring-slate-200")}>
                 <h2 className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600">
                   <Link href={qs({ view: "day", date: d })} className="hover:underline">{dateOnly(dayRange(d, tz).start, tz)}</Link>
                   <span>{items.length}</span>
@@ -114,7 +114,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps<"/app
                     </li>
                   ))}
                 </ul>
-                <Link href={`/appointments/new?date=${d}${docFilter ? `&practitioner=${docFilter}` : ""}`} className="mt-1 block text-center text-xs text-teal-700 hover:underline">+ Book</Link>
+                <Link href={`/appointments/new?date=${d}${docFilter ? `&practitioner=${docFilter}` : ""}`} className="mt-1 block text-center text-xs text-brand-700 hover:underline">+ Book</Link>
               </section>
             );
           })}
@@ -127,7 +127,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps<"/app
             {rows.map(({ a, p, service }) => (
               <tr key={a.id} className="hover:bg-slate-50">
                 <Td className="tabular-nums">{timeOnly(a.startsAt, tz)}–{timeOnly(a.endsAt, tz)}</Td>
-                <Td><Link href={`/appointments/${a.id}`} className="font-medium text-teal-800 hover:underline">{fullName(p)}</Link>{a.telehealth && <span className="ml-1"><Badge tone="purple">Video</Badge></span>}</Td>
+                <Td><Link href={`/appointments/${a.id}`} className="font-medium text-brand-800 hover:underline">{fullName(p)}</Link>{a.telehealth && <span className="ml-1"><Badge tone="purple">Video</Badge></span>}</Td>
                 <Td>{a.practitionerId ? docName.get(a.practitionerId) ?? "—" : "—"}</Td>
                 <Td>{service ?? "—"}</Td>
                 <Td><Badge tone={STATUS_TONE[a.status]}>{STATUS_LABEL[a.status]}</Badge></Td>
@@ -161,7 +161,7 @@ function DayGrid({ rows, practitioners, day, tz, hours }: { rows: Row[]; practit
   const nowMin = localDay(tz) === day ? localMinutes(new Date(), tz) : null;
 
   return (
-    <div className="overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
+    <div className="overflow-x-auto cf-card">
       <div className="flex min-w-max">
         <div className="sticky left-0 z-20 w-14 shrink-0 border-r border-slate-200 bg-white">
           <div className="h-10 border-b border-slate-200" />
@@ -180,7 +180,7 @@ function DayGrid({ rows, practitioners, day, tz, hours }: { rows: Row[]; practit
                 {slots.map((m) => (
                   c.id ? (
                     <Link key={m} href={`/appointments/new?practitioner=${c.id}&date=${day}&time=${hhmm(m)}`} aria-label={`Book ${c.label} at ${hhmm(m)}`}
-                      className={cx("absolute inset-x-0 block hover:bg-teal-50", m % 60 === 0 ? "border-t border-slate-200" : "border-t border-slate-100")}
+                      className={cx("absolute inset-x-0 block hover:bg-brand-50", m % 60 === 0 ? "border-t border-slate-200" : "border-t border-slate-100")}
                       style={{ top: (m - win.start) * PX_PER_MIN, height: STEP * PX_PER_MIN }} />
                   ) : <div key={m} className="absolute inset-x-0 border-t border-slate-100" style={{ top: (m - win.start) * PX_PER_MIN }} />
                 ))}

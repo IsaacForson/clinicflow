@@ -64,13 +64,13 @@ export default async function LabOrderPage({ params }: PageProps<"/lab/[id]">) {
                     <Field label={i.documentId ? "Replace attached result" : "Attach result (PDF or image)"} className="flex-1">
                       <input type="file" name="file" accept="image/*,application/pdf" className="block w-full text-sm" />
                     </Field>
-                    {i.documentId && <a href={`/api/files/${i.documentId}`} target="_blank" className="pb-2 text-sm text-teal-800 hover:underline">View attachment</a>}
+                    {i.documentId && <a href={`/api/files/${i.documentId}`} target="_blank" className="pb-2 text-sm text-brand-800 hover:underline">View attachment</a>}
                     <Submit>Save result</Submit>
                   </div>
                 </ActionForm>
               ) : (
                 <Dl items={[["Value", [i.resultValue, i.unit].filter(Boolean).join(" ")], ["Reference range", i.refRange], ["Result", i.resultText],
-                  ["Attachment", i.documentId && <a href={`/api/files/${i.documentId}`} target="_blank" className="text-teal-800 hover:underline">View</a>]]} />
+                  ["Attachment", i.documentId && <a href={`/api/files/${i.documentId}`} target="_blank" className="text-brand-800 hover:underline">View</a>]]} />
               )}
             </Card>
           ))}
@@ -78,7 +78,7 @@ export default async function LabOrderPage({ params }: PageProps<"/lab/[id]">) {
         <div className="space-y-4">
           <Card title="Order">
             <Dl items={[["Status", o.status], ["Notified", o.notifiedAt ? dateTime(o.notifiedAt, tz) : null], ["Notes", o.notes],
-              ["Consultation", o.visitId && <Link className="text-teal-800 hover:underline" href={`/visits/${o.visitId}`}>Open</Link>]]} />
+              ["Consultation", o.visitId && <Link className="text-brand-800 hover:underline" href={`/visits/${o.visitId}`}>Open</Link>]]} />
             {open && (
               <ActionForm action={setExternalLabAction} className="mt-3 space-y-2 border-t border-slate-100 pt-3">
                 <input type="hidden" name="id" value={id} />

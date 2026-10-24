@@ -55,7 +55,7 @@ export default async function AppointmentPage({ params }: PageProps<"/appointmen
         <div className="space-y-4 lg:col-span-2">
           <Card title="Details">
             <Dl items={[
-              ["Patient", <Link key="p" href={`/patients/${p.id}`} className="text-teal-800 hover:underline">{fullName(p)} ({p.patientNo})</Link>],
+              ["Patient", <Link key="p" href={`/patients/${p.id}`} className="text-brand-800 hover:underline">{fullName(p)} ({p.patientNo})</Link>],
               ["Phone", p.phone],
               ["Practitioner", practitionerName(data.doc)],
               ["Service", data.service],
@@ -92,7 +92,7 @@ export default async function AppointmentPage({ params }: PageProps<"/appointmen
           {a.telehealth && (
             <Card title="Video consultation">
               <div className="space-y-3 text-sm">
-                {a.telehealthUrl && <a href={a.telehealthUrl} target="_blank" rel="noreferrer" className="block break-all text-teal-800 underline">{a.telehealthUrl}</a>}
+                {a.telehealthUrl && <a href={a.telehealthUrl} target="_blank" rel="noreferrer" className="block break-all text-brand-800 underline">{a.telehealthUrl}</a>}
                 {inv && (
                   <div className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2">
                     <span>{inv.invoiceNo} · {money(inv.patientPortionMinor, cur)}</span>
@@ -125,7 +125,7 @@ export default async function AppointmentPage({ params }: PageProps<"/appointmen
                 <div key={f.id} className="flex items-center justify-between gap-2">
                   <span className="text-slate-600">Sent {dateTime(f.createdAt, tz, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                   {f.status === "sent" ? <Badge tone={f.expiresAt < new Date() ? "gray" : "blue"}>{f.expiresAt < new Date() ? "Expired" : "Awaiting patient"}</Badge>
-                    : <Link href={`/appointments/intake/${f.id}`} className="text-teal-800 underline">{f.status === "submitted" ? "Review" : "View (applied)"}</Link>}
+                    : <Link href={`/appointments/intake/${f.id}`} className="text-brand-800 underline">{f.status === "submitted" ? "Review" : "View (applied)"}</Link>}
                 </div>
               ))}
               {write && (

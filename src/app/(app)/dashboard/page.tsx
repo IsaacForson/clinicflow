@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           {d.myQueue.map((x) => (
             <li key={x.ticketNo} className="flex items-center justify-between gap-2 py-2">
               <span><span className="mr-2 font-mono text-xs text-slate-500">#{x.ticketNo}</span>
-                <Link href={x.visitId ? `/visits/${x.visitId}` : `/patients/${x.patientId}`} className="font-medium text-teal-800 hover:underline">{x.patient}</Link>
+                <Link href={x.visitId ? `/visits/${x.visitId}` : `/patients/${x.patientId}`} className="font-medium text-brand-800 hover:underline">{x.patient}</Link>
                 {x.priority > 0 && <span className="ml-2"><Badge tone="red">Urgent</Badge></span>}</span>
               <Badge tone={x.status === "with_doctor" ? "teal" : "gray"}>{QUEUE_LABELS[x.status]}</Badge>
             </li>
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
         <p className="mb-2 text-sm text-slate-600"><strong className="text-lg text-slate-900">{money(d.outstanding?.total ?? 0, cur)}</strong> owed by {d.outstanding?.n ?? 0} patient{d.outstanding?.n === 1 ? "" : "s"}</p>
         <Table head={["Patient", "Patient no.", "Balance"]} empty="No outstanding balances.">
           {d.debtors.map((x) => (
-            <tr key={x.id}><Td><Link href={`/patients/${x.id}`} className="font-medium text-teal-800 hover:underline">{x.patient}</Link></Td><Td className="font-mono text-xs">{x.patientNo}</Td><Td className="tabular-nums">{money(x.balance, cur)}</Td></tr>
+            <tr key={x.id}><Td><Link href={`/patients/${x.id}`} className="font-medium text-brand-800 hover:underline">{x.patient}</Link></Td><Td className="font-mono text-xs">{x.patientNo}</Td><Td className="tabular-nums">{money(x.balance, cur)}</Td></tr>
           ))}
         </Table>
       </Card>
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
           {d.appts.slice(0, 10).map((a) => (
             <tr key={a.id}>
               <Td className="tabular-nums">{timeOnly(a.startsAt, tz)}</Td>
-              <Td><Link href={`/patients/${a.patientId}`} className="font-medium text-teal-800 hover:underline">{a.patient}</Link></Td>
+              <Td><Link href={`/patients/${a.patientId}`} className="font-medium text-brand-800 hover:underline">{a.patient}</Link></Td>
               <Td>{a.doctor ?? "Any"}</Td>
               <Td><Badge tone={a.status === "no_show" ? "red" : a.status === "completed" ? "green" : a.status === "arrived" ? "teal" : "gray"}>{a.status.replace("_", " ")}</Badge></Td>
             </tr>
@@ -190,7 +190,7 @@ export default async function DashboardPage() {
     <>
       <PageHeader title={`${greeting}, ${ctx.user.name.split(" ")[0]}`} subtitle={[ctx.tenant.name, ctx.branches.length > 1 ? branchName : null, dateTime(new Date(), tz, { dateStyle: "full" })].filter(Boolean).join(" · ")} />
       {can(role, "settings.manage") && (ctx.access === "read_only" || (trialDays !== null && trialDays <= 14)) && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-teal-50 px-4 py-3 text-sm text-teal-900 ring-1 ring-teal-200">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900 ring-1 ring-brand-200">
           <span>
             {ctx.access === "read_only" ? "Your account is read-only. All your data is still here and exportable."
               : trialDays! > 0 ? `You're on the ${PLANS[ctx.tenant.plan].name} plan trial — ${trialDays} day${trialDays === 1 ? "" : "s"} left. No card needed until you choose a plan.`
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
       {kpis.length > 0 && (
         <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
           {kpis.map(([label, value, href, sub, alert]) => (
-            <Link key={label} href={href} className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200 transition hover:ring-teal-400 focus-visible:outline-2 focus-visible:outline-teal-600">
+            <Link key={label} href={href} className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-400 focus-visible:outline-2 focus-visible:outline-brand-600">
               <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div>
               <div className={cx("mt-1 text-2xl font-semibold tabular-nums", alert ? "text-amber-700" : "text-slate-900")}>{value}</div>
               {sub && <div className="mt-0.5 text-xs text-slate-500">{sub}</div>}
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
 }
 
 function WidgetLink({ href, children }: { href: string; children: ReactNode }) {
-  return <Link href={href} className="text-xs font-medium text-teal-700 hover:text-teal-900 hover:underline">{children} →</Link>;
+  return <Link href={href} className="text-xs font-medium text-brand-700 hover:text-brand-900 hover:underline">{children} →</Link>;
 }
 
 function UnsignedCard({ rows, count, tz, title }: { rows: { id: string; startedAt: string; patient: string; doctor: string | null }[]; count: number; tz: string; title: string }) {
@@ -225,7 +225,7 @@ function UnsignedCard({ rows, count, tz, title }: { rows: { id: string; startedA
       <ul className="divide-y divide-slate-100 text-sm">
         {rows.map((v) => (
           <li key={v.id} className="flex items-center justify-between gap-2 py-2">
-            <Link href={`/visits/${v.id}`} className="font-medium text-teal-800 hover:underline">{v.patient}</Link>
+            <Link href={`/visits/${v.id}`} className="font-medium text-brand-800 hover:underline">{v.patient}</Link>
             <span className="text-xs text-slate-500">{v.doctor ? `${v.doctor} · ` : ""}{dateTime(v.startedAt, tz)}</span>
           </li>
         ))}

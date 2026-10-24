@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "ClinicFlow", statusBarStyle: "default" },
 };
 
-export const viewport: Viewport = { themeColor: "#0f766e", colorScheme: "light" };
+export const viewport: Viewport = { themeColor: "#1f1850", colorScheme: "light" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

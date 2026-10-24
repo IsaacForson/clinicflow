@@ -17,7 +17,7 @@ export default async function ApiKeysPage() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-600">
-        Connect other software to ClinicFlow with the REST API at <code className="rounded bg-slate-100 px-1">/api/v1</code> (<Link href="/api/v1/openapi.json" className="text-teal-800 underline">OpenAPI spec</Link>).
+        Connect other software to ClinicFlow with the REST API at <code className="rounded bg-slate-100 px-1">/api/v1</code> (<Link href="/api/v1/openapi.json" className="text-brand-800 underline">OpenAPI spec</Link>).
         Send <code className="rounded bg-slate-100 px-1">Authorization: Bearer cf_live_…</code>. Limit {RATE_LIMIT} requests per minute per key.
       </p>
       {!enabled && <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">API access is part of the <Link href="/settings/subscription" className="font-medium underline">Group plan</Link>. Existing keys stop working on other plans.</p>}

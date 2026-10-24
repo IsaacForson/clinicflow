@@ -36,7 +36,7 @@ export default async function InboxPage() {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="text-sm font-medium text-slate-900">
-                      {p ? <Link href={`/patients/${p.id}`} className="text-teal-800 hover:underline">{fullName(p)}</Link> : m.to}
+                      {p ? <Link href={`/patients/${p.id}`} className="text-brand-800 hover:underline">{fullName(p)}</Link> : m.to}
                       <span className="ml-2 text-xs font-normal text-slate-500">{m.to} · {m.channel} · {dateTime(m.createdAt, tz)}</span>
                     </div>
                     <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{m.body}</p>
