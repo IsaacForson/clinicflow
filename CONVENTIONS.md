@@ -42,3 +42,8 @@ Clinic operating system for 1–15 practitioner private clinics (Ghana/Nigeria/K
 - Reminders, backups and data export are never paid add-ons. Unpaid accounts become read-only, never locked out of their data.
 - No clinical decision support (no diagnosis/treatment suggestions) — avoids medical-device classification. AI scribe output is a draft the clinician must review and sign; never auto-file.
 - Every patient message records purpose + consent; opt-out wins.
+
+## Two kinds of admin
+- **Clinic admin** (role `admin`): runs a clinic like the owner, except plan/payment (`subscription.manage`), account deletion and clinical note writing/signing. Only owners can create, change or deactivate owners. Clinic console: `/clinic-admin` (`admin.console`).
+- **ClinicFlow team ("Control")** at `/admin`: separate `platform_admins` table, `cf_admin` cookie, mandatory TOTP, roles `super_admin` / `finance` / `support` (capabilities in `src/lib/platform-auth.ts`). Uses `adminDb()` across clinics; every action is written to append-only `audit.platform_log` via `platformLog`. Create the first admin with `npx tsx scripts/create-admin.mts --email you@x --name "You"`.
+- Support view = a 1-hour read-only clinic session (`sessions.impersonatedBy`): `requireWrite` and account/export actions refuse it, and the clinic's own audit log records it. Suspension (`tenants.suspendedAt`) blocks sign-in for abuse cases only; unpaid accounts use read-only status instead.
