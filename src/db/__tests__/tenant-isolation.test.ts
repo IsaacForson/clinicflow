@@ -5,7 +5,7 @@ import { adminDb, withTenant } from "@/db";
 import * as schema from "@/db/schema";
 
 // A user of tenant A must never read or write tenant B's rows, for every tenant-scoped table.
-const tenantTables = Object.values(schema).filter(
+const tenantTables = (Object.values(schema) as unknown[]).filter(
   (v): v is PgTable => v instanceof PgTable && "tenantId" in getTableColumns(v),
 );
 
