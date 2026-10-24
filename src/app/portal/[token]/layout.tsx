@@ -7,9 +7,9 @@ export const metadata = { title: "Patient portal", robots: { index: false, follo
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <main className="mx-auto max-w-lg px-4 py-5">
-        <Suspense fallback={<div className="animate-pulse space-y-3"><div className="h-16 rounded-lg bg-slate-200" /><div className="h-40 rounded-lg bg-slate-200" /></div>}>
+    <div className="backdrop-os min-h-screen text-fg">
+      <main className="mx-auto max-w-lg px-4 pb-12 pt-5 sm:pt-10">
+        <Suspense fallback={<div className="space-y-4" aria-busy="true"><div className="skeleton h-36 rounded-[1.25rem]" /><div className="skeleton h-56 rounded-[1.25rem]" /><div className="skeleton h-32 rounded-[1.25rem]" /></div>}>
           {children}
         </Suspense>
       </main>

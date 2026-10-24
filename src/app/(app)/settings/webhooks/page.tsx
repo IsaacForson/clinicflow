@@ -1,18 +1,25 @@
 import { desc, eq } from "drizzle-orm";
+import { Activity, Plus, ShieldCheck, Webhook } from "lucide-react";
 import { ActionButton, ActionForm, Submit } from "@/components/form";
-import { Badge, Card, Field, Input, Table, Td } from "@/components/ui";
+import { Badge, Check, EmptyState, Field, Input, Panel, StatusDot, Table, Td } from "@/components/ui";
 import { webhookDeliveries, webhooks } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { WEBHOOK_EVENTS } from "@/lib/events";
 import { dateTime } from "@/lib/format";
+import { SecretActionForm } from "../secret-form";
 import { createWebhookAction, deleteWebhookAction, testWebhookAction, updateWebhookAction } from "./actions";
 
 function EventBoxes({ selected }: { selected?: string[] }) {
   return (
     <fieldset>
-      <legend className="text-sm font-medium text-slate-700">Events</legend>
-      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        {WEBHOOK_EVENTS.map((e) => <label key={e} className="flex items-center gap-1"><input type="checkbox" name="events" value={e} defaultChecked={selected?.includes(e)} /> <code>{e}</code></label>)}
+      <legend className="mb-2 text-xs font-medium tracking-wide text-muted">Events</legend>
+      <div className="flex flex-wrap gap-2">
+        {WEBHOOK_EVENTS.map((e) => (
+          <label key={e} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-line bg-surface px-2.5 py-1.5 transition hover:border-line-strong has-[:checked]:border-accent/40 has-[:checked]:bg-accent/10">
+            <input type="checkbox" name="events" value={e} defaultChecked={selected?.includes(e)} className="h-3.5 w-3.5 accent-[var(--accent)]" />
+            <code className="font-mono text-xs text-fg">{e}</code>
+          </label>
+        ))}
       </div>
     </fieldset>
   );
@@ -26,43 +33,56 @@ export default async function WebhooksPage() {
       .orderBy(desc(webhookDeliveries.createdAt)).limit(30),
   ] as const);
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-slate-600">ClinicFlow POSTs JSON to your URL when these events happen. Verify the <code className="rounded bg-slate-100 px-1">X-ClinicFlow-Signature</code> header (HMAC-SHA256 of the body with your signing secret).</p>
+    <>
+      <div className="glass flex flex-wrap items-center gap-4 p-5 animate-rise">
+        <span className="grid h-11 w-11 place-items-center rounded-2xl border border-accent/25 bg-accent/15 text-accent" aria-hidden><ShieldCheck className="h-5 w-5" /></span>
+        <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted">ClinicFlow POSTs JSON to your URL when these events happen. Verify the <code className="rounded-md border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-accent-2">X-ClinicFlow-Signature</code> header (HMAC-SHA256 of the body with your signing secret).</p>
+      </div>
+
+      {hooks.length === 0 && <EmptyState icon={<Webhook />} title="No webhooks yet">Add an endpoint below to receive appointment, invoice and patient events in real time.</EmptyState>}
       {hooks.map((h) => (
-        <Card key={h.id} title={<>{h.url} {!h.active && <Badge>Paused</Badge>}</>} actions={<>
-          <ActionButton action={testWebhookAction} fields={{ id: h.id }}>Send test</ActionButton>
-          <ActionButton action={deleteWebhookAction} fields={{ id: h.id }} variant="danger" confirm="Delete this webhook?">Delete</ActionButton>
-        </>}>
-          <ActionForm action={updateWebhookAction}>
+        <Panel key={h.id} icon={<Webhook />} title={<span className="font-mono text-sm">{h.url}</span>}
+          eyebrow={<span className="inline-flex items-center gap-1.5"><StatusDot tone={h.active ? "green" : "gray"} pulse={h.active} />{h.active ? `Live · ${h.events.length} events` : "Paused"}</span>}
+          actions={<>
+            <ActionButton action={testWebhookAction} fields={{ id: h.id }}>Send test</ActionButton>
+            <ActionButton action={deleteWebhookAction} fields={{ id: h.id }} variant="danger" confirm="Delete this webhook?">Delete</ActionButton>
+          </>}>
+          <ActionForm action={updateWebhookAction} className="space-y-4">
             <input type="hidden" name="id" value={h.id} />
-            <Field label="URL"><Input name="url" type="url" defaultValue={h.url} required /></Field>
+            <Field label="URL"><Input name="url" type="url" defaultValue={h.url} required className="font-mono" /></Field>
             <EventBoxes selected={h.events} />
-            <label className="flex items-center gap-1.5 text-sm"><input type="checkbox" name="active" defaultChecked={h.active} /> Active</label>
-            <Submit variant="secondary">Save</Submit>
+            <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
+              <Check name="active" defaultChecked={h.active} label="Active" />
+              <Submit variant="secondary">Save</Submit>
+            </div>
           </ActionForm>
-        </Card>
+        </Panel>
       ))}
-      <Card title="Add webhook">
-        <ActionForm action={createWebhookAction} resetOnSuccess>
-          <Field label="URL"><Input name="url" type="url" required placeholder="https://example.com/clinicflow" /></Field>
+
+      <Panel title="Add a webhook" eyebrow="New endpoint" icon={<Plus />} glow>
+        <SecretActionForm action={createWebhookAction} resetOnSuccess>
+          <Field label="URL"><Input name="url" type="url" required placeholder="https://example.com/clinicflow" className="font-mono" /></Field>
           <EventBoxes />
-          <Submit>Add webhook</Submit>
-        </ActionForm>
-      </Card>
-      <Card title="Recent deliveries">
-        <Table head={["Time", "Event", "URL", "Status", "Response", "Attempts"]} empty="No deliveries yet.">
-          {deliveries.map(({ d, url }) => (
-            <tr key={d.id}>
-              <Td>{dateTime(d.createdAt, ctx.tenant.timezone)}</Td>
-              <Td><code>{d.event}</code></Td>
-              <Td className="max-w-xs truncate">{url}</Td>
-              <Td><Badge tone={d.status === "delivered" || d.status === "done" ? "green" : d.status === "failed" ? "red" : "gray"}>{d.status}</Badge></Td>
-              <Td>{d.responseCode}</Td>
-              <Td>{d.attempts}</Td>
-            </tr>
-          ))}
-        </Table>
-      </Card>
-    </div>
+          <div className="flex justify-end"><Submit>Add webhook</Submit></div>
+        </SecretActionForm>
+      </Panel>
+
+      <Panel title="Recent deliveries" eyebrow="Last 30" icon={<Activity />}>
+        {deliveries.length === 0 ? <EmptyState compact icon={<Activity />} title="No deliveries yet">Use “Send test” on a webhook to check your endpoint.</EmptyState> : (
+          <Table head={["Time", "Event", "URL", "Status", "Response", "Attempts"]}>
+            {deliveries.map(({ d, url }) => (
+              <tr key={d.id}>
+                <Td className="text-muted tabular-nums">{dateTime(d.createdAt, ctx.tenant.timezone)}</Td>
+                <Td><code className="font-mono text-xs">{d.event}</code></Td>
+                <Td className="max-w-xs truncate font-mono text-xs text-muted">{url}</Td>
+                <Td><Badge tone={d.status === "delivered" || d.status === "done" ? "green" : d.status === "failed" ? "red" : "gray"}>{d.status}</Badge></Td>
+                <Td className="font-mono text-xs tabular-nums">{d.responseCode}</Td>
+                <Td className="tabular-nums">{d.attempts}</Td>
+              </tr>
+            ))}
+          </Table>
+        )}
+      </Panel>
+    </>
   );
 }

@@ -1,11 +1,12 @@
 import { and, asc, desc, eq, gte, lt } from "drizzle-orm";
-import Link from "next/link";
-import { Button, Card, Field, Input, LinkButton, Select, Table, Td } from "@/components/ui";
+import { Filter, ScrollText, SearchX } from "lucide-react";
+import { A, Avatar, Badge, Button, Callout, Field, Input, LinkButton, Panel, Select, Table, Td, type Tone } from "@/components/ui";
 import { auditLog, patients, users } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { dateTime, dayRange, fullName } from "@/lib/format";
 
 const PER_PAGE = 50;
+const ACTION_TONE: Record<string, Tone> = { view: "gray", create: "green", update: "blue", delete: "red", void: "red", sign: "purple", export: "yellow", download: "yellow", login: "teal", print: "gray", send: "blue", merge: "purple" };
 const day = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");
 
 export default async function AuditPage({ searchParams }: PageProps<"/settings/audit">) {
@@ -33,39 +34,42 @@ export default async function AuditPage({ searchParams }: PageProps<"/settings/a
   });
   const qs = (page: number) => "?" + new URLSearchParams({ ...Object.fromEntries(Object.entries(f).filter(([, v]) => v)), page: String(page) });
 
+  const filtered = Object.values(f).some(Boolean);
   return (
-    <Card title="Audit log">
-      <form className="mb-4 grid items-end gap-2 sm:grid-cols-7">
+    <>
+      <form className="glass grid items-end gap-3 p-4 animate-rise sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
         <Field label="Staff">
           <Select name="user" defaultValue={f.user}><option value="">Anyone</option>{staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select>
         </Field>
         <Field label="Action"><Input name="action" defaultValue={f.action} placeholder="view, update…" list="audit-actions" /></Field>
         <Field label="Record type"><Input name="entity" defaultValue={f.entity} placeholder="patient, invoice…" /></Field>
-        <Field label="Patient no."><Input name="patient" defaultValue={f.patient} placeholder="P-000001" /></Field>
+        <Field label="Patient no."><Input name="patient" defaultValue={f.patient} placeholder="P-000001" className="font-mono" /></Field>
         <Field label="From"><Input name="from" type="date" defaultValue={f.from} /></Field>
         <Field label="To"><Input name="to" type="date" defaultValue={f.to} /></Field>
-        <div className="flex gap-2"><Button type="submit">Filter</Button><LinkButton href="/settings/audit" variant="ghost">Clear</LinkButton></div>
+        <div className="flex gap-2"><Button type="submit"><Filter className="h-4 w-4" aria-hidden /> Filter</Button>{filtered && <LinkButton href="/settings/audit" variant="ghost">Clear</LinkButton>}</div>
         <datalist id="audit-actions">{["view", "create", "update", "delete", "sign", "export", "download", "login", "print", "send", "merge", "void"].map((a) => <option key={a} value={a} />)}</datalist>
       </form>
-      {f.patient && !patientMatch && <p className="mb-2 text-sm text-amber-700">No patient with number {f.patient}.</p>}
-      <Table head={["When", "Who", "Action", "Record", "Patient", "Details", "IP"]} empty="No matching entries.">
-        {rows.slice(0, PER_PAGE).map(({ a, userName, p }) => (
-          <tr key={a.id}>
-            <Td>{dateTime(a.at, tz, { dateStyle: "medium", timeStyle: "medium" })}</Td>
-            <Td>{userName ?? (a.userId ? "Unknown" : (a.details as { apiKeyId?: string } | null)?.apiKeyId ? "API key" : "System")}</Td>
-            <Td>{a.action}</Td>
-            <Td>{a.entity}{a.entityId && <span className="ml-1 font-mono text-xs text-slate-400">{a.entityId.slice(0, 8)}</span>}</Td>
-            <Td>{p?.patientNo && <Link href={`/patients/${a.patientId}`} className="text-brand-800 hover:underline">{fullName(p)} ({p.patientNo})</Link>}</Td>
-            <Td className="max-w-xs truncate font-mono text-xs" title={a.details ? JSON.stringify(a.details) : ""}>{a.details ? JSON.stringify(a.details) : ""}</Td>
-            <Td className="text-xs">{a.ip}</Td>
-          </tr>
-        ))}
-      </Table>
-      <div className="mt-3 flex justify-between text-sm">
-        {pageNo > 1 ? <Link href={qs(pageNo - 1)} className="text-brand-800 hover:underline">← Newer</Link> : <span />}
-        <span className="text-slate-500">Page {pageNo}</span>
-        {rows.length > PER_PAGE ? <Link href={qs(pageNo + 1)} className="text-brand-800 hover:underline">Older →</Link> : <span />}
-      </div>
-    </Card>
+      {f.patient && !patientMatch && <Callout tone="yellow" icon={<SearchX />}>No patient with number {f.patient}.</Callout>}
+      <Panel title="Activity" eyebrow={`Page ${pageNo}${filtered ? " · filtered" : ""}`} icon={<ScrollText />}>
+        <Table head={["When", "Who", "Action", "Record", "Patient", "Details", "IP"]} empty="No matching entries.">
+          {rows.slice(0, PER_PAGE).map(({ a, userName, p }) => (
+            <tr key={a.id} className="text-[13px]">
+              <Td className="py-2.5 font-mono text-xs text-muted tabular-nums">{dateTime(a.at, tz, { dateStyle: "medium", timeStyle: "medium" })}</Td>
+              <Td className="py-2.5">{userName ? <span className="inline-flex items-center gap-2"><Avatar name={userName} size="sm" />{userName}</span> : <span className="text-muted">{a.userId ? "Unknown" : (a.details as { apiKeyId?: string } | null)?.apiKeyId ? "API key" : "System"}</span>}</Td>
+              <Td className="py-2.5"><Badge tone={ACTION_TONE[a.action] ?? "gray"}>{a.action}</Badge></Td>
+              <Td className="py-2.5">{a.entity}{a.entityId && <span className="ml-1.5 font-mono text-xs text-subtle">{a.entityId.slice(0, 8)}</span>}</Td>
+              <Td className="py-2.5">{p?.patientNo && <A href={`/patients/${a.patientId}`}>{fullName(p)} <span className="font-mono text-xs text-muted">{p.patientNo}</span></A>}</Td>
+              <Td className="max-w-xs truncate py-2.5 font-mono text-xs text-muted" title={a.details ? JSON.stringify(a.details) : ""}>{a.details ? JSON.stringify(a.details) : ""}</Td>
+              <Td className="py-2.5 font-mono text-xs text-subtle">{a.ip}</Td>
+            </tr>
+          ))}
+        </Table>
+        <div className="mt-4 flex items-center justify-between border-t border-line pt-4 text-sm">
+          {pageNo > 1 ? <A href={qs(pageNo - 1)}>← Newer</A> : <span />}
+          <span className="text-subtle tabular-nums">Page {pageNo}</span>
+          {rows.length > PER_PAGE ? <A href={qs(pageNo + 1)}>Older →</A> : <span />}
+        </div>
+      </Panel>
+    </>
   );
 }

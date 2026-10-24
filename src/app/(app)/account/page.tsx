@@ -1,7 +1,8 @@
 import { desc, eq } from "drizzle-orm";
 import QRCode from "qrcode";
 import { ActionForm, Submit } from "@/components/form";
-import { Badge, Card, Field, Input, PageHeader, Table, Td } from "@/components/ui";
+import { CircleUserRound, Fingerprint, LockKeyhole, Monitor, MonitorSmartphone, QrCode, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { Avatar, Badge, EmptyState, Field, IconTile, Input, ListRow, PageHeader, Panel } from "@/components/ui";
 import { adminDb } from "@/db";
 import { sessions } from "@/db/schema";
 import { requireCtx } from "@/lib/auth";
@@ -20,61 +21,117 @@ export default async function AccountPage() {
   const mySessions = await adminDb().select().from(sessions).where(eq(sessions.userId, u.id)).orderBy(desc(sessions.lastSeenAt));
   const pendingSecret = !u.totpEnabled && u.totpSecret ? u.totpSecret : null;
   const qr = pendingSecret ? `data:image/svg+xml;base64,${Buffer.from(await QRCode.toString(totpUri(pendingSecret, u.email ?? u.phone ?? u.name), { type: "svg", margin: 1 })).toString("base64")}` : null;
+  const fullNameStr = [u.title, u.name].filter(Boolean).join(" ");
+  const step = (n: number, title: string, body: React.ReactNode, done?: boolean) => (
+    <li className="flex gap-3">
+      <span className={done ? "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-aurora text-xs font-semibold text-on-accent shadow-glow" : "grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line-strong bg-surface-2 text-xs font-semibold text-muted"}>{n}</span>
+      <div className="min-w-0 flex-1 pt-0.5"><div className="text-sm font-medium text-fg">{title}</div><div className="mt-1 text-sm text-muted">{body}</div></div>
+    </li>
+  );
   return (
     <>
-      <PageHeader title="My account" subtitle={`${ROLE_LABELS[u.role]} · ${ctx.tenant.name}`} />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Profile">
-          <ActionForm action={updateMyProfileAction}>
+      <PageHeader icon={<CircleUserRound />} eyebrow="Personal" title="My account" subtitle={`${ROLE_LABELS[u.role]} · ${ctx.tenant.name}`} />
+
+      <section className="glass relative mb-6 overflow-hidden p-6 animate-rise">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-aurora opacity-20 blur-3xl" aria-hidden />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <Avatar name={u.name} size="lg" />
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-xl font-semibold tracking-tight text-fg">{fullNameStr}</h2>
+            <p className="truncate text-sm text-muted">{u.email ?? u.phone}</p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge tone="purple">{ROLE_LABELS[u.role]}</Badge>
+            <Badge tone={u.totpEnabled ? "green" : "yellow"}>{u.totpEnabled ? "2FA on" : "2FA off"}</Badge>
+            <Badge tone="teal">{mySessions.length} device{mySessions.length === 1 ? "" : "s"}</Badge>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Panel title="Profile" eyebrow="Your details" icon={<UserRound />}>
+          <ActionForm action={updateMyProfileAction} className="space-y-4">
             <Field label="Name"><Input name="name" defaultValue={u.name} required /></Field>
-            <Field label="Email"><Input name="email" type="email" defaultValue={u.email ?? ""} /></Field>
-            <Field label="Phone"><Input name="phone" type="tel" defaultValue={u.phone ?? ""} /></Field>
-            <Submit>Save</Submit>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Email"><Input name="email" type="email" defaultValue={u.email ?? ""} /></Field>
+              <Field label="Phone"><Input name="phone" type="tel" defaultValue={u.phone ?? ""} /></Field>
+            </div>
+            <div className="flex justify-end"><Submit>Save profile</Submit></div>
           </ActionForm>
-        </Card>
-        <Card title="Change password">
-          <ActionForm action={changePasswordAction} resetOnSuccess>
+        </Panel>
+
+        <Panel title="Password" eyebrow="Sign-in" icon={<LockKeyhole />}>
+          <ActionForm action={changePasswordAction} resetOnSuccess className="space-y-4">
             <Field label="Current password"><Input name="current" type="password" autoComplete="current-password" required /></Field>
-            <Field label="New password" hint="At least 8 characters"><Input name="next" type="password" autoComplete="new-password" minLength={8} required /></Field>
-            <Field label="Confirm new password"><Input name="confirm" type="password" autoComplete="new-password" required /></Field>
-            <Submit>Change password</Submit>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="New password" hint="At least 8 characters"><Input name="next" type="password" autoComplete="new-password" minLength={8} required /></Field>
+              <Field label="Confirm new password"><Input name="confirm" type="password" autoComplete="new-password" required /></Field>
+            </div>
+            <div className="flex justify-end"><Submit variant="secondary">Change password</Submit></div>
           </ActionForm>
-        </Card>
-        <Card title={<>Two-factor authentication {u.totpEnabled ? <Badge tone="green">On</Badge> : <Badge>Off</Badge>}</>}>
+        </Panel>
+
+        <Panel title="Two-factor authentication" eyebrow="Extra protection" icon={<Fingerprint />} glow={!!pendingSecret}
+          actions={u.totpEnabled ? <Badge tone="green" pulse>On</Badge> : <Badge>Off</Badge>}>
           {u.totpEnabled ? (
-            <ActionForm action={disableTotpAction} className="max-w-xs">
-              <p className="text-sm text-slate-600">You enter a code from your authenticator app when signing in.</p>
-              <Field label="Current 6-digit code to turn off"><Input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required /></Field>
+            <ActionForm action={disableTotpAction} className="space-y-4">
+              <div className="flex items-center gap-3 rounded-xl border border-ok/25 bg-ok/10 px-4 py-3 text-sm text-fg">
+                <ShieldCheck className="h-5 w-5 shrink-0 text-ok" aria-hidden />You enter a code from your authenticator app when signing in.
+              </div>
+              <Field label="Current 6-digit code to turn off"><Input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required className="max-w-xs font-mono tracking-[0.4em]" /></Field>
               <Submit variant="danger">Turn off</Submit>
             </ActionForm>
           ) : pendingSecret ? (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-600">Scan this with Google Authenticator, Microsoft Authenticator or Authy, then enter the code it shows.</p>
-              {qr && <img src={qr} alt="QR code for your authenticator app" className="h-44 w-44 rounded ring-1 ring-slate-200" />}
-              <p className="text-xs text-slate-500">Can&apos;t scan? Enter this key: <code className="select-all break-all rounded bg-slate-100 px-1 font-mono">{pendingSecret}</code></p>
-              <ActionForm action={confirmTotpAction} className="max-w-xs">
-                <Field label="6-digit code"><Input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required autoFocus /></Field>
-                <Submit>Turn on</Submit>
-              </ActionForm>
-            </div>
+            <ol className="space-y-5">
+              {step(1, "Scan the code", "Use Google Authenticator, Microsoft Authenticator or Authy.", true)}
+              <li className="flex justify-center">
+                <div className="ring-aurora relative rounded-3xl bg-surface-2 p-3 shadow-glow">
+                  <div className="pointer-events-none absolute -inset-6 rounded-full bg-aurora opacity-25 blur-2xl" aria-hidden />
+                  {qr && <img src={qr} alt="QR code for your authenticator app" className="relative h-44 w-44 rounded-2xl bg-solid p-2" />}
+                </div>
+              </li>
+              {step(2, "Can't scan?", <>Enter this key: <code className="select-all break-all rounded-md border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-accent-2">{pendingSecret}</code></>)}
+              <li>
+                {step(3, "Confirm the 6-digit code", "Type the code your app shows right now.")}
+                <ActionForm action={confirmTotpAction} className="mt-3 space-y-3 pl-10">
+                  <Input name="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required autoFocus aria-label="6-digit code" placeholder="123456" className="h-12 max-w-xs text-center font-mono text-lg tracking-[0.4em]" />
+                  <Submit>Turn on two-factor</Submit>
+                </ActionForm>
+              </li>
+            </ol>
           ) : (
-            <ActionForm action={startTotpAction}>
-              <p className="text-sm text-slate-600">Protect patient records with a code from your phone in addition to your password.</p>
+            <ActionForm action={startTotpAction} className="space-y-4">
+              <div className="flex items-start gap-3 rounded-xl border border-line bg-surface px-4 py-3">
+                <QrCode className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
+                <p className="text-sm text-muted">Protect patient records with a code from your phone in addition to your password. Takes about a minute.</p>
+              </div>
               <Submit>Set up two-factor</Submit>
             </ActionForm>
           )}
-        </Card>
-        <Card title="Signed-in devices" actions={mySessions.length > 1 && <ActionForm action={signOutOthersAction}><Submit variant="secondary" className="px-2 py-1 text-xs">Sign out other devices</Submit></ActionForm>}>
-          <Table head={["Device", "IP", "Last active"]}>
-            {mySessions.map((s) => (
-              <tr key={s.id}>
-                <Td>{device(s.userAgent)} {s.id === ctx.sessionId && <Badge tone="teal">This device</Badge>}</Td>
-                <Td>{s.ip}</Td>
-                <Td>{dateTime(s.lastSeenAt, tz)}</Td>
-              </tr>
-            ))}
-          </Table>
-        </Card>
+        </Panel>
+
+        <Panel title="Signed-in devices" eyebrow={`${mySessions.length} active`} icon={<MonitorSmartphone />}
+          actions={mySessions.length > 1 && <ActionForm action={signOutOthersAction}><Submit variant="secondary" size="sm">Sign out others</Submit></ActionForm>}>
+          {mySessions.length === 0 ? <EmptyState compact icon={<MonitorSmartphone />} title="No active sessions" /> : (
+            <ul className="-mx-3 space-y-1">
+              {mySessions.map((s) => {
+                const mobile = /Android|iPhone|iPad/.test(s.userAgent ?? "");
+                return (
+                  <li key={s.id}>
+                    <ListRow
+                      leading={<IconTile tone={s.id === ctx.sessionId ? "teal" : "gray"}>{mobile ? <Smartphone /> : <Monitor />}</IconTile>}
+                      title={device(s.userAgent)}
+                      meta={<span className="font-mono">{s.ip ?? "—"}</span>}
+                      trailing={<div className="text-right">
+                        {s.id === ctx.sessionId ? <Badge tone="teal" pulse>This device</Badge> : null}
+                        <div className="mt-1 text-xs text-subtle tabular-nums">{dateTime(s.lastSeenAt, tz)}</div>
+                      </div>} />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
       </div>
     </>
   );
