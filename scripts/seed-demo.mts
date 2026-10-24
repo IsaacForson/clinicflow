@@ -32,7 +32,7 @@ const tz = tenant.timezone;
 const hash = await hashPassword(PASSWORD);
 
 const staff = await db.insert(s.users).values([
-  { tenantId: T, name: "Dr. Kofi Boateng", email: "doctor@demo.test", phone: "+233200000002", role: "doctor", isPractitioner: true, title: "Dr.", licenseNo: "MDC/RN/5678", passwordHash: hash, scribeEnabled: true },
+  { tenantId: T, name: "Kofi Boateng", email: "doctor@demo.test", phone: "+233200000002", role: "doctor", isPractitioner: true, title: "Dr.", licenseNo: "MDC/RN/5678", passwordHash: hash, scribeEnabled: true },
   { tenantId: T, name: "Nurse Efua Owusu", email: "nurse@demo.test", phone: "+233200000003", role: "nurse", passwordHash: hash },
   { tenantId: T, name: "Abena Front Desk", email: "desk@demo.test", phone: "+233200000004", role: "front_desk", passwordHash: hash },
   { tenantId: T, name: "Yaw Cashier", email: "cashier@demo.test", phone: "+233200000005", role: "cashier", passwordHash: hash },

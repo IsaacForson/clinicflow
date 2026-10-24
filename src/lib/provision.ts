@@ -35,6 +35,10 @@ export function slugify(s: string) {
 export async function provisionTenant(o: { clinicName: string; country: string; ownerName: string; email?: string; phone?: string; password: string }) {
   const c = COUNTRIES[o.country] ?? COUNTRIES.GH;
   const passwordHash = await hashPassword(o.password);
+  // Keep the title separate from the name so documents don't print "Dr. Dr. Ama".
+  const m = /^(dr|prof|nurse|mr|mrs|ms)\.?\s+/i.exec(o.ownerName.trim());
+  const ownerName = m ? o.ownerName.trim().slice(m[0].length) : o.ownerName.trim();
+  const title = m ? m[1][0].toUpperCase() + m[1].slice(1).toLowerCase() + "." : null;
   return adminDb().transaction(async (t) => {
     const [tenant] = await t.insert(tenants).values({
       name: o.clinicName, slug: `${slugify(o.clinicName)}-${Math.random().toString(36).slice(2, 7)}`,
@@ -43,8 +47,8 @@ export async function provisionTenant(o: { clinicName: string; country: string; 
     }).returning();
     await t.insert(branches).values({ tenantId: tenant.id, name: "Main branch", isMain: true, phone: o.phone });
     const [owner] = await t.insert(users).values({
-      tenantId: tenant.id, name: o.ownerName, email: o.email?.toLowerCase() || null, phone: o.phone || null,
-      passwordHash, role: "owner", isPractitioner: true, title: "Dr.",
+      tenantId: tenant.id, name: ownerName, email: o.email?.toLowerCase() || null, phone: o.phone || null,
+      passwordHash, role: "owner", isPractitioner: true, title,
     }).returning();
     const svc = await t.insert(services).values(STARTER_SERVICES.map(([name, category, priceMinor, durationMin]) => ({ tenantId: tenant.id, name, category, priceMinor, durationMin }))).returning();
     await t.insert(labTests).values(svc.filter((s) => s.category === "lab" || s.category === "imaging").map((s) => ({ tenantId: tenant.id, name: s.name, kind: s.category === "imaging" ? "imaging" : "lab", serviceId: s.id })));
