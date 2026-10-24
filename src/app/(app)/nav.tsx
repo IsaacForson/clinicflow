@@ -39,7 +39,6 @@ export function Nav({ items, footer, clinic }: { items: NavItem[]; footer: React
   const [open, setOpen] = useState(false);
   const collapsed = useRailCollapsed();
   useEffect(() => { document.documentElement.dataset.rail = collapsed ? "collapsed" : "open"; }, [collapsed]);
-  let lastGroup: string | undefined;
 
   return (
     <>
@@ -65,11 +64,10 @@ export function Nav({ items, footer, clinic }: { items: NavItem[]; footer: React
         </div>
 
         <nav className="relative flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden px-3 pb-3" aria-label="Main">
-          {items.map((i) => {
+          {items.map((i, idx) => {
             const Icon = ICONS[i.icon];
             const active = path === i.href || path.startsWith(i.href + "/");
-            const label = i.group && i.group !== lastGroup ? i.group : null;
-            lastGroup = i.group;
+            const label = i.group && i.group !== items[idx - 1]?.group ? i.group : null;
             return (
               <div key={i.href}>
                 {label && (collapsed
