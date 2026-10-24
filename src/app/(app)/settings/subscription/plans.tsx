@@ -5,7 +5,7 @@ import { ActionForm, Submit } from "@/components/form";
 import { Badge, cx, Input } from "@/components/ui";
 
 export type PlanCard = {
-  key: string; name: string; monthly: number; annual: number; practitioners: number; users: number; branches: number; reminders: number;
+  key: string; name: string; monthlyLabel: string; annualLabel: string; annualPerMonthLabel: string; practitioners: number; users: number; branches: number; reminders: number;
   features: string[]; current: boolean; recommended: boolean; seats: number; cta: string;
 };
 type Action = Parameters<typeof ActionForm>[0]["action"];
@@ -38,10 +38,10 @@ export function PlanGrid({ plans, action, initialCycle }: { plans: PlanCard[]; a
               </div>
             </div>
             <div className="relative mt-4 flex items-baseline gap-1">
-              <span className="text-4xl font-semibold tracking-[-0.03em] text-fg tabular-nums">${cycle === "annual" ? p.annual : p.monthly}</span>
+              <span className="text-4xl font-semibold tracking-[-0.03em] text-fg tabular-nums">{cycle === "annual" ? p.annualLabel : p.monthlyLabel}</span>
               <span className="text-sm text-muted">/{cycle === "annual" ? "year" : "month"}</span>
             </div>
-            <p className="relative mt-1 text-xs text-subtle">{cycle === "annual" ? `≈ $${Math.round(p.annual / 12)}/month, billed yearly` : `or $${p.annual}/year — 2 months free`}</p>
+            <p className="relative mt-1 text-xs text-subtle">{cycle === "annual" ? `≈ ${p.annualPerMonthLabel}/month, billed yearly` : `or ${p.annualLabel}/year — 2 months free`}</p>
 
             <ul className="relative my-6 space-y-2.5 text-sm text-muted">
               {[

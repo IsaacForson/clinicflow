@@ -1,22 +1,38 @@
 import "server-only";
 import { sql, type SQL } from "drizzle-orm";
 import { adminDb } from "@/db";
-import { PLANS, SCRIBE_PRICE_USD, type PlanKey } from "./plans";
+import { fxRates, priceBook } from "@/db/schema";
+import { clinicMrrMinor, convertMinor, DEFAULT_PER_USD, priceListFor, type PriceList, type Rates } from "./money";
+import { PLANS, type PlanKey } from "./plans";
 
 type R = Record<string, unknown>;
 const q = async <T extends R>(s: SQL) => (await adminDb().execute(s)) as unknown as T[];
 
-/** Monthly recurring revenue in USD for one clinic (annual billing = 10 months / 12; trials and unpaid count 0). */
-export function clinicMrrUsd(t: { plan: PlanKey; planStatus: string; billingCycle: string; scribeSeats: number; suspendedAt?: Date | string | null }) {
-  if (t.planStatus !== "active" || t.suspendedAt) return 0;
-  const base = PLANS[t.plan].priceUsd + t.scribeSeats * SCRIBE_PRICE_USD;
-  return t.billingCycle === "annual" ? (base * 10) / 12 : base;
+/** Money context for Control: every figure is converted into the viewing admin's currency. */
+export type MoneyCtx = { display: string; rates: Rates; lists: Map<string, PriceList> };
+
+export async function moneyCtx(display: string): Promise<MoneyCtx> {
+  const [rateRows, books] = await Promise.all([adminDb().select().from(fxRates), adminDb().select().from(priceBook)]);
+  const rates = { ...DEFAULT_PER_USD, ...Object.fromEntries(rateRows.map((r) => [r.currency, r.perUsd])) };
+  const custom = new Map(books.map((b) => [b.currency, b]));
+  const lists = new Map<string, PriceList>();
+  for (const c of new Set([...Object.keys(rates), ...custom.keys()])) lists.set(c, priceListFor(c, rates, custom.get(c) ?? null));
+  return { display, rates, lists };
 }
 
-export async function platformOverview() {
-  const tenants = await q<{ id: string; plan: PlanKey; planStatus: string; billingCycle: string; scribeSeats: number; suspendedAt: string | null; createdAt: string; trialEndsAt: string | null }>(sql`
-    select id, plan, plan_status as "planStatus", billing_cycle as "billingCycle", scribe_seats as "scribeSeats", suspended_at as "suspendedAt", created_at as "createdAt", trial_ends_at as "trialEndsAt" from tenants`);
-  const mrr = tenants.reduce((s, t) => s + clinicMrrUsd(t), 0);
+const listFor = (m: MoneyCtx, currency: string) => m.lists.get(currency) ?? priceListFor(currency, m.rates);
+const toDisplay = (m: MoneyCtx, minor: number, from: string) => convertMinor(minor, from, m.display, m.rates);
+
+/** A clinic's MRR in its own currency (from its local price list) and in the admin's currency. */
+export function clinicMrr(m: MoneyCtx, t: { currency: string; plan: PlanKey; planStatus: string; billingCycle: string; scribeSeats: number; suspendedAt?: Date | string | null }) {
+  const local = clinicMrrMinor(listFor(m, t.currency), t);
+  return { local, display: toDisplay(m, local, t.currency) };
+}
+
+export async function platformOverview(m: MoneyCtx) {
+  const tenants = await q<{ id: string; currency: string; plan: PlanKey; planStatus: string; billingCycle: string; scribeSeats: number; suspendedAt: string | null; createdAt: string; trialEndsAt: string | null }>(sql`
+    select id, currency, plan, plan_status as "planStatus", billing_cycle as "billingCycle", scribe_seats as "scribeSeats", suspended_at as "suspendedAt", created_at as "createdAt", trial_ends_at as "trialEndsAt" from tenants`);
+  const mrr = tenants.reduce((s, t) => s + clinicMrr(m, t).display, 0);
   const byStatus = tenants.reduce<Record<string, number>>((m, t) => { const k = t.suspendedAt ? "suspended" : t.planStatus; m[k] = (m[k] ?? 0) + 1; return m; }, {});
   const byPlan = tenants.filter((t) => t.planStatus === "active" && !t.suspendedAt).reduce<Record<string, number>>((m, t) => { m[t.plan] = (m[t.plan] ?? 0) + 1; return m; }, {});
   const trialsEndingSoon = tenants.filter((t) => t.planStatus === "trialing" && t.trialEndsAt && new Date(t.trialEndsAt).getTime() - Date.now() < 3 * 86400_000).length;
@@ -51,8 +67,14 @@ export async function platformOverview() {
     from scribe_sessions where created_at > now() - interval '30 days'`);
   return {
     clinics: tenants.length, mrr, arr: mrr * 12, byStatus, byPlan, trialsEndingSoon,
-    payingClinics: tenants.filter((t) => clinicMrrUsd(t) > 0).length,
-    activity, gmv: gmv.map((g) => ({ ...g, amount: Number(g.amount) })), signups, collected: collected.map((c) => ({ ...c, amount: Number(c.amount) })), churn, messaging, ai,
+    payingClinics: tenants.filter((t) => clinicMrr(m, t).local > 0).length,
+    activity, signups, churn, messaging, ai,
+    gmv: gmv.map((g) => ({ ...g, amount: Number(g.amount), display: toDisplay(m, Number(g.amount), g.currency) })),
+    gmvTotal: gmv.reduce((s, g) => s + toDisplay(m, Number(g.amount), g.currency), 0),
+    // Subscription charges in any currency, converted and summed per month.
+    collected: [...collected.reduce((acc, c) => acc.set(c.month, (acc.get(c.month) ?? 0) + toDisplay(m, Number(c.amount), c.currency)), new Map<string, number>())]
+      .map(([month, amount]) => ({ month, amount })),
+    aiCost: toDisplay(m, Math.round(((ai.inTok * 1 + ai.outTok * 5) / 1_000_000 + (ai.audio * 0.0077) / 60) * 100), "USD"), // rough planning estimate
   };
 }
 
@@ -115,17 +137,17 @@ export async function systemHealth() {
   return { jobs, failedJobs, backlog, msgFailures, hooks };
 }
 
-export async function revenueDetails() {
-  const clinics = await q<{ id: string; name: string; plan: PlanKey; planStatus: string; billingCycle: string; scribeSeats: number; suspendedAt: string | null; currentPeriodEnd: string | null; trialEndsAt: string | null }>(sql`
-    select id, name, plan, plan_status as "planStatus", billing_cycle as "billingCycle", scribe_seats as "scribeSeats", suspended_at as "suspendedAt",
+export async function revenueDetails(m: MoneyCtx) {
+  const clinics = await q<{ id: string; name: string; currency: string; plan: PlanKey; planStatus: string; billingCycle: string; scribeSeats: number; suspendedAt: string | null; currentPeriodEnd: string | null; trialEndsAt: string | null }>(sql`
+    select id, name, currency, plan, plan_status as "planStatus", billing_cycle as "billingCycle", scribe_seats as "scribeSeats", suspended_at as "suspendedAt",
       current_period_end as "currentPeriodEnd", trial_ends_at as "trialEndsAt" from tenants`);
-  const paying = clinics.filter((c) => clinicMrrUsd(c) > 0);
+  const paying = clinics.filter((c) => clinicMrr(m, c).local > 0);
   const byPlan = (Object.keys(PLANS) as PlanKey[]).map((plan) => {
     const rows = paying.filter((c) => c.plan === plan);
     return { plan, clinics: rows.length, annual: rows.filter((r) => r.billingCycle === "annual").length,
-      mrr: rows.reduce((s, r) => s + clinicMrrUsd({ ...r, scribeSeats: 0 }), 0) };
+      mrr: rows.reduce((s, r) => s + clinicMrr(m, { ...r, scribeSeats: 0 }).display, 0) };
   });
-  const scribeMrr = paying.reduce((s, c) => s + clinicMrrUsd(c) - clinicMrrUsd({ ...c, scribeSeats: 0 }), 0);
+  const scribeMrr = paying.reduce((s, c) => s + clinicMrr(m, c).display - clinicMrr(m, { ...c, scribeSeats: 0 }).display, 0);
   const soon = (d: string | null, days: number) => !!d && new Date(d).getTime() - Date.now() < days * 86400_000 && new Date(d).getTime() > Date.now() - 86400_000;
   const ledger = await q<{ id: string; createdAt: string; type: string; amountMinor: number | null; currency: string | null; providerRef: string | null; tenantId: string; clinic: string | null }>(sql`
     select e.id, e.created_at as "createdAt", e.type, e.amount_minor as "amountMinor", e.currency, e.provider_ref as "providerRef", e.tenant_id as "tenantId", t.name as clinic
@@ -136,10 +158,12 @@ export async function revenueDetails() {
       coalesce(sum(amount_minor) filter (where created_at >= date_trunc('year', now())), 0)::bigint as year
     from billing_events where type = 'charge.success' group by 1`);
   return {
-    byPlan, scribeMrr, mrr: paying.reduce((s, c) => s + clinicMrrUsd(c), 0),
+    byPlan, scribeMrr, mrr: paying.reduce((s, c) => s + clinicMrr(m, c).display, 0),
     renewals: paying.filter((c) => soon(c.currentPeriodEnd, 14)).sort((a, b) => String(a.currentPeriodEnd).localeCompare(String(b.currentPeriodEnd))),
     pastDue: clinics.filter((c) => c.planStatus === "past_due" || c.planStatus === "read_only"),
     trialsEnding: clinics.filter((c) => c.planStatus === "trialing" && soon(c.trialEndsAt, 7)),
-    ledger, totals: totals.map((t) => ({ ...t, month: Number(t.month), year: Number(t.year) })),
+    ledger: ledger.map((e) => ({ ...e, display: e.amountMinor != null ? toDisplay(m, e.amountMinor, e.currency ?? "USD") : null })),
+    collectedMonth: totals.reduce((s, t) => s + toDisplay(m, Number(t.month), t.currency), 0),
+    collectedYear: totals.reduce((s, t) => s + toDisplay(m, Number(t.year), t.currency), 0),
   };
 }

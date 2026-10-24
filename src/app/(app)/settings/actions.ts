@@ -1,4 +1,5 @@
 "use server";
+import { CURRENCIES } from "@/lib/countries";
 import { parseHoursForm } from "@/lib/hours";
 import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -17,7 +18,7 @@ const profileSchema = z.object({
   phone: z.string().optional(), email: z.string().email().optional(), address: z.string().optional(),
   registrationNo: z.string().optional(), taxId: z.string().optional(), letterhead: z.string().max(500).optional(),
   country: z.string().refine((c) => c in COUNTRIES, "Choose a country"),
-  currency: z.string().regex(/^[A-Z]{3}$/, "Currency must be a 3-letter code like GHS"),
+  currency: z.enum(CURRENCIES as [string, ...string[]], { message: "Choose a supported currency" }),
   timezone: z.string().refine((tz) => Intl.supportedValuesOf("timeZone").includes(tz), "Choose a valid timezone"),
 });
 

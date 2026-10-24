@@ -29,6 +29,13 @@
       "when": 1792858721617,
       "tag": "0003_audit_action_index",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792859209581,
+      "tag": "0004_local_currency_pricing",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { adminDb, withTenant } from "@/db";
 import * as schema from "@/db/schema";
 import { assertSeats, limitError } from "../limits";
-import { priceUsd } from "../subscription/pricing";
+import { priceListFor, subscriptionTotal } from "@/lib/money";
 
 describe("plan limits", () => {
   it("checks users, practitioners, branches and scribe seats", () => {
@@ -16,8 +16,9 @@ describe("plan limits", () => {
     expect(limitError("clinic", 1, { ...ok, scribe: 2 })).toMatch(/scribe/);
   });
   it("prices annual as 10 months", () => {
-    expect(priceUsd("clinic", "monthly", 0)).toBe(79);
-    expect(priceUsd("clinic", "annual", 2)).toBe((79 + 38) * 10);
+    const usd = priceListFor("USD", { USD: 1 });
+    expect(subscriptionTotal(usd, "clinic", "monthly", 0)).toBe(7900);
+    expect(subscriptionTotal(usd, "clinic", "annual", 2)).toBe((7900 + 3800) * 10);
   });
 
   let tenantId: string;

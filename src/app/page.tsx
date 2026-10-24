@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { LogoMark } from "@/app/(app)/nav";
 import { Avatar, Badge, cx, IconTile, LinkButton, Sparkline } from "@/components/ui";
 import { PLANS, TRIAL_DAYS, type PlanKey } from "@/lib/plans";
+import { Price, PriceCurrencySwitcher } from "./pricing/price";
 import { CtaBand, Eyebrow, SitePage } from "./pricing/site";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ const STEPS = [
 ];
 
 const COMPARE: [string, string, string][] = [
-  ["Price", `From $${PLANS.solo.priceUsd}/month, published`, "Quote only, often per bed or per module"],
+  ["Price", "Published monthly price in your currency", "Quote only, often per bed or per module"],
   ["Setup", "Same day — import your patient list", "Weeks of consultants and training"],
   ["Contract", "Monthly, cancel any time", "Multi-year with setup fees"],
   ["Works through unstable internet", "Yes", "Usually needs a constant connection or a local server"],
@@ -198,8 +199,9 @@ export default function LandingPage() {
 
       {/* Pricing teaser */}
       <section aria-labelledby="price-title" className="mx-auto max-w-6xl px-4 pb-24 sm:px-6 sm:pb-32">
-        <SectionHead id="price-title" eyebrow="Pricing" title={<>Simple pricing from <span className="text-aurora">${PLANS.solo.priceUsd}/month</span></>}>
+        <SectionHead id="price-title" eyebrow="Pricing" title={<>Simple pricing from <span className="text-aurora"><Price of={{ plan: "solo" }} />/month</span></>}>
           {TRIAL_DAYS}-day free trial, no card. 30-day money-back guarantee. Reminders and backups always included.
+          <span className="mt-4 block"><PriceCurrencySwitcher /></span>
         </SectionHead>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {(Object.entries(PLANS) as [PlanKey, (typeof PLANS)[PlanKey]][]).map(([key, p]) => (
@@ -208,7 +210,7 @@ export default function LandingPage() {
                 <h3 className="font-semibold text-fg">{p.name}</h3>
                 {key === "clinic" && <Badge tone="purple">Most popular</Badge>}
               </div>
-              <p className="mt-4"><span className="text-4xl font-semibold tracking-[-0.03em] text-fg tabular-nums">${p.priceUsd}</span><span className="text-muted">/month</span></p>
+              <p className="mt-4"><span className="text-4xl font-semibold tracking-[-0.03em] text-fg tabular-nums"><Price of={{ plan: key }} /></span><span className="text-muted">/month</span></p>
               <p className="mt-2 text-sm text-muted">Up to {p.practitioners} practitioner{p.practitioners === 1 ? "" : "s"} · {p.reminders.toLocaleString("en")} reminders/month</p>
               <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-accent">See what&apos;s included <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden /></span>
             </Link>

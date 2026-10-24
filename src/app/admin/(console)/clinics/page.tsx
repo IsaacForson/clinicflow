@@ -1,9 +1,10 @@
 import { Building2, Search } from "lucide-react";
 import Link from "next/link";
 import { Avatar, Badge, Callout, Input, PageHeader, Panel, Table, Tabs, Td } from "@/components/ui";
-import { dateOnly } from "@/lib/format";
+import { dateOnly, money } from "@/lib/format";
 import { requireAdmin } from "@/lib/platform-auth";
-import { clinicMrrUsd, deletionRequests, listClinics } from "@/lib/platform-metrics";
+import { clinicMrr, deletionRequests, listClinics } from "@/lib/platform-metrics";
+import { controlMoney } from "../money";
 import { PLANS } from "@/lib/plans";
 
 export const metadata = { title: "Clinics" };
@@ -16,7 +17,8 @@ const ago = (d: string | null) => {
 };
 
 export default async function ClinicsPage({ searchParams }: PageProps<"/admin/clinics">) {
-  await requireAdmin();
+  const { admin } = await requireAdmin();
+  const { m, fmt, display } = await controlMoney(admin);
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
   const status = typeof sp.status === "string" ? sp.status : "";
@@ -42,7 +44,7 @@ export default async function ClinicsPage({ searchParams }: PageProps<"/admin/cl
         { key: "deletion", label: "Deletion requests", href: href({ status: "deletion" }), count: deletions.length },
       ]} />
       <Panel>
-        <Table head={["Clinic", "Owner", "Plan", "Status", "MRR", "Staff", "Patients", "Last active", "Joined"]} empty={q ? "No clinics match." : "No clinics here."}>
+        <Table head={["Clinic", "Owner", "Plan", "Status", `MRR (${display})`, "Staff", "Patients", "Last active", "Joined"]} empty={q ? "No clinics match." : "No clinics here."}>
           {rows.map((c) => {
             const st = c.suspendedAt ? "suspended" : c.planStatus;
             return (
@@ -55,7 +57,7 @@ export default async function ClinicsPage({ searchParams }: PageProps<"/admin/cl
                 <Td className="text-sm"><span className="block">{c.ownerName}</span><span className="block text-xs text-subtle">{c.ownerEmail ?? c.ownerPhone}</span></Td>
                 <Td>{PLANS[c.plan].name}{c.billingCycle === "annual" && <span className="text-xs text-subtle"> · annual</span>}</Td>
                 <Td><Badge tone={STATUS_TONE[st as keyof typeof STATUS_TONE] ?? "gray"}>{st.replace("_", " ")}</Badge>{deletionIds.has(c.id) && <span className="ml-1"><Badge tone="yellow">deletion</Badge></span>}</Td>
-                <Td className="tabular-nums">${Math.round(clinicMrrUsd(c))}</Td>
+                <Td className="tabular-nums" title={money(clinicMrr(m, c).local, c.currency)}>{fmt(clinicMrr(m, c).display)}</Td>
                 <Td className="tabular-nums">{c.users}</Td>
                 <Td className="tabular-nums">{c.patients.toLocaleString()}</Td>
                 <Td className="text-muted">{ago(c.lastActive)}</Td>

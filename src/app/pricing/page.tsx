@@ -1,12 +1,13 @@
 import { ArrowRight, Check, ChevronDown, Minus, Mic, Upload } from "lucide-react";
 import type { Metadata } from "next";
 import { Badge, cx, IconTile, LinkButton } from "@/components/ui";
-import { GRACE_DAYS, PLANS, SCRIBE_NOTES_CAP, SCRIBE_PRICE_USD, TRIAL_DAYS, type PlanKey } from "@/lib/plans";
+import { GRACE_DAYS, PLANS, SCRIBE_NOTES_CAP, TRIAL_DAYS, type PlanKey } from "@/lib/plans";
+import { Price, PriceCurrencySwitcher } from "./price";
 import { CtaBand, Eyebrow, SitePage } from "./site";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: `Solo $${PLANS.solo.priceUsd}, Clinic $${PLANS.clinic.priceUsd}, Group $${PLANS.group.priceUsd} per month. ${TRIAL_DAYS}-day free trial, no card. Reminders, backups and data export always included.`,
+  description: `Simple monthly plans for clinics of every size, priced in your local currency. ${TRIAL_DAYS}-day free trial, no card. Reminders, backups and data export always included.`,
 };
 
 const FEATURE_LABELS: Record<string, string> = {
@@ -26,7 +27,7 @@ const FAQ: [string, string][] = [
   ["How does annual billing work?", "Pay for 10 months and get 12 — two months free on any plan."],
   ["What if I'm not happy?", "Ask for a refund within 30 days of your first payment and we'll return it in full. No forms, no questions."],
   ["What happens if we stop paying?", `Nothing is deleted and you're never locked out. After a ${GRACE_DAYS}-day grace period the account becomes read-only: you can still view every record and export all your data.`],
-  ["Can you move our existing records?", "Yes. Our migration service imports patients, balances and appointments from spreadsheets or your old system — $99 for a simple patient list, up to $299 for full history from another system."],
+  ["Can you move our existing records?", "Yes. Our migration service imports patients, balances and appointments from spreadsheets or your old system — priced in your currency, from a simple patient list up to full history from another system."],
   ["Are reminders extra?", "No. WhatsApp and SMS reminders are included in every plan up to the monthly allowance shown — reminders, backups and data export are never paid add-ons."],
   ["Which payment methods do you accept?", "Card and mobile money through Paystack, billed in US dollars or your local currency equivalent."],
 ];
@@ -59,6 +60,7 @@ export default function PricingPage() {
                 </label>
               ))}
             </fieldset>
+            <div className="mt-4 animate-rise [animation-delay:280ms]"><PriceCurrencySwitcher /></div>
 
             <ul className="mt-7 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted">
               {[`${TRIAL_DAYS}-day free trial, no card`, "30-day money-back guarantee", "Read-only, never locked out"].map((x) => (
@@ -82,12 +84,12 @@ export default function PricingPage() {
                   <p className="relative mt-1 text-sm text-muted">{BLURB[key]}</p>
 
                   <div className="relative mt-6 group-has-[#bill-annual:checked]/bill:hidden">
-                    <p><span className="text-5xl font-semibold tracking-[-0.04em] text-fg tabular-nums">${p.priceUsd}</span><span className="text-muted">/month</span></p>
-                    <p className="mt-1.5 text-sm text-subtle">or ${p.priceUsd * 10}/year (2 months free)</p>
+                    <p><span className="text-5xl font-semibold tracking-[-0.04em] text-fg tabular-nums"><Price of={{ plan: key }} /></span><span className="text-muted">/month</span></p>
+                    <p className="mt-1.5 text-sm text-subtle">or <Price of={{ plan: key, cycle: "annual" }} />/year (2 months free)</p>
                   </div>
                   <div className="relative mt-6 hidden group-has-[#bill-annual:checked]/bill:block">
-                    <p><span className="text-5xl font-semibold tracking-[-0.04em] text-fg tabular-nums">${p.priceUsd * 10}</span><span className="text-muted">/year</span></p>
-                    <p className="mt-1.5 text-sm text-ok">2 months free · ${p.priceUsd * 2} saved</p>
+                    <p><span className="text-5xl font-semibold tracking-[-0.04em] text-fg tabular-nums"><Price of={{ plan: key, cycle: "annual" }} /></span><span className="text-muted">/year</span></p>
+                    <p className="mt-1.5 text-sm text-ok">2 months free · <Price of={{ plan: key, cycle: "annual-saving" }} /> saved</p>
                   </div>
 
                   <dl className="relative mt-6 grid grid-cols-3 gap-2 rounded-2xl border border-line bg-surface p-3 text-center">
@@ -109,13 +111,13 @@ export default function PricingPage() {
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <AddOn icon={<Mic />} title="AI Scribe add-on" price={`$${SCRIBE_PRICE_USD}/practitioner/month`}>
+            <AddOn icon={<Mic />} title="AI Scribe add-on" price={<><Price of={{ scribe: true }} />/practitioner/month</>}>
               Record the consultation with the patient&apos;s consent and get a draft SOAP note in seconds. The clinician always reviews, edits and signs —
               nothing is filed automatically. Fair use up to {SCRIBE_NOTES_CAP} notes per practitioner per month. Audio and transcripts are never used to train AI models.
             </AddOn>
-            <AddOn icon={<Upload />} title="Migration service" price="$99–$299 one-time">
+            <AddOn icon={<Upload />} title="Migration service" price={<><Price of={{ migration: "basic" }} />–<Price of={{ migration: "full" }} /> one-time</>}>
               We import your patient list, outstanding balances and upcoming appointments from spreadsheets or your old system, so you start on day one with your history.
-              $99 for a simple patient list; up to $299 for full records from another system.
+              <Price of={{ migration: "basic" }} /> for a simple patient list; up to <Price of={{ migration: "full" }} /> for full records from another system.
             </AddOn>
           </div>
         </section>
@@ -175,7 +177,7 @@ export default function PricingPage() {
   );
 }
 
-function AddOn({ icon, title, price, children }: { icon: React.ReactNode; title: string; price: string; children: React.ReactNode }) {
+function AddOn({ icon, title, price, children }: { icon: React.ReactNode; title: string; price: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="glass flex gap-4 p-6">
       <IconTile>{icon}</IconTile>

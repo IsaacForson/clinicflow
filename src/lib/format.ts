@@ -1,7 +1,8 @@
 export function money(minor: number | null | undefined, currency = "GHS") {
   const v = (minor ?? 0) / 100;
   try {
-    return new Intl.NumberFormat("en", { style: "currency", currency, minimumFractionDigits: 2 }).format(v);
+    // Natural decimals per currency: GHS 12.50, UGX 12,500, XOF 1 250.
+    return new Intl.NumberFormat("en", { style: "currency", currency }).format(v);
   } catch {
     return `${currency} ${v.toFixed(2)}`;
   }

@@ -6,7 +6,9 @@ import { AuthError, getCtx, tx } from "@/lib/auth";
 import { initializePayment } from "@/lib/paystack";
 import { can } from "@/lib/permissions";
 import { currentSeats, limitError } from "../limits";
-import { MIGRATION_TIERS, priceUsd } from "./pricing";
+import { clinicBilling } from "@/lib/currency";
+import { subscriptionTotal } from "@/lib/money";
+import { MIGRATION_TIERS } from "./pricing";
 
 // Not requireWrite: a read-only (unpaid) account must still be able to pay.
 async function billingCtx() {
@@ -28,9 +30,10 @@ export async function checkoutAction(_: ActionState, fd: FormData): Promise<Acti
     const seats = await tx(ctx, (t) => currentSeats(t, ctx.tenant.id));
     const err = limitError(o.plan, o.scribeSeats, seats);
     if (err) throw new UserError(`You currently use more than this plan allows: ${err}`);
-    // shortcut: billed in USD (public list price); switch to local-currency amounts if the Paystack merchant can't take USD.
+    // Charged in the clinic's own currency (USD only where Paystack can't take that currency).
+    const { charge } = await clinicBilling(ctx.tenant.currency);
     const r = await initializePayment({
-      tenantId: null, email, amountMinor: priceUsd(o.plan, o.cycle, o.scribeSeats) * 100, currency: "USD", callbackUrl: callbackUrl(),
+      tenantId: null, email, amountMinor: subscriptionTotal(charge, o.plan, o.cycle, o.scribeSeats), currency: charge.currency, callbackUrl: callbackUrl(),
       metadata: { kind: "subscription", tenantId: ctx.tenant.id, plan: o.plan, cycle: o.cycle, scribeSeats: o.scribeSeats },
     });
     if (!r) throw new UserError("Online payment isn't available right now. Please contact support to renew.");
@@ -42,8 +45,9 @@ export async function migrationCheckoutAction(_: ActionState, fd: FormData): Pro
   return run(async () => {
     const { ctx, email } = await billingCtx();
     const tier = z.enum(Object.keys(MIGRATION_TIERS) as [keyof typeof MIGRATION_TIERS]).parse(fd.get("tier"));
+    const { charge } = await clinicBilling(ctx.tenant.currency);
     const r = await initializePayment({
-      tenantId: null, email, amountMinor: MIGRATION_TIERS[tier].priceUsd * 100, currency: "USD", callbackUrl: callbackUrl(),
+      tenantId: null, email, amountMinor: charge.migration[tier], currency: charge.currency, callbackUrl: callbackUrl(),
       metadata: { kind: "migration", tenantId: ctx.tenant.id, tier },
     });
     if (!r) throw new UserError("Online payment isn't available right now. Please contact support.");

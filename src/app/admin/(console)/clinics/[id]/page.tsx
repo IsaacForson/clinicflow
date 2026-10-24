@@ -8,7 +8,8 @@ import { billingEvents, platformAdmins, platformAudit, tenants, users } from "@/
 import { dateOnly, dateTime, money } from "@/lib/format";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { platformCan, requireAdmin } from "@/lib/platform-auth";
-import { clinicMrrUsd, clinicStats, deletionRequests } from "@/lib/platform-metrics";
+import { clinicMrr, clinicStats, deletionRequests } from "@/lib/platform-metrics";
+import { controlMoney } from "../../money";
 import { PLANS } from "@/lib/plans";
 import {
   deleteClinicAction, extendTrialAction, saveClinicNotesAction, setSuspendedAction, startSupportViewAction, updateClinicBillingAction,
@@ -22,6 +23,7 @@ export default async function ClinicDetail({ params }: PageProps<"/admin/clinics
   const { id } = await params;
   const ctx = await requireAdmin();
   const role = ctx.admin.role;
+  const { m, fmt, display } = await controlMoney(ctx.admin);
   const db = adminDb();
   const [t] = await db.select().from(tenants).where(eq(tenants.id, id));
   if (!t) notFound();
@@ -35,6 +37,8 @@ export default async function ClinicDetail({ params }: PageProps<"/admin/clinics
     deletionRequests(id),
   ]);
   const st = t.suspendedAt ? "suspended" : t.planStatus;
+  const mrr = clinicMrr(m, t);
+  const localList = m.lists.get(t.currency);
   const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "");
 
   return (
@@ -46,7 +50,7 @@ export default async function ClinicDetail({ params }: PageProps<"/admin/clinics
       {deletion && <div className="mb-4"><Callout tone="yellow" icon={<Trash2 />}>Owner requested deletion on {dateOnly(deletion.requestedAt, "UTC")}{deletion.by ? ` (${deletion.by})` : ""}. Earliest deletion: {deletion.deleteAfter?.slice(0, 10)}.</Callout></div>}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi label="MRR" value={`$${Math.round(clinicMrrUsd(t))}`} sub={t.scribeSeats ? `incl. ${t.scribeSeats} scribe seats` : "no add-ons"} icon={<CreditCard />} />
+        <Kpi label="MRR" value={money(mrr.local, t.currency)} sub={`${t.currency !== display ? `≈ ${fmt(mrr.display)} · ` : ""}${t.scribeSeats ? `incl. ${t.scribeSeats} scribe seats` : "no add-ons"}`} icon={<CreditCard />} />
         <Kpi label="Consultations" value={stats.visits30} sub="last 30 days" icon={<Users />} tone="teal" />
         <Kpi label="Patient payments" value={money(stats.gmv30, t.currency)} sub={`${stats.payments30} in 30 days`} icon={<CreditCard />} tone="green" />
         <Kpi label="Messages" value={stats.messages30} sub={`this month · ${stats.scribe30} scribe drafts`} icon={<ScrollText />} tone="blue" />
@@ -110,7 +114,7 @@ export default async function ClinicDetail({ params }: PageProps<"/admin/clinics
             <Panel title="Subscription" icon={<CreditCard />} glow>
               <ActionForm action={updateClinicBillingAction} className="grid gap-3 sm:grid-cols-2 [&>*]:mb-0!">
                 <input type="hidden" name="tenantId" value={t.id} />
-                <Field label="Plan"><Select name="plan" defaultValue={t.plan}>{Object.entries(PLANS).map(([k, p]) => <option key={k} value={k}>{p.name} · ${p.priceUsd}</option>)}</Select></Field>
+                <Field label="Plan"><Select name="plan" defaultValue={t.plan}>{Object.entries(PLANS).map(([k, p]) => <option key={k} value={k}>{p.name} · {money(localList?.plans[k as keyof typeof PLANS] ?? 0, t.currency)}</option>)}</Select></Field>
                 <Field label="Status"><Select name="planStatus" defaultValue={t.planStatus}>{["trialing", "active", "past_due", "read_only", "cancelled"].map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}</Select></Field>
                 <Field label="Billing cycle"><Select name="billingCycle" defaultValue={t.billingCycle}><option value="monthly">Monthly</option><option value="annual">Annual</option></Select></Field>
                 <Field label="AI scribe seats"><Input name="scribeSeats" type="number" min={0} max={100} defaultValue={t.scribeSeats} /></Field>

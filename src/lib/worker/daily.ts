@@ -109,7 +109,10 @@ export async function billingSweep(now = new Date()) {
 export async function scheduleRecurring(now = new Date()) {
   const db = adminDb();
   const hour = now.toISOString().slice(0, 13);
-  const rows: (typeof jobs.$inferInsert)[] = [{ tenantId: null, type: "billing.sweep", payload: {}, runAt: now, dedupeKey: `billing:${hour}` }];
+  const rows: (typeof jobs.$inferInsert)[] = [
+    { tenantId: null, type: "billing.sweep", payload: {}, runAt: now, dedupeKey: `billing:${hour}` },
+    { tenantId: null, type: "fx.refresh", payload: {}, runAt: now, dedupeKey: `fx:${now.toISOString().slice(0, 10)}` },
+  ];
   for (const t of await db.select({ id: tenants.id, tz: tenants.timezone }).from(tenants).where(ne(tenants.planStatus, "cancelled"))) {
     const day = localDay(t.tz, now);
     rows.push({ tenantId: t.id, type: "daily.tenant", payload: {}, runAt: zonedToUtc(day, "06:00", t.tz), dedupeKey: `daily:${t.id}:${day}` });

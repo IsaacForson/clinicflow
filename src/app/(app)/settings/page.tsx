@@ -2,7 +2,7 @@ import { Building2, Globe2, Phone, Printer } from "lucide-react";
 import { ActionForm, Submit } from "@/components/form";
 import { Field, Input, Panel, Select, Textarea } from "@/components/ui";
 import { requireCtx } from "@/lib/auth";
-import { COUNTRIES } from "@/lib/provision";
+import { COUNTRIES, CURRENCIES, CURRENCY_NAMES } from "@/lib/countries";
 import { updateProfileAction } from "./actions";
 import { LogoPicker } from "./logo-picker";
 
@@ -39,7 +39,9 @@ export default async function ClinicProfilePage() {
               <Field label="Country">
                 <Select name="country" defaultValue={t.country}>{Object.entries(COUNTRIES).map(([k, c]) => <option key={k} value={k}>{c.name}</option>)}</Select>
               </Field>
-              <Field label="Currency" hint="Changing this does not convert existing amounts"><Input name="currency" defaultValue={t.currency} maxLength={3} required className="font-mono uppercase" /></Field>
+              <Field label="Currency" hint={`Defaults to your country's currency. Used for prices, invoices, reports and your subscription. Existing amounts are not converted.`}>
+                <Select name="currency" defaultValue={t.currency}>{CURRENCIES.map((c) => <option key={c} value={c}>{c} · {CURRENCY_NAMES[c]}</option>)}</Select>
+              </Field>
               <Field label="Timezone">
                 <Select name="timezone" defaultValue={t.timezone}>{zones.map((z) => <option key={z}>{z}</option>)}</Select>
               </Field>

@@ -9,8 +9,9 @@ import { jobs } from "@/db/schema";
  *  export.run          { exportJobId }                   build a full tenant export zip/json
  *  daily.tenant        {}                                per-tenant daily sweep: follow-ups, schedules, care plans, low stock
  *  billing.sweep       {}                                platform-wide: trial/subscription status
+ *  fx.refresh          {}                                platform-wide: daily exchange-rate refresh (unlocked rates)
  */
-export type JobType = "message.send" | "appointment.remind" | "webhook.deliver" | "export.run" | "daily.tenant" | "billing.sweep";
+export type JobType = "message.send" | "appointment.remind" | "webhook.deliver" | "export.run" | "daily.tenant" | "billing.sweep" | "fx.refresh";
 
 export async function enqueue(t: Tx, tenantId: string | null, type: JobType, payload: Record<string, unknown> = {}, opts: { runAt?: Date; dedupeKey?: string } = {}) {
   await t.insert(jobs).values({ tenantId, type, payload, runAt: opts.runAt ?? new Date(), dedupeKey: opts.dedupeKey }).onConflictDoNothing();

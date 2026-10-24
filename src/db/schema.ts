@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
-  boolean, check, customType, date, index, integer, jsonb, pgEnum, pgSchema, pgTable, primaryKey,
+  boolean, check, customType, date, doublePrecision, index, integer, jsonb, pgEnum, pgSchema, pgTable, primaryKey,
   real, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import { decrypt, encrypt } from "@/lib/crypto";
@@ -815,6 +815,7 @@ export const platformAdmins = pgTable("platform_admins", {
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull(),
   role: platformRoleEnum("role").notNull().default("support"),
+  currency: text("currency"), // display currency in Control; null = from the country they're browsing from
   totpSecret: encrypted("totp_secret"),
   totpEnabled: boolean("totp_enabled").notNull().default(false),
   active: boolean("active").notNull().default(true),
@@ -831,6 +832,32 @@ export const platformSessions = pgTable("platform_sessions", {
   ip: text("ip"),
   userAgent: text("user_agent"),
   createdAt: createdAt(),
+});
+
+/** Exchange rates: units of `currency` per 1 USD. Refreshed daily unless `locked` (set by hand in Control). */
+export const fxRates = pgTable("fx_rates", {
+  currency: text("currency").primaryKey(),
+  perUsd: doublePrecision("per_usd").notNull(),
+  locked: boolean("locked").notNull().default(false),
+  source: text("source").notNull().default("default"),
+  updatedAt: updatedAt(),
+});
+
+/**
+ * Local subscription price list per currency (minor units). Missing currencies fall back to the USD list price
+ * converted and rounded. Lets the team set purchasing-power prices (e.g. GHS 450 instead of an exact conversion).
+ */
+export const priceBook = pgTable("price_book", {
+  currency: text("currency").primaryKey(),
+  solo: integer("solo").notNull(),
+  clinic: integer("clinic").notNull(),
+  group: integer("group").notNull(),
+  scribe: integer("scribe").notNull(),
+  migrationBasic: integer("migration_basic").notNull(),
+  migrationStandard: integer("migration_standard").notNull(),
+  migrationFull: integer("migration_full").notNull(),
+  updatedBy: uuid("updated_by"),
+  updatedAt: updatedAt(),
 });
 
 // ---------- Audit (separate schema, append-only) ----------

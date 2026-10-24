@@ -5,10 +5,12 @@ import { Badge, Callout, Dl, EmptyState, Panel, Table, Td } from "@/components/u
 import { billingEvents } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { dateOnly, dateTime, money } from "@/lib/format";
-import { PLANS, SCRIBE_PRICE_USD, type PlanKey } from "@/lib/plans";
+import { clinicBilling } from "@/lib/currency";
+import { subscriptionTotal } from "@/lib/money";
+import { PLANS, type PlanKey } from "@/lib/plans";
 import { checkoutAction, migrationCheckoutAction } from "./actions";
 import { PlanGrid } from "./plans";
-import { MIGRATION_TIERS, priceUsd } from "./pricing";
+import { MIGRATION_TIERS } from "./pricing";
 
 
 export const metadata = { title: "Subscription" };
@@ -19,10 +21,13 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/set
   const t = ctx.tenant;
   const paid = (await searchParams).paid;
   const events = await tx(ctx, (x) => x.select().from(billingEvents).orderBy(desc(billingEvents.createdAt)).limit(50));
+  const { display, charge, chargeable } = await clinicBilling(t.currency);
+  const fmt = (minor: number) => money(minor, display.currency);
   const plans = (Object.keys(PLANS) as PlanKey[]).map((key) => {
     const p = PLANS[key];
+    const annual = subscriptionTotal(display, key, "annual", 0);
     return {
-      key, name: p.name, monthly: p.priceUsd, annual: priceUsd(key, "annual", 0), practitioners: p.practitioners, users: p.users, branches: p.branches, reminders: p.reminders,
+      key, name: p.name, monthlyLabel: fmt(display.plans[key]), annualLabel: fmt(annual), annualPerMonthLabel: fmt(Math.round(annual / 12)), practitioners: p.practitioners, users: p.users, branches: p.branches, reminders: p.reminders,
       features: p.features.filter((f) => f !== "records").map((f) => f.replace(/_/g, " ")),
       current: key === t.plan, recommended: key === "clinic", seats: t.scribeSeats,
       cta: key === t.plan && t.planStatus === "active" ? "Renew / change seats" : `Choose ${p.name}`,
@@ -49,14 +54,14 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/set
           <Dl cols={3} items={[
             ["Trial ends", t.planStatus === "trialing" ? dateOnly(t.trialEndsAt, t.timezone) : null],
             ["Current period ends", dateOnly(t.currentPeriodEnd, t.timezone)],
-            ["AI scribe seats", `${t.scribeSeats} × $${SCRIBE_PRICE_USD}/month`],
+            ["AI scribe seats", `${t.scribeSeats} × ${fmt(display.scribe)}/month`],
             ["Access", ctx.access === "full" ? "Full" : "Read-only — your data is safe and can still be viewed and exported"],
           ]} />
         </div>
       </section>
 
       <PlanGrid plans={plans} action={checkoutAction} initialCycle={t.billingCycle === "annual" ? "annual" : "monthly"} />
-      <p className="text-center text-xs text-subtle">AI Scribe is ${SCRIBE_PRICE_USD} per practitioner per month. Reminders, backups and data export are included in every plan. If a payment lapses, your account becomes read-only — never locked.</p>
+      <p className="text-center text-xs text-subtle">AI Scribe is {fmt(display.scribe)} per practitioner per month.{!chargeable && ` Paystack can't charge ${display.currency}, so payments are taken in USD (${money(charge.plans.clinic, "USD")} for Clinic); local prices are estimates.`} Reminders, backups and data export are included in every plan. If a payment lapses, your account becomes read-only — never locked.</p>
 
       <Panel title="Done-for-you migration" eyebrow="One-off" icon={<Rocket />}>
         <div className="grid gap-4 md:grid-cols-3">
@@ -65,10 +70,10 @@ export default async function SubscriptionPage({ searchParams }: PageProps<"/set
               <input type="hidden" name="tier" value={key} />
               <div className="flex items-baseline justify-between gap-2">
                 <p className="font-medium text-fg">{m.name}</p>
-                <p className="text-lg font-semibold tabular-nums text-fg">${m.priceUsd}</p>
+                <p className="text-lg font-semibold tabular-nums text-fg">{fmt(display.migration[key as keyof typeof display.migration])}</p>
               </div>
               <p className="flex-1 text-sm text-muted">{m.detail}</p>
-              <Submit variant="secondary" className="w-full">Pay ${m.priceUsd}</Submit>
+              <Submit variant="secondary" className="w-full">Pay {fmt(display.migration[key as keyof typeof display.migration])}</Submit>
             </ActionForm>
           ))}
         </div>

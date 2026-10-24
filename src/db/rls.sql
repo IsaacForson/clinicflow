@@ -50,3 +50,6 @@ revoke all on public.platform_admins, public.platform_sessions from clinicflow_a
 revoke all on audit.platform_log from clinicflow_app;
 drop trigger if exists platform_audit_append_only on audit.platform_log;
 create trigger platform_audit_append_only before update or delete on audit.platform_log for each row execute function audit.block_change();
+
+-- Platform-wide reference data: clinics may read rates and prices, only the ClinicFlow team changes them.
+revoke insert, update, delete on public.fx_rates, public.price_book from clinicflow_app;

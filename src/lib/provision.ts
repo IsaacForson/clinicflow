@@ -1,25 +1,14 @@
 import { adminDb } from "@/db";
-import { branches, labTests, messageTemplates, services, tenants, users } from "@/db/schema";
+import { branches, fxRates, labTests, messageTemplates, services, tenants, users } from "@/db/schema";
+import { convertMinor, DEFAULT_PER_USD, nicePrice } from "./money";
 import { hashPassword } from "./crypto";
 import { DEFAULT_TEMPLATES } from "./messaging";
 import { TRIAL_DAYS } from "./plans";
+import { COUNTRIES } from "./countries";
 
-export const COUNTRIES: Record<string, { name: string; currency: string; timezone: string }> = {
-  GH: { name: "Ghana", currency: "GHS", timezone: "Africa/Accra" },
-  NG: { name: "Nigeria", currency: "NGN", timezone: "Africa/Lagos" },
-  KE: { name: "Kenya", currency: "KES", timezone: "Africa/Nairobi" },
-  UG: { name: "Uganda", currency: "UGX", timezone: "Africa/Kampala" },
-  TZ: { name: "Tanzania", currency: "TZS", timezone: "Africa/Dar_es_Salaam" },
-  RW: { name: "Rwanda", currency: "RWF", timezone: "Africa/Kigali" },
-  ZA: { name: "South Africa", currency: "ZAR", timezone: "Africa/Johannesburg" },
-  ZM: { name: "Zambia", currency: "ZMW", timezone: "Africa/Lusaka" },
-  CI: { name: "Côte d'Ivoire", currency: "XOF", timezone: "Africa/Abidjan" },
-  SN: { name: "Senegal", currency: "XOF", timezone: "Africa/Dakar" },
-  CM: { name: "Cameroon", currency: "XAF", timezone: "Africa/Douala" },
-  GB: { name: "United Kingdom", currency: "GBP", timezone: "Europe/London" },
-  US: { name: "United States", currency: "USD", timezone: "America/New_York" },
-};
+export { COUNTRIES } from "./countries";
 
+// Starter prices are written in Ghana cedi minor units and converted to the clinic's currency at signup.
 const STARTER_SERVICES: [string, "consultation" | "lab" | "procedure" | "imaging", number, number][] = [
   ["General consultation", "consultation", 15000, 15], ["Follow-up consultation", "consultation", 8000, 10],
   ["Specialist consultation", "consultation", 30000, 20], ["Wound dressing", "procedure", 5000, 15],
@@ -39,6 +28,9 @@ export async function provisionTenant(o: { clinicName: string; country: string; 
   const m = /^(dr|prof|nurse|mr|mrs|ms)\.?\s+/i.exec(o.ownerName.trim());
   const ownerName = m ? o.ownerName.trim().slice(m[0].length) : o.ownerName.trim();
   const title = m ? m[1][0].toUpperCase() + m[1].slice(1).toLowerCase() + "." : null;
+  const rateRows = await adminDb().select().from(fxRates);
+  const rates = { ...DEFAULT_PER_USD, ...Object.fromEntries(rateRows.map((r) => [r.currency, r.perUsd])) };
+  const localPrice = (ghsMinor: number) => c.currency === "GHS" ? ghsMinor : nicePrice(convertMinor(ghsMinor, "GHS", c.currency, rates) / 100) * 100;
   return adminDb().transaction(async (t) => {
     const [tenant] = await t.insert(tenants).values({
       name: o.clinicName, slug: `${slugify(o.clinicName)}-${Math.random().toString(36).slice(2, 7)}`,
@@ -50,7 +42,7 @@ export async function provisionTenant(o: { clinicName: string; country: string; 
       tenantId: tenant.id, name: ownerName, email: o.email?.toLowerCase() || null, phone: o.phone || null,
       passwordHash, role: "owner", isPractitioner: true, title,
     }).returning();
-    const svc = await t.insert(services).values(STARTER_SERVICES.map(([name, category, priceMinor, durationMin]) => ({ tenantId: tenant.id, name, category, priceMinor, durationMin }))).returning();
+    const svc = await t.insert(services).values(STARTER_SERVICES.map(([name, category, priceMinor, durationMin]) => ({ tenantId: tenant.id, name, category, priceMinor: localPrice(priceMinor), durationMin }))).returning();
     await t.insert(labTests).values(svc.filter((s) => s.category === "lab" || s.category === "imaging").map((s) => ({ tenantId: tenant.id, name: s.name, kind: s.category === "imaging" ? "imaging" : "lab", serviceId: s.id })));
     await t.insert(messageTemplates).values(Object.entries(DEFAULT_TEMPLATES).map(([key, body]) => ({ tenantId: tenant.id, key, body })));
     return { tenant, owner };

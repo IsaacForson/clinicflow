@@ -4,22 +4,21 @@ import { A, Badge, BarChart, Callout, Kpi, Panel, PageHeader, Progress, Table, T
 import { money } from "@/lib/format";
 import { platformCan, requireAdmin } from "@/lib/platform-auth";
 import { deletionRequests, platformOverview, systemHealth } from "@/lib/platform-metrics";
+import { controlMoney } from "./money";
 import { PLANS, type PlanKey } from "@/lib/plans";
 
 export const metadata = { title: "Overview" };
 
-const usd = (v: number) => new Intl.NumberFormat("en", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
 const STATUS_TONE = { active: "green", trialing: "purple", past_due: "yellow", read_only: "red", cancelled: "gray", suspended: "red" } as const;
 
 export default async function ControlOverview({ searchParams }: PageProps<"/admin">) {
   const { admin } = await requireAdmin();
   const denied = (await searchParams).denied;
   const seeMoney = platformCan(admin.role, "revenue.view");
-  const [o, health, deletions] = await Promise.all([platformOverview(), systemHealth(), deletionRequests()]);
+  const { m, fmt, display } = await controlMoney(admin);
+  const [o, health, deletions] = await Promise.all([platformOverview(m), systemHealth(), deletionRequests()]);
   const failed = health.jobs.filter((j) => j.status === "failed").reduce((n, j) => n + j.n, 0);
-  const usdCollected = o.collected.filter((c) => c.currency === "USD");
   const statusTotal = Object.values(o.byStatus).reduce((a, b) => a + b, 0);
-  const aiCostUsd = (o.ai.inTok * 1 + o.ai.outTok * 5) / 1_000_000 + o.ai.audio * 0.0077 / 60; // rough planning estimate
 
   return (
     <>
@@ -34,7 +33,7 @@ export default async function ControlOverview({ searchParams }: PageProps<"/admi
       )}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {seeMoney ? <Kpi label="MRR" value={usd(o.mrr)} sub={`ARR ${usd(o.arr)}`} icon={<CircleDollarSign />} tone="purple" href="/admin/revenue" trend={usdCollected.map((c) => c.amount)} /> : null}
+        {seeMoney ? <Kpi label="MRR" value={fmt(o.mrr)} sub={`ARR ${fmt(o.arr)} · shown in ${display}`} icon={<CircleDollarSign />} tone="purple" href="/admin/revenue" trend={o.collected.map((c) => c.amount)} /> : null}
         <Kpi label="Paying clinics" value={o.payingClinics} sub={`${o.clinics} clinics in total`} icon={<Building2 />} tone="teal" href="/admin/clinics?status=active" />
         <Kpi label="On trial" value={o.byStatus.trialing ?? 0} sub={`${o.trialsEndingSoon} ending in 3 days`} icon={<Hourglass />} tone="blue" href="/admin/clinics?status=trialing" />
         <Kpi label="Active this week" value={o.activity.active7} sub={`${o.activity.visits30} consultations in 30 days`} icon={<Activity />} tone="green" />
@@ -47,14 +46,14 @@ export default async function ControlOverview({ searchParams }: PageProps<"/admi
             {o.signups.length ? <BarChart data={o.signups.map((s) => ({ label: s.week.slice(5), value: s.n }))} height={170} /> : <p className="text-sm text-muted">No signups yet.</p>}
           </Panel>
           {seeMoney && (
-            <Panel title="Subscription revenue collected" eyebrow="Paystack charges · last 12 months" icon={<CircleDollarSign />} actions={<A href="/admin/revenue" className="text-xs">Details</A>}>
-              {usdCollected.length ? <BarChart data={usdCollected.map((c) => ({ label: c.month.slice(5), value: c.amount }))} format={(v) => money(v, "USD")} height={170} /> : <p className="text-sm text-muted">No subscription payments recorded yet.</p>}
-              {o.collected.some((c) => c.currency !== "USD") && <p className="mt-3 text-xs text-subtle">Charges in other currencies are listed on the Revenue page.</p>}
+            <Panel title="Subscription revenue collected" eyebrow={`Paystack charges · last 12 months · in ${display}`} icon={<CircleDollarSign />} actions={<A href="/admin/revenue" className="text-xs">Details</A>}>
+              {o.collected.length ? <BarChart data={o.collected.map((c) => ({ label: c.month.slice(5), value: c.amount }))} format={fmt} height={170} /> : <p className="text-sm text-muted">No subscription payments recorded yet.</p>}
+              <p className="mt-3 text-xs text-subtle">Charges in other currencies are converted at today&apos;s exchange rates.</p>
             </Panel>
           )}
-          <Panel title="Money processed by clinics" eyebrow="Patient payments · last 30 days" icon={<TrendingUp />}>
-            <Table head={["Currency", "Clinics", "Amount"]} empty="No patient payments in the last 30 days.">
-              {o.gmv.map((g) => <tr key={g.currency}><Td className="font-mono text-xs">{g.currency}</Td><Td>{g.clinics}</Td><Td className="tabular-nums">{money(g.amount, g.currency)}</Td></tr>)}
+          <Panel title="Money processed by clinics" eyebrow="Patient payments · last 30 days" icon={<TrendingUp />} actions={<span className="text-sm font-semibold tabular-nums">{fmt(o.gmvTotal)}</span>}>
+            <Table head={["Currency", "Clinics", "Amount", `In ${display}`]} empty="No patient payments in the last 30 days.">
+              {o.gmv.map((g) => <tr key={g.currency}><Td className="font-mono text-xs">{g.currency}</Td><Td>{g.clinics}</Td><Td className="tabular-nums">{money(g.amount, g.currency)}</Td><Td className="tabular-nums text-muted">{fmt(g.display)}</Td></tr>)}
             </Table>
             <p className="mt-3 text-xs text-subtle">{o.activity.payments30.toLocaleString()} payments · {o.activity.patients.toLocaleString()} patients on the platform.</p>
           </Panel>
@@ -74,7 +73,7 @@ export default async function ControlOverview({ searchParams }: PageProps<"/admi
           <Panel title="Paid plan mix" icon={<CircleDollarSign />}>
             <div className="space-y-2 text-sm">
               {(Object.keys(PLANS) as PlanKey[]).map((p) => (
-                <div key={p} className="flex items-center justify-between"><span>{PLANS[p].name} <span className="text-subtle">· ${PLANS[p].priceUsd}</span></span><span className="tabular-nums">{o.byPlan[p] ?? 0}</span></div>
+                <div key={p} className="flex items-center justify-between"><span>{PLANS[p].name} <span className="text-subtle">· {fmt(m.lists.get(display)?.plans[p] ?? 0)}</span></span><span className="tabular-nums">{o.byPlan[p] ?? 0}</span></div>
               ))}
             </div>
           </Panel>
@@ -88,7 +87,7 @@ export default async function ControlOverview({ searchParams }: PageProps<"/admi
           </Panel>
           <Panel title="AI scribe usage" eyebrow="Last 30 days" icon={<Bot />}>
             <div className="text-2xl font-semibold tabular-nums">{o.ai.notes} <span className="text-sm font-normal text-muted">drafts</span></div>
-            <p className="mt-1 text-xs text-subtle">{(o.ai.inTok + o.ai.outTok).toLocaleString()} tokens · {Math.round(o.ai.audio / 60)} min audio · ≈ {usd(aiCostUsd)} estimated cost</p>
+            <p className="mt-1 text-xs text-subtle">{(o.ai.inTok + o.ai.outTok).toLocaleString()} tokens · {Math.round(o.ai.audio / 60)} min audio · ≈ {fmt(o.aiCost)} estimated cost</p>
           </Panel>
         </div>
       </section>

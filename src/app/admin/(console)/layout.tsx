@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import { Avatar, Badge } from "@/components/ui";
 import { PLATFORM_ROLE_LABELS, platformCan, requireAdmin, type PlatformCap } from "@/lib/platform-auth";
 import { LogoMark, ThemeToggle } from "../../(app)/nav";
+import { CURRENCIES } from "@/lib/countries";
 import { adminLogoutAction } from "../auth-actions";
+import { setAdminCurrencyAction } from "./actions";
+import { adminCurrency } from "./money";
 import { AdminNav, type AdminNavItem } from "./admin-nav";
 
 export const instant = false;
@@ -13,6 +16,7 @@ const NAV: (AdminNavItem & { cap?: PlatformCap })[] = [
   { href: "/admin", label: "Overview", icon: "Gauge" },
   { href: "/admin/clinics", label: "Clinics", icon: "Building2" },
   { href: "/admin/revenue", label: "Revenue", icon: "CircleDollarSign", cap: "revenue.view" },
+  { href: "/admin/pricing", label: "Pricing & currency", icon: "Coins", cap: "clinics.billing" },
   { href: "/admin/system", label: "System health", icon: "Activity", cap: "system.jobs" },
   { href: "/admin/team", label: "Team", icon: "Users", cap: "team.manage" },
   { href: "/admin/audit", label: "Audit log", icon: "ScrollText" },
@@ -30,7 +34,15 @@ async function Side() {
         </div>
       </div>
       <AdminNav items={NAV.filter((n) => !n.cap || platformCan(admin.role, n.cap)).map(({ href, label, icon }) => ({ href, label, icon }))} />
-      <div className="mt-auto hidden items-center gap-3 border-t border-line pt-4 lg:flex">
+      <form action={setAdminCurrencyAction} className="mt-auto flex items-center gap-2 border-t border-line pt-4">
+        <label htmlFor="cf-cur" className="text-xs text-subtle">Show money in</label>
+        <select id="cf-cur" name="currency" defaultValue={admin.currency ?? "auto"} className="h-8 min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-2 text-xs text-fg">
+          <option value="auto">Auto · {await adminCurrency({ currency: null })}</option>
+          {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button className="h-8 rounded-lg border border-line px-2 text-xs text-muted hover:text-fg">Set</button>
+      </form>
+      <div className="hidden items-center gap-3 border-t border-line pt-4 lg:flex">
         <Avatar name={admin.name} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-medium">{admin.name}</div>

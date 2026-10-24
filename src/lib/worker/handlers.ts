@@ -7,6 +7,7 @@ import { dateOnly, timeOnly } from "@/lib/format";
 import type { JobType } from "@/lib/jobs";
 import { DEFAULT_TEMPLATES, queuePatientMessage, sendNow, type Channel } from "@/lib/messaging";
 import { assertPublicUrl } from "@/lib/net";
+import { refreshRates } from "@/lib/fx";
 import { billingSweep, dailyTenant } from "./daily";
 import { MAX_ATTEMPTS, type Handler, type Job } from "./runner";
 
@@ -106,4 +107,5 @@ export const HANDLERS: Record<JobType, (job: Job) => Promise<void>> = {
   "export.run": exportRun,
   "daily.tenant": (job) => dailyTenant(job.tenantId!),
   "billing.sweep": () => billingSweep(),
+  "fx.refresh": async () => { await refreshRates(); },
 };

@@ -7,10 +7,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { adminDb } from "@/db";
-import { auditLog, jobs, platformAdmins, platformSessions, sessions, tenants, users } from "@/db/schema";
+import { auditLog, fxRates, jobs, platformAdmins, platformSessions, priceBook, sessions, tenants, users } from "@/db/schema";
 import { formObject, run, UserError, zInt, type ActionState } from "@/lib/action";
 import { hashPassword, randomToken, sha256 } from "@/lib/crypto";
 import { platformLog, requireAdminAction } from "@/lib/platform-auth";
+import { CURRENCIES } from "@/lib/countries";
+import { refreshRates } from "@/lib/fx";
 import { deletionRequests } from "@/lib/platform-metrics";
 
 const uuid = z.string().uuid();
@@ -177,5 +179,63 @@ export async function updateAdminAction(_: ActionState, fd: FormData): Promise<A
     await platformLog(ctx, `admin_${o.op}`, { entity: "platform_admin", entityId: o.id, details: { role: o.role ?? null } });
     revalidatePath("/admin/team");
     return { ok: true, message };
+  });
+}
+
+/** Each admin picks the currency Control shows money in ("auto" = from the country they're browsing from). */
+export async function setAdminCurrencyAction(fd: FormData) {
+  const ctx = await requireAdminAction();
+  const v = String(fd.get("currency") ?? "auto");
+  const currency = v === "auto" ? null : z.enum(CURRENCIES as [string, ...string[]]).parse(v);
+  await adminDb().update(platformAdmins).set({ currency }).where(eq(platformAdmins.id, ctx.admin.id));
+  revalidatePath("/admin", "layout");
+}
+
+// ---------- Pricing & exchange rates ----------
+export async function saveRateAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const ctx = await requireAdminAction("clinics.billing");
+    const o = z.object({ currency: z.enum(CURRENCIES as [string, ...string[]]), perUsd: z.coerce.number().positive(), locked: z.string().optional() }).parse(formObject(fd));
+    if (o.currency === "USD" && o.perUsd !== 1) throw new UserError("USD is the base currency (always 1).");
+    const locked = o.locked === "on";
+    await adminDb().insert(fxRates).values({ currency: o.currency, perUsd: o.perUsd, locked, source: "manual" })
+      .onConflictDoUpdate({ target: fxRates.currency, set: { perUsd: o.perUsd, locked, source: "manual", updatedAt: new Date() } });
+    await platformLog(ctx, "fx_rate_set", { entity: "fx_rate", entityId: o.currency, details: { perUsd: o.perUsd, locked } });
+    revalidatePath("/admin", "layout");
+    return { ok: true, message: `${o.currency} rate saved.` };
+  });
+}
+
+export async function refreshRatesAction(_: ActionState, _fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const ctx = await requireAdminAction("clinics.billing");
+    let n: number;
+    try { n = await refreshRates(); } catch (e) { throw new UserError(`Couldn't fetch rates: ${(e as Error).message}`); }
+    await platformLog(ctx, "fx_rates_refresh", { details: { updated: n } });
+    revalidatePath("/admin", "layout");
+    return { ok: true, message: `${n} rates updated (locked rates left as they are).` };
+  });
+}
+
+/** Local price list for one currency (major units in the form). Empty "reset" clears it back to converted USD prices. */
+export async function savePriceBookAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  return run(async () => {
+    const ctx = await requireAdminAction("clinics.billing");
+    const f = formObject(fd);
+    const currency = z.enum(CURRENCIES as [string, ...string[]]).parse(f.currency);
+    if (f.reset === "1") {
+      await adminDb().delete(priceBook).where(eq(priceBook.currency, currency));
+      await platformLog(ctx, "price_book_reset", { entity: "price_book", entityId: currency });
+      revalidatePath("/admin/pricing");
+      return { ok: true, message: `${currency} prices reset to converted USD prices.` };
+    }
+    const amt = z.coerce.number().positive().transform((v) => Math.round(v * 100));
+    const o = z.object({ solo: amt, clinic: amt, group: amt, scribe: amt, migrationBasic: amt, migrationStandard: amt, migrationFull: amt }).parse(f);
+    if (!(o.solo < o.clinic && o.clinic < o.group)) throw new UserError("Plan prices should go up: Solo < Clinic < Group.");
+    await adminDb().insert(priceBook).values({ currency, ...o, updatedBy: ctx.admin.id })
+      .onConflictDoUpdate({ target: priceBook.currency, set: { ...o, updatedBy: ctx.admin.id, updatedAt: new Date() } });
+    await platformLog(ctx, "price_book_set", { entity: "price_book", entityId: currency, details: o });
+    revalidatePath("/admin/pricing");
+    return { ok: true, message: `${currency} prices saved. New checkouts use them immediately.` };
   });
 }

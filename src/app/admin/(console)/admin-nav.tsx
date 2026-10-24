@@ -1,10 +1,10 @@
 "use client";
-import { Activity, Building2, CircleDollarSign, Gauge, ScrollText, Users } from "lucide-react";
+import { Activity, Building2, CircleDollarSign, Coins, Gauge, ScrollText, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/components/ui";
 
-const ICONS = { Gauge, Building2, CircleDollarSign, Activity, Users, ScrollText };
+const ICONS = { Gauge, Building2, CircleDollarSign, Coins, Activity, Users, ScrollText };
 export type AdminNavItem = { href: string; label: string; icon: keyof typeof ICONS };
 
 export function AdminNav({ items }: { items: AdminNavItem[] }) {
