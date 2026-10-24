@@ -1,12 +1,56 @@
+import { Activity, CalendarCheck, ShieldCheck, Wallet } from "lucide-react";
 import Link from "next/link";
+import { LogoMark } from "../(app)/nav";
 
+const PULSE = [
+  { icon: CalendarCheck, label: "No-shows cut", value: "−38%", tone: "text-ok" },
+  { icon: Wallet, label: "Cash-up time", value: "2 min", tone: "text-accent-2" },
+  { icon: Activity, label: "Patients in queue", value: "7", tone: "text-accent" },
+];
+
+/** Split-screen auth: cinematic brand panel + glass form. */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10">
-      <Link href="/" className="mb-6 flex items-center gap-2 text-lg font-semibold text-brand-800">
-        <span className="grid h-8 w-8 place-items-center rounded-md bg-brand-700 text-white">C</span> ClinicFlow
-      </Link>
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">{children}</div>
+    <main className="backdrop-os relative grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
+      <section className="relative hidden overflow-hidden border-r border-line lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <div className="pointer-events-none absolute -left-32 top-10 h-[28rem] w-[28rem] rounded-full bg-accent/25 blur-[120px]" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-40 right-0 h-[30rem] w-[30rem] rounded-full bg-accent-2/20 blur-[120px]" aria-hidden />
+        <Link href="/" className="relative flex items-center gap-3 text-lg font-semibold tracking-tight">
+          <LogoMark className="h-10 w-10" /> ClinicFlow
+        </Link>
+
+        <div className="relative max-w-lg">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-accent-2">Clinic operating system</p>
+          <h2 className="mt-4 text-5xl font-semibold leading-[1.05] tracking-[-0.03em]">
+            Your whole clinic,<br /><span className="text-aurora">one calm screen.</span>
+          </h2>
+          <p className="mt-5 text-base leading-relaxed text-muted">Queue, records, billing, mobile money, insurance and WhatsApp reminders — built for busy private clinics, and it keeps working when the internet doesn&apos;t.</p>
+
+          <div className="mt-10 grid grid-cols-3 gap-3">
+            {PULSE.map((p, i) => (
+              <div key={p.label} className="glass p-4 animate-rise" style={{ animationDelay: `${120 + i * 90}ms` }}>
+                <p.icon className={`h-4 w-4 ${p.tone}`} aria-hidden />
+                <div className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">{p.value}</div>
+                <div className="mt-0.5 text-[11px] text-subtle">{p.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative flex items-center gap-2 text-xs text-subtle">
+          <ShieldCheck className="h-4 w-4 text-ok" aria-hidden /> Encrypted records · Per-clinic isolation · Your data is always yours
+        </div>
+      </section>
+
+      <section className="relative flex flex-col items-center justify-center px-4 py-12 sm:px-8">
+        <Link href="/" className="mb-8 flex items-center gap-3 text-lg font-semibold tracking-tight lg:hidden">
+          <LogoMark /> ClinicFlow
+        </Link>
+        <div className="glass ring-aurora w-full max-w-[440px] p-7 sm:p-9 animate-rise">{children}</div>
+        <p className="mt-6 text-center text-xs text-subtle">
+          <Link href="/privacy" className="hover:text-fg">Privacy</Link> · <Link href="/terms" className="hover:text-fg">Terms</Link> · <Link href="/security" className="hover:text-fg">Security</Link>
+        </p>
+      </section>
     </main>
   );
 }

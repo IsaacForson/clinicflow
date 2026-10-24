@@ -1,14 +1,17 @@
 import { sql, type SQL } from "drizzle-orm";
+import {
+  AlertTriangle, ArrowUpRight, CalendarClock, CalendarPlus, ClipboardCheck, CreditCard, FilePenLine, FlaskConical, Inbox,
+  ListOrdered, PackageX, Receipt, Stethoscope, UserPlus, Users, Wallet,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Badge, Card, cx, LinkButton, PageHeader, Table, Td } from "@/components/ui";
+import { A, Avatar, Badge, BarChart, cx, EmptyState, IconTile, Kpi, LinkButton, Panel, Progress, StatusDot, type Tone } from "@/components/ui";
 import type { Tx } from "@/db";
 import { requireCtx, tx } from "@/lib/auth";
 import { addDays, dateTime, dayRange, localDay, money, timeOnly } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { hasFeature, PLANS } from "@/lib/plans";
 import { denseSeries, pct } from "../reports/range";
-import { BarChart } from "../reports/ui";
 
 export const metadata = { title: "Dashboard" };
 
@@ -16,6 +19,8 @@ type R = Record<string, string | number | null>;
 const q = async <T extends R = R>(t: Tx, s: SQL) => (await t.execute(s)) as unknown as T[];
 const one = async <T extends R = R>(t: Tx, s: SQL) => (await q<T>(t, s))[0];
 
+// Request-time clock (server component renders once per request).
+const nowMs = () => Date.now();
 const daysUntil = (d: Date) => Math.ceil((d.getTime() - Date.now()) / 86400_000);
 const QUEUE_LABELS: Record<string, string> = { waiting: "Waiting", with_doctor: "With doctor", lab: "Lab", billing: "Billing", pharmacy: "Pharmacy", done: "Done", left: "Left" };
 
@@ -88,149 +93,217 @@ export default async function DashboardPage() {
   }));
 
   const queueCount = (s: string) => d.queue.find((x) => x.status === s)?.n ?? 0;
+  const queueTotal = d.queue.filter((x) => x.status !== "left").reduce((n, x) => n + x.n, 0);
   const revenueToday = d.methods.reduce((s, m) => s + m.amount, 0);
   const series = denseSeries(from14, today, new Map(d.revenue.map((r) => [r.day, r.amount])));
+  const yesterday = series.at(-2)?.value ?? 0;
   const trialDays = ctx.tenant.planStatus === "trialing" && ctx.tenant.trialEndsAt ? daysUntil(ctx.tenant.trialEndsAt) : null;
   const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "numeric", hourCycle: "h23" }).format(new Date()));
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const branchName = ctx.branches.find((b) => b.id === branch)?.name;
+  const firstName = ctx.user.name.split(" ")[0];
+  const now = nowMs();
+  const upcoming = d.appts.filter((a) => new Date(a.startsAt).getTime() >= now - 15 * 60_000 && a.status !== "completed" && a.status !== "no_show");
+  const noShowRate = d.noShow ? pct(d.noShow.missed, d.noShow.total) : 0;
 
-  const sections: { key: string; node: ReactNode }[] = [];
-  const add = (key: string, show: boolean, node: ReactNode) => { if (show) sections.push({ key, node }); };
+  const actions = [
+    { href: "/patients/new", label: "Register patient", icon: UserPlus, show: can(role, "patients.write") },
+    { href: "/queue", label: "Add walk-in", icon: ListOrdered, show: sees.queue },
+    { href: "/appointments/new", label: "Book appointment", icon: CalendarPlus, show: can(role, "appointments.manage") },
+    { href: "/visits", label: "Consultations", icon: Stethoscope, show: practitioner && sees.clinical },
+    { href: "/billing/new", label: "New invoice", icon: Receipt, show: can(role, "billing.write") },
+    { href: "/billing/cashup", label: "Cash-up", icon: Wallet, show: can(role, "cashup") },
+  ].filter((a) => a.show).slice(0, 4);
 
-  add("practice", practitioner && sees.clinical, (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card title="My queue today" actions={<WidgetLink href="/queue">Open queue</WidgetLink>}>
-        <ul className="divide-y divide-slate-100 text-sm">
-          {d.myQueue.map((x) => (
-            <li key={x.ticketNo} className="flex items-center justify-between gap-2 py-2">
-              <span><span className="mr-2 font-mono text-xs text-slate-500">#{x.ticketNo}</span>
-                <Link href={x.visitId ? `/visits/${x.visitId}` : `/patients/${x.patientId}`} className="font-medium text-brand-800 hover:underline">{x.patient}</Link>
-                {x.priority > 0 && <span className="ml-2"><Badge tone="red">Urgent</Badge></span>}</span>
-              <Badge tone={x.status === "with_doctor" ? "teal" : "gray"}>{QUEUE_LABELS[x.status]}</Badge>
-            </li>
-          ))}
-          {d.myQueue.length === 0 && <li className="py-4 text-center text-slate-500">Nobody waiting for you.</li>}
-        </ul>
-      </Card>
-      <UnsignedCard rows={d.unsigned} count={d.unsignedCount} tz={tz} title="My unsigned notes" />
-    </div>
-  ));
+  const kpis: { key: string; node: ReactNode }[] = [];
+  if (sees.money) kpis.push({ key: "rev", node: <Kpi label="Revenue today" value={money(revenueToday, cur)} icon={<CreditCard />} tone="purple" trend={series.map((x) => x.value)} href="/billing"
+    delta={yesterday ? { value: `${revenueToday >= yesterday ? "+" : ""}${Math.round(((revenueToday - yesterday) / yesterday) * 100)}% vs yesterday`, good: revenueToday >= yesterday } : undefined} sub={!yesterday ? "last 14 days" : undefined} /> });
+  if (sees.queue || practitioner) kpis.push({ key: "q", node: <Kpi label="In the queue" value={queueCount("waiting") + queueCount("with_doctor")} icon={<ListOrdered />} tone="teal" href="/queue"
+    sub={`${queueCount("waiting")} waiting · ${queueCount("with_doctor")} with doctor`} /> });
+  if (sees.appts) kpis.push({ key: "a", node: <Kpi label="Appointments today" value={d.appts.length} icon={<CalendarClock />} tone="blue" href="/appointments"
+    sub={`${upcoming.length} still to come · ${d.walkIns} walk-ins`} /> });
+  if (sees.appts && d.noShow) kpis.push({ key: "ns", node: <Kpi label="No-show rate" value={`${noShowRate}%`} icon={<AlertTriangle />} tone={noShowRate > 15 ? "red" : "green"}
+    sub={`${d.noShow.missed} of ${d.noShow.total} in 30 days`} /> });
+  if (sees.money && d.outstanding && kpis.length < 4) kpis.push({ key: "o", node: <Kpi label="Patients owe" value={money(d.outstanding.total, cur)} icon={<Wallet />} tone="yellow" href="/billing" sub={`${d.outstanding.n} patients`} /> });
+  if (sees.clinical && kpis.length < 4) kpis.push({ key: "u", node: <Kpi label="Unsigned notes" value={d.unsignedCount} icon={<FilePenLine />} tone={d.unsignedCount ? "yellow" : "green"} href="/visits" /> });
 
-  add("money", sees.money, (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <Card title="Revenue, last 14 days" className="lg:col-span-2" actions={<WidgetLink href="/reports/revenue-day?preset=last30">Revenue report</WidgetLink>}>
-        <BarChart label="Money collected per day, last 14 days" data={series.map((s) => ({ label: s.day, value: s.value }))} format={(v) => money(v, cur)} />
-        <p className="mt-2 text-sm text-slate-600">14-day total <strong className="text-slate-900">{money(series.reduce((s, x) => s + x.value, 0), cur)}</strong></p>
-      </Card>
-      <Card title="Payments today" actions={<WidgetLink href="/billing">Billing</WidgetLink>}>
-        <ul className="space-y-1.5 text-sm">
-          {d.methods.map((m) => (
-            <li key={m.method} className="flex justify-between gap-2"><span className="capitalize text-slate-600">{m.method.replace("_", " ")} <span className="text-xs text-slate-400">×{m.n}</span></span><span className="font-medium tabular-nums">{money(m.amount, cur)}</span></li>
-          ))}
-          {d.methods.length === 0 && <li className="text-slate-500">No payments yet today.</li>}
-        </ul>
-        <div className="mt-3 flex justify-between border-t border-slate-100 pt-2 text-sm font-semibold"><span>Total</span><span className="tabular-nums">{money(revenueToday, cur)}</span></div>
-      </Card>
-      <Card title="Outstanding balances" className="lg:col-span-3" actions={<WidgetLink href="/reports/aging">Aging report</WidgetLink>}>
-        <p className="mb-2 text-sm text-slate-600"><strong className="text-lg text-slate-900">{money(d.outstanding?.total ?? 0, cur)}</strong> owed by {d.outstanding?.n ?? 0} patient{d.outstanding?.n === 1 ? "" : "s"}</p>
-        <Table head={["Patient", "Patient no.", "Balance"]} empty="No outstanding balances.">
-          {d.debtors.map((x) => (
-            <tr key={x.id}><Td><Link href={`/patients/${x.id}`} className="font-medium text-brand-800 hover:underline">{x.patient}</Link></Td><Td className="font-mono text-xs">{x.patientNo}</Td><Td className="tabular-nums">{money(x.balance, cur)}</Td></tr>
-          ))}
-        </Table>
-      </Card>
-    </div>
-  ));
+  const alerts = [
+    sees.lab && d.lab > 0 && { href: "/lab", icon: <FlaskConical />, tone: "blue" as Tone, text: `${d.lab} lab order${d.lab === 1 ? "" : "s"} waiting for results` },
+    sees.stock && d.lowStock > 0 && { href: "/pharmacy/inventory", icon: <PackageX />, tone: "red" as Tone, text: `${d.lowStock} item${d.lowStock === 1 ? "" : "s"} at or below reorder level` },
+    sees.messages && d.inbox > 0 && { href: "/messages/inbox", icon: <Inbox />, tone: "purple" as Tone, text: `${d.inbox} unread patient message${d.inbox === 1 ? "" : "s"}` },
+    sees.clinical && d.unsignedCount > 0 && !practitioner && { href: "/visits", icon: <FilePenLine />, tone: "yellow" as Tone, text: `${d.unsignedCount} consultation note${d.unsignedCount === 1 ? "" : "s"} not signed` },
+  ].filter(Boolean) as { href: string; icon: ReactNode; tone: Tone; text: string }[];
 
-  add("today", sees.appts, (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <Card title={`Today's patients (${d.appts.length + d.walkIns})`} className="lg:col-span-2" actions={<WidgetLink href="/appointments">Appointments</WidgetLink>}>
-        <p className="mb-2 text-sm text-slate-600">{d.appts.length} appointment{d.appts.length === 1 ? "" : "s"}{sees.queue && ` · ${d.walkIns} walk-in${d.walkIns === 1 ? "" : "s"}`}</p>
-        <Table head={["Time", "Patient", "With", "Status"]} empty="No appointments today.">
-          {d.appts.slice(0, 10).map((a) => (
-            <tr key={a.id}>
-              <Td className="tabular-nums">{timeOnly(a.startsAt, tz)}</Td>
-              <Td><Link href={`/patients/${a.patientId}`} className="font-medium text-brand-800 hover:underline">{a.patient}</Link></Td>
-              <Td>{a.doctor ?? "Any"}</Td>
-              <Td><Badge tone={a.status === "no_show" ? "red" : a.status === "completed" ? "green" : a.status === "arrived" ? "teal" : "gray"}>{a.status.replace("_", " ")}</Badge></Td>
-            </tr>
-          ))}
-        </Table>
-        {d.appts.length > 10 && <p className="mt-2 text-xs text-slate-500">+ {d.appts.length - 10} more</p>}
-      </Card>
-      {sees.queue && (
-        <Card title="Queue now" actions={<WidgetLink href="/queue">Queue</WidgetLink>}>
-          <ul className="grid grid-cols-2 gap-2 text-sm">
-            {["waiting", "with_doctor", "lab", "billing", "pharmacy", "done"].map((s) => (
-              <li key={s} className="rounded-md bg-slate-50 px-3 py-2"><div className="text-xs text-slate-500">{QUEUE_LABELS[s]}</div><div className="text-xl font-semibold tabular-nums">{queueCount(s)}</div></li>
-            ))}
-          </ul>
-        </Card>
-      )}
-    </div>
-  ));
-
-  add("unsigned", sees.clinical && !practitioner, <UnsignedCard rows={d.unsigned} count={d.unsignedCount} tz={tz} title="Open (unsigned) consultations" />);
-
-  const kpis: [string, ReactNode, string, ReactNode?, boolean?][] = [
-    ...(sees.money ? [["Revenue today", money(revenueToday, cur), "/billing"] as [string, ReactNode, string]] : []),
-    ...(sees.appts ? [["No-show rate (30 days)", `${pct(d.noShow?.missed ?? 0, d.noShow?.total ?? 0)}%`, "/reports/noshow-practitioner", `${d.noShow?.missed ?? 0} of ${d.noShow?.total ?? 0} appointments`] as [string, ReactNode, string, ReactNode]] : []),
-    ...(sees.clinical ? [["Unsigned notes", d.unsignedCount, "/visits", undefined, d.unsignedCount > 0] as [string, ReactNode, string, undefined, boolean]] : []),
-    ...(sees.lab ? [["Lab results awaited", d.lab, "/lab"] as [string, ReactNode, string]] : []),
-    ...(sees.stock ? [["Low-stock items", d.lowStock, "/pharmacy/inventory", undefined, d.lowStock > 0] as [string, ReactNode, string, undefined, boolean]] : []),
-    ...(sees.messages ? [["Unread messages", d.inbox, "/messages", undefined, d.inbox > 0] as [string, ReactNode, string, undefined, boolean]] : []),
-  ];
-
-  // Cashiers see money first, practitioners their own work first; everyone else (owners) sees the day first.
-  const order = role === "cashier" ? ["money", "today", "practice", "unsigned"] : practitioner ? ["practice", "today", "money", "unsigned"] : ["today", "money", "unsigned", "practice"];
-  sections.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+  const lanes = ["waiting", "with_doctor", "lab", "billing", "pharmacy", "done"];
 
   return (
-    <>
-      <PageHeader title={`${greeting}, ${ctx.user.name.split(" ")[0]}`} subtitle={[ctx.tenant.name, ctx.branches.length > 1 ? branchName : null, dateTime(new Date(), tz, { dateStyle: "full" })].filter(Boolean).join(" · ")} />
-      {can(role, "settings.manage") && (ctx.access === "read_only" || (trialDays !== null && trialDays <= 14)) && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900 ring-1 ring-brand-200">
-          <span>
-            {ctx.access === "read_only" ? "Your account is read-only. All your data is still here and exportable."
-              : trialDays! > 0 ? `You're on the ${PLANS[ctx.tenant.plan].name} plan trial — ${trialDays} day${trialDays === 1 ? "" : "s"} left. No card needed until you choose a plan.`
-              : "Your trial has ended."}
-          </span>
-          <LinkButton href="/settings/subscription">{ctx.access === "read_only" ? "Renew" : "Choose a plan"}</LinkButton>
+    <div className="space-y-6">
+      {/* Mission brief */}
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="glass ring-aurora relative overflow-hidden p-6 sm:p-8 animate-rise">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-aurora opacity-20 blur-[90px]" aria-hidden />
+          <div className="relative flex flex-wrap items-center gap-2 text-xs text-muted">
+            <StatusDot tone="green" label="Live" />
+            <span>{dateTime(new Date(), tz, { weekday: "long", day: "numeric", month: "long" })}</span>
+            <span className="text-subtle">·</span><span>{branchName ?? ctx.tenant.name}</span>
+          </div>
+          <h1 className="relative mt-4 text-[34px] font-semibold leading-tight tracking-[-0.03em] sm:text-[42px]">
+            {greeting}, <span className="text-aurora">{firstName}</span>
+          </h1>
+          <p className="relative mt-2 max-w-xl text-[15px] text-muted">
+            {queueTotal ? `${queueCount("waiting")} waiting, ${queueCount("with_doctor")} with a doctor` : "The queue is clear"}
+            {sees.appts ? ` · ${upcoming.length} appointment${upcoming.length === 1 ? "" : "s"} still to come today` : ""}
+            {sees.money ? ` · ${money(revenueToday, cur)} collected so far` : ""}.
+          </p>
+          {trialDays !== null && trialDays > 7 && can(role, "settings.manage") && (
+            <p className="relative mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs text-fg">
+              {PLANS[ctx.tenant.plan].name} trial · {trialDays} days left <A href="/settings/subscription" className="text-xs">Choose a plan</A>
+            </p>
+          )}
         </div>
-      )}
-      {kpis.length > 0 && (
-        <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-          {kpis.map(([label, value, href, sub, alert]) => (
-            <Link key={label} href={href} className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200 transition hover:ring-brand-400 focus-visible:outline-2 focus-visible:outline-brand-600">
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div>
-              <div className={cx("mt-1 text-2xl font-semibold tabular-nums", alert ? "text-amber-700" : "text-slate-900")}>{value}</div>
-              {sub && <div className="mt-0.5 text-xs text-slate-500">{sub}</div>}
+        {actions.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {actions.map((a, i) => (
+              <Link key={a.href} href={a.href} className="glass group flex flex-col justify-between gap-6 p-5 transition hover:-translate-y-0.5 hover:border-line-strong animate-rise" style={{ animationDelay: `${60 * i}ms` }}>
+                <div className="flex items-center justify-between">
+                  <IconTile><a.icon /></IconTile>
+                  <ArrowUpRight className="h-4 w-4 text-subtle transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent-2" aria-hidden />
+                </div>
+                <span className="text-sm font-medium">{a.label}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {kpis.length > 0 && <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{kpis.slice(0, 4).map((k) => <div key={k.key}>{k.node}</div>)}</section>}
+
+      {alerts.length > 0 && (
+        <section className="flex flex-wrap gap-2" aria-label="Needs attention">
+          {alerts.map((a) => (
+            <Link key={a.href} href={a.href} className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm transition hover:border-line-strong">
+              <IconTile tone={a.tone} className="h-6 w-6 rounded-lg [&>svg]:h-3.5 [&>svg]:w-3.5">{a.icon}</IconTile>{a.text}
             </Link>
           ))}
-        </div>
+        </section>
       )}
-      <div className="space-y-4">{sections.map((s) => <div key={s.key}>{s.node}</div>)}</div>
-    </>
-  );
-}
 
-function WidgetLink({ href, children }: { href: string; children: ReactNode }) {
-  return <Link href={href} className="text-xs font-medium text-brand-700 hover:text-brand-900 hover:underline">{children} →</Link>;
-}
+      <section className="grid gap-4 xl:grid-cols-12">
+        <div className="space-y-4 xl:col-span-8">
+          {(sees.queue || practitioner) && (
+            <Panel title="Live queue" eyebrow="Patient flow" icon={<Users />} actions={<LinkButton href="/queue" variant="ghost" size="sm">Open board</LinkButton>}>
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+                {lanes.map((l) => {
+                  const n = queueCount(l);
+                  return (
+                    <div key={l} className={cx("rounded-2xl border p-3", n ? "border-line-strong bg-surface-2" : "border-line bg-surface")}>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">{QUEUE_LABELS[l]}</div>
+                      <div className="mt-1.5 text-2xl font-semibold tabular-nums">{n}</div>
+                      <Progress value={queueTotal ? (n / queueTotal) * 100 : 0} className="mt-2" tone={l === "done" ? "green" : "purple"} />
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+          )}
 
-function UnsignedCard({ rows, count, tz, title }: { rows: { id: string; startedAt: string; patient: string; doctor: string | null }[]; count: number; tz: string; title: string }) {
-  return (
-    <Card title={`${title} (${count})`} actions={<WidgetLink href="/visits">Consultations</WidgetLink>}>
-      <ul className="divide-y divide-slate-100 text-sm">
-        {rows.map((v) => (
-          <li key={v.id} className="flex items-center justify-between gap-2 py-2">
-            <Link href={`/visits/${v.id}`} className="font-medium text-brand-800 hover:underline">{v.patient}</Link>
-            <span className="text-xs text-slate-500">{v.doctor ? `${v.doctor} · ` : ""}{dateTime(v.startedAt, tz)}</span>
-          </li>
-        ))}
-        {rows.length === 0 && <li className="py-4 text-center text-slate-500">All notes are signed.</li>}
-      </ul>
-    </Card>
+          {sees.money && (
+            <Panel title="Revenue" eyebrow="Last 14 days" icon={<CreditCard />} actions={<LinkButton href="/reports" variant="ghost" size="sm">Reports</LinkButton>}>
+              <BarChart data={series.map((x) => ({ label: x.day.slice(8), value: x.value }))} format={(v) => money(v, cur)} height={180} />
+              {d.methods.length > 0 && (
+                <div className="mt-6 grid gap-3 border-t border-line pt-5 sm:grid-cols-2">
+                  {d.methods.map((m) => (
+                    <div key={m.method}>
+                      <div className="flex justify-between text-xs"><span className="capitalize text-muted">{m.method.replace("_", " ")} · {m.n}</span><span className="tabular-nums text-fg">{money(m.amount, cur)}</span></div>
+                      <Progress value={revenueToday ? (m.amount / revenueToday) * 100 : 0} className="mt-1.5" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          )}
+
+          {sees.appts && (
+            <Panel title="Today's schedule" eyebrow={`${d.appts.length} appointments`} icon={<CalendarClock />} actions={<LinkButton href="/appointments" variant="ghost" size="sm">Calendar</LinkButton>}>
+              {d.appts.length === 0 ? <EmptyState compact title="No appointments booked today" /> : (
+                <ol className="relative space-y-1 before:absolute before:inset-y-2 before:left-[68px] before:w-px before:bg-line">
+                  {d.appts.map((a) => {
+                    const past = new Date(a.startsAt).getTime() < now;
+                    return (
+                      <li key={a.id}>
+                        <Link href={`/appointments/${a.id}`} className="flex items-center gap-4 rounded-xl px-2 py-2 transition hover:bg-surface-2">
+                          <span className={cx("w-12 text-right font-mono text-xs tabular-nums", past ? "text-subtle" : "text-fg")}>{timeOnly(a.startsAt, tz)}</span>
+                          <span className={cx("relative z-10 h-2.5 w-2.5 rounded-full ring-4 ring-canvas", a.status === "arrived" ? "bg-accent-2" : past ? "bg-subtle" : "bg-accent")} aria-hidden />
+                          <Avatar name={a.patient} size="sm" />
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium">{a.patient}<span className="ml-2 font-normal text-muted">{a.doctor ?? ""}</span></span>
+                          <Badge tone={a.status === "arrived" ? "teal" : a.status === "completed" ? "green" : a.status === "no_show" ? "red" : a.status === "confirmed" ? "blue" : "gray"}>{a.status.replace("_", " ")}</Badge>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </Panel>
+          )}
+        </div>
+
+        <div className="space-y-4 xl:col-span-4">
+          {practitioner && sees.clinical && (
+            <Panel title="Waiting for you" eyebrow="My patients" icon={<Stethoscope />} actions={<LinkButton href="/visits" variant="ghost" size="sm">All</LinkButton>}>
+              {d.myQueue.length === 0 ? <EmptyState compact title="Nobody is waiting for you" /> : (
+                <div className="-mx-2 space-y-0.5">
+                  {d.myQueue.map((x) => (
+                    <Link key={x.ticketNo} href={x.visitId ? `/visits/${x.visitId}` : `/visits/new?patient=${x.patientId}`}
+                      className={cx("flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-surface-2", x.priority > 0 && "bg-bad/5")}>
+                      <span className="grid h-9 w-11 place-items-center rounded-lg border border-line bg-surface-2 font-mono text-sm font-semibold tabular-nums">#{x.ticketNo}</span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{x.patient}</span>
+                      {x.priority > 0 ? <Badge tone="red" pulse>Urgent</Badge> : <Badge tone={x.status === "with_doctor" ? "teal" : "gray"}>{QUEUE_LABELS[x.status]}</Badge>}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          )}
+
+          {sees.clinical && (
+            <Panel title={practitioner ? "My unsigned notes" : "Unsigned notes"} eyebrow={`${d.unsignedCount} open`} icon={<ClipboardCheck />}>
+              {d.unsigned.length === 0 ? <EmptyState compact title="All notes are signed" /> : (
+                <div className="-mx-2 space-y-0.5">
+                  {d.unsigned.map((v) => (
+                    <Link key={v.id} href={`/visits/${v.id}`} className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-surface-2">
+                      <Avatar name={v.patient} size="sm" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{v.patient}</span>
+                        <span className="block truncate text-xs text-muted">{dateTime(v.startedAt, tz)}{v.doctor ? ` · ${v.doctor}` : ""}</span>
+                      </span>
+                      <ArrowUpRight className="h-4 w-4 text-subtle" aria-hidden />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          )}
+
+          {sees.money && d.outstanding && (
+            <Panel title="Patients owe" eyebrow={`${d.outstanding.n} patients`} icon={<Wallet />}>
+              <div className="text-3xl font-semibold tracking-tight tabular-nums">{money(d.outstanding.total, cur)}</div>
+              <div className="-mx-2 mt-4 space-y-0.5">
+                {d.debtors.map((x) => (
+                  <Link key={x.id} href={`/patients/${x.id}`} className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-surface-2">
+                    <Avatar name={x.patient} size="sm" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{x.patient}</span>
+                      <span className="block font-mono text-[11px] text-subtle">{x.patientNo}</span>
+                    </span>
+                    <span className="text-sm tabular-nums text-warn">{money(x.balance, cur)}</span>
+                  </Link>
+                ))}
+                {d.debtors.length === 0 && <EmptyState compact title="No outstanding balances" />}
+              </div>
+            </Panel>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
