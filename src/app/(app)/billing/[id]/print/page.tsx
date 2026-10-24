@@ -23,44 +23,52 @@ export default async function InvoicePrintPage({ params }: PageProps<"/billing/[
   if (!data) notFound();
   const { i, p } = data;
   const tz = ctx.tenant.timezone, cur = ctx.tenant.currency;
-  const row = (k: string, v: string, strong = false) => <tr key={k} className={strong ? "font-semibold" : ""}><td className="py-1 pr-6 text-right text-slate-600">{k}</td><td className="py-1 text-right">{v}</td></tr>;
+  const row = (k: string, v: string, strong = false) => <tr key={k} className={strong ? "border-t border-line-strong font-semibold text-fg" : "text-muted"}><td className="py-1.5 pr-8 text-right">{k}</td><td className="py-1.5 text-right tabular-nums text-fg">{v}</td></tr>;
+  const due = i.status === "void" ? 0 : i.patientPortionMinor - i.paidMinor;
   return (
     <PrintDoc tenant={ctx.tenant} title={i.status === "void" ? "Invoice (VOID)" : "Invoice"} back={`/billing/${i.id}`}>
-      <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
+      <div className="mb-8 grid gap-6 text-sm sm:grid-cols-2">
         <div>
-          <div className="text-xs uppercase text-slate-500">Bill to</div>
-          <div className="font-semibold">{fullName(p)}</div>
-          <div>{p.patientNo}{p.phone && ` · ${p.phone}`}</div>
-          {data.insurer && <div>{data.insurer.name} · Member {p.memberNo ?? "—"}</div>}
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">Bill to</div>
+          <div className="mt-1 text-base font-semibold text-fg">{fullName(p)}</div>
+          <div className="text-muted"><span className="font-mono text-xs">{p.patientNo}</span>{p.phone && ` · ${p.phone}`}</div>
+          {data.insurer && <div className="text-muted">{data.insurer.name} · Member <span className="font-mono text-xs">{p.memberNo ?? "—"}</span></div>}
         </div>
-        <div className="text-right">
-          <div>Invoice no. <strong>{i.invoiceNo}</strong></div>
-          <div>Date {dateOnly(i.issuedAt ?? i.createdAt, tz)}</div>
-          <div className="capitalize">Status {i.status.replace("_", " ")}</div>
-        </div>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 sm:justify-self-end sm:text-right">
+          <dt className="text-subtle">Invoice no.</dt><dd className="font-mono font-semibold text-fg">{i.invoiceNo}</dd>
+          <dt className="text-subtle">Date</dt><dd className="text-fg">{dateOnly(i.issuedAt ?? i.createdAt, tz)}</dd>
+          <dt className="text-subtle">Status</dt><dd className="capitalize text-fg">{i.status.replace("_", " ")}</dd>
+        </dl>
       </div>
       <table className="w-full text-sm">
-        <thead><tr className="border-b border-slate-300 text-left text-xs uppercase text-slate-500"><th className="py-1">Description</th><th className="py-1 text-right">Qty</th><th className="py-1 text-right">Unit</th><th className="py-1 text-right">Amount</th></tr></thead>
+        <thead><tr className="border-b border-line-strong text-left text-[10px] uppercase tracking-[0.16em] text-subtle"><th className="pb-2 font-semibold">Description</th><th className="pb-2 text-right font-semibold">Qty</th><th className="pb-2 text-right font-semibold">Unit</th><th className="pb-2 text-right font-semibold">Amount</th></tr></thead>
         <tbody>{data.lines.map((l) => (
-          <tr key={l.id} className="border-b border-slate-100"><td className="py-1">{l.description}{data.insurer && !l.insurerCovered && <span className="text-xs text-slate-500"> (not covered)</span>}</td><td className="py-1 text-right">{l.quantity}</td><td className="py-1 text-right">{money(l.unitPriceMinor, cur)}</td><td className="py-1 text-right">{money(l.totalMinor, cur)}</td></tr>
+          <tr key={l.id} className="border-b border-line"><td className="py-2.5 text-fg">{l.description}{data.insurer && !l.insurerCovered && <span className="text-xs text-subtle"> (not covered)</span>}</td><td className="py-2.5 text-right tabular-nums">{l.quantity}</td><td className="py-2.5 text-right tabular-nums">{money(l.unitPriceMinor, cur)}</td><td className="py-2.5 text-right tabular-nums text-fg">{money(l.totalMinor, cur)}</td></tr>
         ))}</tbody>
       </table>
-      <table className="ml-auto mt-4 text-sm"><tbody>
-        {row("Subtotal", money(i.subtotalMinor, cur))}
-        {i.discountMinor > 0 && row("Discount", `− ${money(i.discountMinor, cur)}`)}
-        {row("Total", money(i.totalMinor, cur), true)}
-        {data.insurer && row(`${data.insurer.name} share`, money(i.insurerPortionMinor, cur))}
-        {row("Patient share", money(i.patientPortionMinor, cur))}
-        {row("Paid", money(i.paidMinor, cur))}
-        {row("Balance due", money(i.status === "void" ? 0 : i.patientPortionMinor - i.paidMinor, cur), true)}
-      </tbody></table>
+      <div className="mt-6 flex justify-end">
+        <table className="text-sm"><tbody>
+          {row("Subtotal", money(i.subtotalMinor, cur))}
+          {i.discountMinor > 0 && row("Discount", `− ${money(i.discountMinor, cur)}`)}
+          {row("Total", money(i.totalMinor, cur), true)}
+          {data.insurer && row(`${data.insurer.name} share`, money(i.insurerPortionMinor, cur))}
+          {row("Patient share", money(i.patientPortionMinor, cur))}
+          {row("Paid", money(i.paidMinor, cur))}
+        </tbody></table>
+      </div>
+      <div className="mt-4 flex justify-end">
+        <div className="rounded-2xl border border-line-strong px-6 py-4 text-right">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">Balance due</div>
+          <div className="text-2xl font-semibold tabular-nums text-fg">{money(due, cur)}</div>
+        </div>
+      </div>
       {data.payments.length > 0 && (
-        <div className="mt-6 text-xs text-slate-600">
-          <div className="font-semibold uppercase">Payments</div>
-          {data.payments.map((x) => <div key={x.id}>{dateOnly(x.receivedAt, tz)} · {x.receiptNo} · {METHOD_LABEL[x.method]} · {money(x.amountMinor, cur)}</div>)}
+        <div className="mt-8 border-t border-line pt-4 text-xs text-muted">
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">Payments</div>
+          {data.payments.map((x) => <div key={x.id} className="flex justify-between gap-4 py-0.5"><span>{dateOnly(x.receivedAt, tz)} · <span className="font-mono">{x.receiptNo}</span> · {METHOD_LABEL[x.method]}</span><span className="tabular-nums text-fg">{money(x.amountMinor, cur)}</span></div>)}
         </div>
       )}
-      <p className="mt-10 text-center text-xs text-slate-500">Thank you for choosing {ctx.tenant.name}.</p>
+      <p className="mt-12 text-center text-xs text-subtle">Thank you for choosing {ctx.tenant.name}.</p>
     </PrintDoc>
   );
 }

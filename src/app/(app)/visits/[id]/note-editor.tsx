@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Field, Input, Select, Textarea } from "@/components/ui";
+import { Cloud, CloudOff, FileSignature, FileText, Save, Sparkles } from "lucide-react";
+import { Button, cx, Field, IconTile, Input, Select, Textarea } from "@/components/ui";
 import { CLINICAL_TEMPLATES, getTemplate } from "@/lib/clinical-templates";
 import { saveNoteAction, setTemplateAction, signVisitAction } from "../actions";
 import { ScribePanel, type Draft } from "./scribe-panel";
@@ -112,49 +113,80 @@ export function NoteEditor(props: {
   }
 
   const fields = getTemplate(template).fields;
+  const dirtyish = status?.error ? "bad" : status ? "ok" : "idle";
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {props.scribe.allowed
         ? <ScribePanel visitId={props.visitId} onInsert={insertDraft} />
-        : props.scribe.reason && <p className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">AI scribe: {props.scribe.reason}</p>}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <Field label="Template" className="w-48">
-          <Select value={template} onChange={(e) => void changeTemplate(e.target.value)}>
-            {Object.values(CLINICAL_TEMPLATES).map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
-          </Select>
-        </Field>
-        <span role="status" className={status?.error ? "text-sm text-red-600" : "text-sm text-slate-500"}>{status?.text ?? "Autosaves every 20 seconds"}</span>
-      </div>
-      {SOAP.map((f) => (
-        <Field key={f.key} label={f.label}>
-          {f.rows === 1
-            ? <Input value={note[f.key]} onChange={(e) => edit({ [f.key]: e.target.value })} onBlur={() => void save(false)} />
-            : <Textarea rows={f.rows} value={note[f.key]} onChange={(e) => edit({ [f.key]: e.target.value })} onBlur={() => void save(false)} />}
-        </Field>
-      ))}
-      {fields.length > 0 && (
-        <fieldset className="grid gap-3 rounded-md bg-slate-50 p-3 sm:grid-cols-2">
-          <legend className="px-1 text-sm font-semibold text-slate-700">{getTemplate(template).label} details</legend>
-          {fields.map((f) => (
-            <Field key={f.key} label={f.label} className={f.multiline ? "sm:col-span-2" : undefined}>
-              {f.multiline
-                ? <Textarea rows={2} value={extra[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => edit({}, { [f.key]: e.target.value })} />
-                : <Input value={extra[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => edit({}, { [f.key]: e.target.value })} />}
-            </Field>
-          ))}
-        </fieldset>
-      )}
-      <div className="flex flex-wrap items-end gap-3 border-t border-slate-100 pt-3">
-        <Button type="button" variant="secondary" onClick={() => void save(true)}>Save</Button>
-        {props.canSign && (
-          <>
-            <Field label="Follow-up date (optional)" className="w-48">
-              <Input type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} />
-            </Field>
-            <Button type="button" onClick={() => void sign()} disabled={signing}>{signing ? "Signing…" : "Sign note"}</Button>
-          </>
+        : props.scribe.reason && (
+          <p className="flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-2.5 text-xs text-muted">
+            <Sparkles className="h-3.5 w-3.5 text-accent" aria-hidden />AI scribe: {props.scribe.reason}
+          </p>
         )}
-      </div>
+
+      <section className="glass animate-rise overflow-hidden">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+          <div className="flex items-center gap-3">
+            <IconTile><FileText /></IconTile>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">Consultation note</div>
+              <h2 className="text-[15px] font-semibold tracking-tight text-fg">SOAP</h2>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span role="status" className={cx("inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs",
+              dirtyish === "bad" ? "bg-bad/12 text-bad" : dirtyish === "ok" ? "bg-ok/12 text-ok" : "bg-surface-3 text-muted")}>
+              {dirtyish === "bad" ? <CloudOff className="h-3.5 w-3.5" aria-hidden /> : <Cloud className="h-3.5 w-3.5" aria-hidden />}
+              {status?.text ?? "Autosaves every 20 seconds"}
+            </span>
+            <label className="sr-only" htmlFor="tpl">Template</label>
+            <Select id="tpl" value={template} onChange={(e) => void changeTemplate(e.target.value)} className="h-9 w-44 text-xs">
+              {Object.values(CLINICAL_TEMPLATES).map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
+            </Select>
+          </div>
+        </header>
+
+        <div className="space-y-5 p-5">
+          {SOAP.map((f) => (
+            <div key={f.key} className="group flex gap-3">
+              <span className="mt-6 grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-xs font-semibold text-accent transition group-focus-within:border-accent group-focus-within:bg-accent/15" aria-hidden>
+                {f.key === "complaint" ? "C" : f.key[0].toUpperCase()}
+              </span>
+              <Field label={f.label} className="min-w-0 flex-1">
+                {f.rows === 1
+                  ? <Input value={note[f.key]} onChange={(e) => edit({ [f.key]: e.target.value })} onBlur={() => void save(false)} placeholder="Why are they here today?" />
+                  : <Textarea rows={f.rows} value={note[f.key]} onChange={(e) => edit({ [f.key]: e.target.value })} onBlur={() => void save(false)} />}
+              </Field>
+            </div>
+          ))}
+          {fields.length > 0 && (
+            <fieldset className="grid gap-4 rounded-2xl border border-accent/25 bg-accent/5 p-4 sm:grid-cols-2">
+              <legend className="px-1.5 text-xs font-semibold text-accent">{getTemplate(template).label} details</legend>
+              {fields.map((f) => (
+                <Field key={f.key} label={f.label} className={f.multiline ? "sm:col-span-2" : undefined}>
+                  {f.multiline
+                    ? <Textarea rows={2} value={extra[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => edit({}, { [f.key]: e.target.value })} />
+                    : <Input value={extra[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => edit({}, { [f.key]: e.target.value })} />}
+                </Field>
+              ))}
+            </fieldset>
+          )}
+        </div>
+
+        <footer className="sticky bottom-0 z-10 flex flex-wrap items-end justify-between gap-3 border-t border-line bg-solid/90 px-5 py-4 backdrop-blur">
+          <Button type="button" variant="secondary" onClick={() => void save(true)}><Save className="h-4 w-4" aria-hidden />Save draft</Button>
+          {props.canSign && (
+            <div className="flex flex-wrap items-end gap-3">
+              <Field label="Follow-up date (optional)" className="w-44">
+                <Input type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} />
+              </Field>
+              <Button type="button" size="lg" onClick={() => void sign()} disabled={signing}>
+                <FileSignature className="h-4 w-4" aria-hidden />{signing ? "Signing…" : "Sign note"}
+              </Button>
+            </div>
+          )}
+        </footer>
+      </section>
     </div>
   );
 }

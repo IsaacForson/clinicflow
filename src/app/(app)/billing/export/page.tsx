@@ -1,4 +1,5 @@
-import { Button, Card, Field, Input, PageHeader, Select } from "@/components/ui";
+import { Download, FileSpreadsheet, Lock } from "lucide-react";
+import { Button, EmptyState, Field, Input, PageHeader, Panel, Select } from "@/components/ui";
 import { requireCtx } from "@/lib/auth";
 import { localDay } from "@/lib/format";
 import { hasFeature } from "@/lib/plans";
@@ -11,13 +12,13 @@ export default async function ExportPage() {
   const to = localDay(ctx.tenant.timezone);
   return (
     <>
-      <PageHeader title="Accounting export" subtitle="CSV files ready to import into QuickBooks or Zoho Books. Covers all branches." />
+      <PageHeader title="Accounting export" eyebrow="Billing" icon={<FileSpreadsheet />} subtitle="CSV files ready to import into QuickBooks or Zoho Books. Covers all branches." />
       {!allowed ? (
-        <Card><p className="text-sm text-slate-600">Accounting export is part of the Group plan. Ask the clinic owner to download it.</p></Card>
+        <Panel className="mx-auto max-w-2xl"><EmptyState icon={<Lock />} title="Part of the Group plan">Accounting export is part of the Group plan. Ask the clinic owner to download it.</EmptyState></Panel>
       ) : (
-        <Card className="max-w-2xl">
-          <form action="/billing/export/csv" method="get" className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
+        <Panel className="mx-auto max-w-2xl" title="Build your export" eyebrow="CSV" icon={<Download />} glow>
+          <form action="/billing/export/csv" method="get" className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="From"><Input type="date" name="from" defaultValue={to.slice(0, 8) + "01"} required /></Field>
               <Field label="To"><Input type="date" name="to" defaultValue={to} required /></Field>
               <Field label="Data">
@@ -31,9 +32,12 @@ export default async function ExportPage() {
                 </Select>
               </Field>
             </div>
-            <Button type="submit">Download CSV</Button>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+              <p className="text-xs text-subtle">Amounts are exported in {ctx.tenant.currency}. Dates use the clinic time zone.</p>
+              <Button type="submit" size="lg"><Download className="h-4 w-4" aria-hidden />Download CSV</Button>
+            </div>
           </form>
-        </Card>
+        </Panel>
       )}
     </>
   );

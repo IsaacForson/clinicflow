@@ -1,4 +1,5 @@
 "use client";
+import { CloudOff } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { clearOfflineData, flush, listOps } from "@/lib/offline-client";
 
@@ -16,8 +17,9 @@ export function OfflineBanner() {
   const online = useOnline();
   if (online) return null;
   return (
-    <div role="status" className="bg-gradient-to-r from-slate-900 to-brand-950 px-4 py-2 text-center text-sm text-white print:hidden">
-      You are offline. Recent pages stay available; visit notes and payments are saved on this device and sync when you reconnect.
+    <div role="status" className="flex items-center justify-center gap-2 border-b border-warn/30 bg-warn/12 px-4 py-2 text-center text-sm text-fg backdrop-blur print:hidden">
+      <CloudOff className="h-4 w-4 shrink-0 text-warn" aria-hidden />
+      <span><strong className="font-semibold text-warn">You are offline.</strong> Recent pages stay available; visit notes and payments are saved on this device and sync when you reconnect.</span>
     </div>
   );
 }
@@ -33,7 +35,7 @@ export function SignOutButton({ action, className, children }: { action: () => P
       await clearOfflineData().catch(() => 0);
       await action();
     }}>
-      <button className={className ?? "text-slate-600 hover:text-slate-900"}>{children ?? "Sign out"}</button>
+      <button className={className ?? "text-muted transition hover:text-fg"}>{children ?? "Sign out"}</button>
     </form>
   );
 }

@@ -1,14 +1,15 @@
-import { PageHeader } from "@/components/ui";
-import { SettingsTabs } from "./tabs";
+import { SettingsHeader, SettingsTabs } from "./tabs";
 
 export const metadata = { title: "Settings" };
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <PageHeader title="Settings" />
-      <SettingsTabs />
-      {children}
+      <SettingsHeader />
+      <div className="grid gap-6 lg:grid-cols-[264px_minmax(0,1fr)]">
+        <SettingsTabs />
+        <div className="min-w-0 space-y-6">{children}</div>
+      </div>
     </>
   );
 }

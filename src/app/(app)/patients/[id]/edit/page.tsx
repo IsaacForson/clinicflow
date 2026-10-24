@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
+import { UserPen } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Card, PageHeader } from "@/components/ui";
+import { LinkButton, PageHeader } from "@/components/ui";
 import { insurers, patients } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { fullName } from "@/lib/format";
@@ -17,8 +18,9 @@ export default async function EditPatientPage({ params }: PageProps<"/patients/[
   if (!p) notFound();
   return (
     <>
-      <PageHeader title={`Edit ${fullName(p)}`} />
-      <Card><PatientForm action={updatePatientAction} patient={p} insurers={ins} redirectTo={`/patients/${id}`} /></Card>
+      <PageHeader eyebrow={`Patient · ${p.patientNo}`} icon={<UserPen />} title={`Edit ${fullName(p)}`}
+        actions={<LinkButton variant="ghost" href={`/patients/${id}`}>Cancel</LinkButton>} />
+      <PatientForm action={updatePatientAction} patient={p} insurers={ins} redirectTo={`/patients/${id}`} />
     </>
   );
 }

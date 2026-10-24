@@ -1,6 +1,6 @@
 import { DatabaseBackup, FileLock2, KeyRound, ListChecks, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import Link from "next/link";
-import { DocPage } from "../pricing/site";
+import { DocPage, Sec } from "../pricing/site";
 
 export const metadata = { title: "Security", description: "How ClinicFlow protects patient data: encryption, tenant isolation, audit logs, tested backups and two-factor sign-in." };
 
@@ -17,19 +17,14 @@ const ITEMS = [
 export default function SecurityPage() {
   return (
     <DocPage title="Security at ClinicFlow" updated="24 October 2026" intro={<p>Clinics trust us with their patients&apos; most sensitive information. Here is how we protect it. Found a vulnerability? Tell us through the support link in the app and we will respond quickly.</p>}>
-      <div className="grid gap-6 sm:grid-cols-2">
-        {ITEMS.map((i) => (
-          <section key={i.title} className="rounded-xl p-5 ring-1 ring-slate-200">
-            <i.icon className="h-6 w-6 text-brand-700" aria-hidden />
-            <h2 className="mt-3 !text-base">{i.title}</h2>
-            <p className="text-sm">{i.body}</p>
-          </section>
-        ))}
-      </div>
-      <section>
-        <h2>Your data stays yours</h2>
+      {ITEMS.map((i) => (
+        <Sec key={i.title} title={i.title} icon={<i.icon />}>
+          <p>{i.body}</p>
+        </Sec>
+      ))}
+      <Sec title="Your data stays yours">
         <p>Full exports are available to account owners at any time, including on read-only accounts. See our <Link href="/privacy">privacy policy</Link> for sub-processors and retention.</p>
-      </section>
+      </Sec>
     </DocPage>
   );
 }

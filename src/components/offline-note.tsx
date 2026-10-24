@@ -49,5 +49,10 @@ export function useOfflineSave(o: { visitId: string; userId: string; version: nu
 export function SaveStatus({ state }: { state: SaveResult | null }) {
   if (!state) return null;
   const text = state.status === "saved" ? "Saved" : state.status === "queued" ? "Saved on this device — will sync when online" : state.error;
-  return <span role="status" className={state.status === "error" ? "text-sm text-red-700" : state.status === "queued" ? "text-sm text-amber-700" : "text-sm text-emerald-700"}>{text}</span>;
+  const tone = state.status === "error" ? "text-bad" : state.status === "queued" ? "text-warn" : "text-ok";
+  return (
+    <span role="status" className={`inline-flex items-center gap-1.5 text-sm font-medium ${tone}`}>
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden />{text}
+    </span>
+  );
 }

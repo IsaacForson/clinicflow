@@ -1,12 +1,14 @@
 import { and, desc, eq, sql } from "drizzle-orm";
-import { ActionForm, PrintButton, Submit } from "@/components/form";
-import { Button, Card, Field, Input, PageHeader, Select, Stat, Table, Td, Textarea } from "@/components/ui";
+import { ArrowDownLeft, Calculator, ClipboardCheck, HandCoins, Receipt, Undo2, Vault, FileText, Wallet } from "lucide-react";
+import { PrintButton } from "@/components/form";
+import { Badge, Button, EmptyState, Input, Kpi, PageHeader, Panel, Select, Timeline, Toolbar } from "@/components/ui";
 import { branches, cashUps, expenses, invoices, payments, users } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { dateOnly, dayRange, localDay, money, timeOnly } from "@/lib/format";
 import { saveCashUpAction } from "../actions";
 import { dayMoney } from "@/lib/billing/cashup";
-import { METHOD_LABEL } from "../methods";
+import { METHOD_ICON, METHOD_LABEL } from "../methods";
+import { DrawerCount } from "./drawer-count";
 
 export const metadata = { title: "Cash-up" };
 
@@ -43,59 +45,97 @@ export default async function CashUpPage({ searchParams }: PageProps<"/billing/c
   const newMoney = byMethod.filter((r) => r.method !== "deposit" && r.method !== "insurance").reduce((s, r) => s + r.total, 0) - refundedTotal;
   const expectedCash = d.money.cashIn - d.money.cashRefunded - cashExpenses;
 
+  const maxMethod = Math.max(...byMethod.map((r) => r.total), 1);
+
   return (
     <>
-      <PageHeader title="Daily cash-up" subtitle={`${d.branch ?? ""} · ${dateOnly(start, tz)}${cashier ? ` · ${d.cashiers.find((c) => c.id === cashier)?.name ?? ""}` : ""}`}
+      <PageHeader title="Daily cash-up" eyebrow="Closing the drawer" icon={<Calculator />}
+        subtitle={`${d.branch ?? ""} · ${dateOnly(start, tz)}${cashier ? ` · ${d.cashiers.find((c) => c.id === cashier)?.name ?? ""}` : ""}`}
         actions={<PrintButton />} />
-      <form className="mb-4 flex flex-wrap gap-2 print:hidden">
-        <Input type="date" name="day" defaultValue={day} className="w-44" aria-label="Day" />
-        <Select name="cashier" defaultValue={cashier ?? ""} className="w-52" aria-label="Cashier">
-          <option value="">All cashiers</option>
-          {d.cashiers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </Select>
-        <Button type="submit" variant="secondary">Show</Button>
+      <form className="print:hidden">
+        <Toolbar>
+          <Input type="date" name="day" defaultValue={day} className="w-44" aria-label="Day" />
+          <Select name="cashier" defaultValue={cashier ?? ""} className="w-52" aria-label="Cashier">
+            <option value="">All cashiers</option>
+            {d.cashiers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </Select>
+          <Button type="submit" variant="secondary">Show</Button>
+        </Toolbar>
       </form>
-      <div className="mb-4 grid gap-3 sm:grid-cols-4">
-        <Stat label="Money received" value={money(newMoney, cur)} sub={refundedTotal ? `after ${money(refundedTotal, cur)} refunds` : "excl. credit applied & insurer"} />
-        <Stat label="Invoices issued" value={money(d.issued.total, cur)} sub={`${d.issued.n} invoices`} />
-        <Stat label="Outstanding from today" value={money(d.issued.outstanding, cur)} sub={`+ ${money(d.issued.insurer, cur)} insurer`} />
-        <Stat label="Net cash" value={money(expectedCash, cur)} sub="cash in − cash refunds − cash expenses" />
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Kpi label="Money received" value={money(newMoney, cur)} sub={refundedTotal ? `after ${money(refundedTotal, cur)} refunds` : "excl. credit applied & insurer"} icon={<HandCoins />} tone="green" />
+        <Kpi label="Invoices issued" value={money(d.issued.total, cur)} sub={`${d.issued.n} invoices`} icon={<FileText />} />
+        <Kpi label="Outstanding from today" value={money(d.issued.outstanding, cur)} sub={`+ ${money(d.issued.insurer, cur)} insurer`} icon={<Wallet />} tone="yellow" />
+        <Kpi label="Net cash" value={money(expectedCash, cur)} sub="cash in − cash refunds − cash expenses" icon={<Vault />} tone="teal" />
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Payments by method">
-          <Table head={["Method", "Count", "Total"]} empty="No payments today.">
-            {byMethod.map((r) => <tr key={r.method}><Td>{METHOD_LABEL[r.method]}</Td><Td>{r.n}</Td><Td>{money(r.total, cur)}</Td></tr>)}
-            {d.money.refunded.map((r) => <tr key={`r-${r.method}`} className="text-red-700"><Td>Refunded · {METHOD_LABEL[r.method]}</Td><Td>{r.n}</Td><Td>−{money(r.total, cur)}</Td></tr>)}
-          </Table>
-        </Card>
-        <Card title="Expenses">
-          <Table head={["Category", "Paid to", "Method", "Amount"]} empty="No expenses recorded.">
-            {d.expenses.map((e) => <tr key={e.id}><Td>{e.category}</Td><Td>{e.paidTo}</Td><Td>{METHOD_LABEL[e.method]}</Td><Td>{money(e.amountMinor, cur)}</Td></tr>)}
-          </Table>
-          <p className="mt-2 text-right text-sm font-medium">Total {money(allExpenses, cur)} (cash {money(cashExpenses, cur)})</p>
-        </Card>
-        {!cashier && ctx.access === "full" && (
-          <Card title="Count the drawer" className="print:hidden">
-            <ActionForm action={saveCashUpAction}>
-              <input type="hidden" name="day" value={day} />
-              <p className="text-sm text-slate-600">Expected cash in drawer: <strong>{money(expectedCash, cur)}</strong></p>
-              <Field label="Counted cash"><Input name="counted" inputMode="decimal" required /></Field>
-              <Field label="Notes"><Textarea name="notes" placeholder="Explain any difference" /></Field>
-              <Submit>Save cash-up</Submit>
-            </ActionForm>
-          </Card>
-        )}
-        <Card title="Saved cash-ups">
-          <Table head={["Time", "By", "Counted", "Variance", "Notes"]} empty="Not counted yet.">
-            {d.saved.map(({ c, by }) => (
-              <tr key={c.id}>
-                <Td>{timeOnly(c.createdAt, tz)}</Td><Td>{by}</Td><Td>{money(c.countedCashMinor, cur)}</Td>
-                <Td className={c.varianceMinor < 0 ? "text-red-700" : c.varianceMinor > 0 ? "text-amber-700" : "text-emerald-700"}>{money(c.varianceMinor, cur)}</Td>
-                <Td className="whitespace-normal">{c.notes}</Td>
-              </tr>
-            ))}
-          </Table>
-        </Card>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="min-w-0 space-y-6">
+          <Panel title="Money in by method" eyebrow="Payments" icon={<ArrowDownLeft />}>
+            {byMethod.length === 0 && d.money.refunded.length === 0 ? (
+              <EmptyState icon={<HandCoins />} title="No payments on this day" compact>Payments taken at the desk show up here as they happen.</EmptyState>
+            ) : (
+              <ul className="space-y-3">
+                {byMethod.map((r) => {
+                  const M = METHOD_ICON[r.method]?.icon ?? Wallet;
+                  return (
+                    <li key={r.method} className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-line bg-surface-2 text-muted"><M className="h-4 w-4" aria-hidden /></span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2 text-sm">
+                          <span className="font-medium text-fg">{METHOD_LABEL[r.method]} <span className="text-xs font-normal text-subtle">· {r.n}</span></span>
+                          <span className="font-semibold tabular-nums text-fg">{money(r.total, cur)}</span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3"><div className="h-full rounded-full bg-aurora" style={{ width: `${(r.total / maxMethod) * 100}%` }} /></div>
+                      </div>
+                    </li>
+                  );
+                })}
+                {d.money.refunded.map((r) => (
+                  <li key={`r-${r.method}`} className="flex items-center gap-3 rounded-xl border border-bad/25 bg-bad/5 px-3 py-2">
+                    <Undo2 className="h-4 w-4 text-bad" aria-hidden />
+                    <span className="flex-1 text-sm text-fg">Refunded · {METHOD_LABEL[r.method]} <span className="text-xs text-subtle">· {r.n}</span></span>
+                    <span className="font-semibold tabular-nums text-bad">−{money(r.total, cur)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+          <Panel title="Expenses" eyebrow="Paid out" icon={<Receipt />}
+            actions={<span className="text-right text-xs text-muted"><span className="block text-sm font-semibold tabular-nums text-fg">{money(allExpenses, cur)}</span>cash {money(cashExpenses, cur)}</span>}>
+            {d.expenses.length === 0 ? (
+              <EmptyState icon={<Receipt />} title="No expenses recorded" compact>Record money paid out from the drawer under Expenses.</EmptyState>
+            ) : (
+              <ul className="divide-y divide-line">
+                {d.expenses.map((e) => (
+                  <li key={e.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                    <div className="min-w-0"><div className="truncate font-medium text-fg">{e.category}</div><div className="truncate text-xs text-muted">{[e.paidTo, METHOD_LABEL[e.method]].filter(Boolean).join(" · ")}</div></div>
+                    <span className="tabular-nums text-fg">{money(e.amountMinor, cur)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+        </div>
+        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          {!cashier && ctx.access === "full" && (
+            <Panel title="Count the drawer" eyebrow="Expected vs counted" icon={<Vault />} glow className="print:hidden">
+              <DrawerCount action={saveCashUpAction} day={day} expectedMinor={expectedCash} currency={cur} />
+            </Panel>
+          )}
+          <Panel title="Saved cash-ups" icon={<ClipboardCheck />}>
+            {d.saved.length === 0 ? (
+              <EmptyState icon={<ClipboardCheck />} title="Not counted yet" compact>Count the drawer at close to save today&apos;s cash-up.</EmptyState>
+            ) : (
+              <Timeline items={d.saved.map(({ c, by }) => ({
+                id: c.id, tone: c.varianceMinor < 0 ? "red" : c.varianceMinor > 0 ? "yellow" : "green",
+                title: <span className="flex flex-wrap items-center gap-2"><span className="tabular-nums">{money(c.countedCashMinor, cur)}</span>
+                  <Badge tone={c.varianceMinor < 0 ? "red" : c.varianceMinor > 0 ? "yellow" : "green"}>{c.varianceMinor === 0 ? "balanced" : <span className="tabular-nums">{money(c.varianceMinor, cur)}</span>}</Badge></span>,
+                meta: `${timeOnly(c.createdAt, tz)} · ${by ?? ""}`,
+                body: c.notes ? <span className="whitespace-pre-line">{c.notes}</span> : undefined,
+              }))} />
+            )}
+          </Panel>
+        </aside>
       </div>
     </>
   );

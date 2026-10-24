@@ -1,24 +1,35 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- full navigations are answered from the service worker cache while offline; <Link> would fetch RSC and fail */
+import { CloudOff } from "lucide-react";
+import { LogoMark } from "@/app/(app)/nav";
 import { OutboxSync } from "@/components/outbox-sync";
 
 export const metadata = { title: "Offline" };
 
+const btn = "inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-medium transition";
+
 export default function OfflinePage() {
   return (
-    <main className="flex min-h-screen flex-col bg-slate-50">
+    <main className="backdrop-os relative flex min-h-screen flex-col overflow-hidden">
       <OutboxSync />
-      <div className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-        <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-700 text-xl font-semibold text-white" aria-hidden>C</span>
-        <h1 className="mt-5 text-2xl font-semibold text-slate-900">You&apos;re offline</h1>
-        <p className="mt-2 text-slate-600">
-          This page hasn&apos;t been saved on this device yet. Pages you opened recently — the dashboard, queue, patient records and
-          consultations — are still available. Notes and payments you save now are kept on this device and sync automatically when the
-          connection returns.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <a href="/dashboard" className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800">Dashboard</a>
-          <a href="/queue" className="rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50">Queue</a>
-          <a href="/patients" className="rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50">Patients</a>
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-accent/20 blur-[100px]" aria-hidden />
+      <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-4 py-16">
+        <div className="glass ring-aurora w-full animate-rise p-8 text-center">
+          <div className="relative mx-auto w-fit">
+            <LogoMark className="h-14 w-14 rounded-2xl" />
+            <span className="absolute -bottom-1.5 -right-1.5 grid h-7 w-7 place-items-center rounded-full border border-line bg-solid text-warn" aria-hidden><CloudOff className="h-3.5 w-3.5" /></span>
+          </div>
+          <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-warn/12 px-3 py-1 text-xs font-medium text-warn"><span className="h-1.5 w-1.5 rounded-full bg-warn" aria-hidden />No connection</p>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-fg">You&apos;re offline</h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            This page hasn&apos;t been saved on this device yet. Pages you opened recently — the dashboard, queue, patient records and
+            consultations — are still available. Notes and payments you save now are kept on this device and sync automatically when the
+            connection returns.
+          </p>
+          <nav aria-label="Available offline" className="mt-7 flex flex-wrap justify-center gap-2">
+            <a href="/dashboard" className={`${btn} bg-aurora text-on-accent shadow-glow hover:brightness-110`}>Dashboard</a>
+            <a href="/queue" className={`${btn} border border-line bg-surface-2 text-fg hover:bg-surface-3`}>Queue</a>
+            <a href="/patients" className={`${btn} border border-line bg-surface-2 text-fg hover:bg-surface-3`}>Patients</a>
+          </nav>
         </div>
       </div>
     </main>
