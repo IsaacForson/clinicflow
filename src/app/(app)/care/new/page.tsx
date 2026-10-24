@@ -1,7 +1,8 @@
 import { and, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import Link from "next/link";
 import { ActionForm, Submit } from "@/components/form";
-import { Card, Field, Input, PageHeader, Select } from "@/components/ui";
+import { ArrowLeft, Bell, HeartPulse, Search, Target, UserPlus } from "lucide-react";
+import { A, Avatar, Check, EmptyState, Field, Input, LinkButton, PageHeader, Panel, Select } from "@/components/ui";
 import { patients } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { fullName } from "@/lib/format";
@@ -24,21 +25,47 @@ export default async function EnrollPage({ searchParams }: PageProps<"/care/new"
   });
 
   return (
-    <>
-      <PageHeader title="Enroll in chronic care" />
+    <div className="mx-auto max-w-3xl">
+      <PageHeader icon={<HeartPulse />} eyebrow="Chronic care" title="Enroll in chronic care"
+        subtitle={patient ? "Set the check-up rhythm and the targets the clinician wants to track." : "Find the patient to enroll."}
+        actions={<LinkButton variant="ghost" href="/care"><ArrowLeft className="h-4 w-4" />Care centre</LinkButton>} />
       {!patient ? (
-        <Card title="Find the patient">
-          <form className="mb-3"><Input name="q" defaultValue={q} placeholder="Name, patient number or phone…" autoFocus /></form>
-          <ul className="divide-y divide-slate-100 text-sm">
-            {matches.map((p) => <li key={p.id} className="py-2"><Link className="font-medium text-brand-800 hover:underline" href={`/care/new?patient=${p.id}`}>{fullName(p)}</Link> <span className="text-slate-500">{p.patientNo} · {p.phone}</span></li>)}
-            {q && matches.length === 0 && <li className="py-2 text-slate-500">No patients match.</li>}
-          </ul>
-        </Card>
+        <Panel icon={<Search />} eyebrow="Step 1" title="Find the patient">
+          <form className="relative mb-4">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" aria-hidden />
+            <Input name="q" defaultValue={q} placeholder="Name, patient number or phone…" autoFocus className="h-12 pl-10 text-base" aria-label="Search patients" />
+          </form>
+          {!q ? <p className="py-6 text-center text-sm text-muted">Type a name, patient number or phone and press Enter.</p>
+            : matches.length === 0 ? <EmptyState icon={<UserPlus />} title="No patients match"><A href="/patients/new">Register the patient</A> first.</EmptyState> : (
+            <ul className="space-y-1">
+              {matches.map((p) => (
+                <li key={p.id}>
+                  <Link href={`/care/new?patient=${p.id}`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-surface-2">
+                    <Avatar name={fullName(p)} />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-fg">{fullName(p)}</div>
+                      <div className="truncate text-xs text-muted"><span className="font-mono">{p.patientNo}</span>{p.phone && ` · ${p.phone}`}</div>
+                    </div>
+                    <span className="text-xs font-medium text-accent">Select →</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
       ) : (
-        <Card title={`Care plan for ${fullName(patient)} (${patient.patientNo})`} className="max-w-2xl">
-          <ActionForm action={enrollAction} onSuccessHref="/care/{id}">
-            <input type="hidden" name="patientId" value={patient.id} />
-            <div className="grid gap-3 sm:grid-cols-2">
+        <ActionForm action={enrollAction} onSuccessHref="/care/{id}" className="space-y-4">
+          <input type="hidden" name="patientId" value={patient.id} />
+          <div className="glass flex items-center gap-4 p-4 animate-rise">
+            <Avatar name={fullName(patient)} size="lg" />
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-semibold text-fg">{fullName(patient)}</div>
+              <div className="font-mono text-xs text-muted">{patient.patientNo}</div>
+            </div>
+            <LinkButton variant="ghost" size="sm" href="/care/new">Change</LinkButton>
+          </div>
+          <Panel eyebrow="Plan" title="Condition & check-ups" icon={<HeartPulse />}>
+            <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Condition">
                 <Select name="condition" defaultValue="hypertension">
                   <option value="hypertension">Hypertension</option><option value="diabetes">Diabetes</option><option value="asthma">Asthma</option><option value="hiv">HIV</option><option value="other">Other</option>
@@ -47,20 +74,23 @@ export default async function EnrollPage({ searchParams }: PageProps<"/care/new"
               <Field label="Check-up every (days)"><Input name="intervalDays" type="number" min={1} max={365} defaultValue={30} /></Field>
               <Field label="First check-up" hint="Defaults to one interval from today"><Input name="firstDue" type="date" /></Field>
             </div>
-            <fieldset className="grid gap-3 sm:grid-cols-3">
-              <legend className="mb-1 text-sm font-medium text-slate-700">Targets set by the clinician (optional)</legend>
+          </Panel>
+          <Panel eyebrow="Optional" title="Targets set by the clinician" icon={<Target />}>
+            <div className="grid gap-4 sm:grid-cols-3">
               <Field label="BP systolic below"><Input name="bpSys" type="number" placeholder="140" /></Field>
               <Field label="BP diastolic below"><Input name="bpDia" type="number" placeholder="90" /></Field>
               <Field label="Glucose below (mmol/L)"><Input name="glucose" type="number" step="0.1" placeholder="7.0" /></Field>
-            </fieldset>
-            <div className="flex flex-wrap items-end gap-4">
-              <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="adherenceNudges" defaultChecked className="h-4 w-4" /> Daily medication reminder</label>
+            </div>
+          </Panel>
+          <Panel eyebrow="Adherence" title="Medication reminder" icon={<Bell />}>
+            <div className="flex flex-wrap items-end gap-6">
+              <Check name="adherenceNudges" defaultChecked label="Daily medication reminder" className="h-10" />
               <Field label="Reminder time"><Input name="nudgeTime" type="time" defaultValue="08:00" /></Field>
             </div>
-            <Submit>Enroll</Submit>
-          </ActionForm>
-        </Card>
+          </Panel>
+          <div className="flex justify-end"><Submit size="lg">Enroll patient</Submit></div>
+        </ActionForm>
       )}
-    </>
+    </div>
   );
 }

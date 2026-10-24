@@ -1,6 +1,8 @@
 import { and, desc, eq, gte, ilike, inArray, lt, or, sql } from "drizzle-orm";
 import Link from "next/link";
-import { Badge, Card, Input, PageHeader, Select, Stat, Table, Td } from "@/components/ui";
+import { ArrowDownLeft, ArrowUpRight, Filter, MessagesSquare, Search, Send } from "lucide-react";
+import { Badge, Button, cx, Input, Kpi, LinkButton, PageHeader, Panel, Progress, Select, Table, Td } from "@/components/ui";
+import { ChannelIcon } from "./channel-icon";
 import { messageLog, patients } from "@/db/schema";
 import { audit, requireCtx, tx } from "@/lib/auth";
 import { addDays, dateTime, dayRange, fullName, localDay } from "@/lib/format";
@@ -47,40 +49,50 @@ export default async function MessagesPage({ searchParams }: PageProps<"/message
 
   return (
     <>
-      <PageHeader title="Messages" subtitle="WhatsApp first, SMS fallback. Every message records its purpose and consent." />
+      <PageHeader icon={<MessagesSquare />} eyebrow="Patient messaging" title="Messages" subtitle="WhatsApp first, SMS fallback. Every message records its purpose and consent."
+        actions={<LinkButton href="/messages/send"><Send className="h-4 w-4" />Send message</LinkButton>} />
       <MessageTabs current="log" />
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <Stat label="Sent this month" value={used} sub={`of ${allowance} included in ${PLANS[ctx.tenant.plan].name}`} />
-        <div className="rounded-lg bg-white p-4 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 sm:col-span-2">
-          <div className="mb-2 h-2 overflow-hidden rounded bg-slate-100"><div className={over > 0 ? "h-full bg-amber-500" : "h-full bg-brand-600"} style={{ width: `${Math.min(100, (used / Math.max(allowance, 1)) * 100)}%` }} /></div>
-          {over > 0
-            ? <>You are {over} messages over your monthly allowance. Extra messages are billed at provider cost on your next invoice; reminders are never paused.</>
-            : <>{allowance - used} included messages left this month. Reminders keep sending even above the allowance (billed at provider cost).</>}
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <Kpi label="Sent this month" icon={<ArrowUpRight />} value={used} sub={`of ${allowance} included in ${PLANS[ctx.tenant.plan].name}`} />
+        <div className="glass animate-rise p-5 lg:col-span-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-subtle">Monthly allowance</span>
+            <Badge tone={over > 0 ? "yellow" : "green"}>{over > 0 ? `${over} over` : `${allowance - used} left`}</Badge>
+          </div>
+          <div className="mt-4 flex items-end justify-between text-sm"><span className="font-semibold tabular-nums text-fg">{used}</span><span className="tabular-nums text-muted">{allowance}</span></div>
+          <Progress className="mt-2 h-2" tone={over > 0 ? "yellow" : "purple"} value={(used / Math.max(allowance, 1)) * 100} />
+          <p className="mt-3 text-sm text-muted">
+            {over > 0
+              ? <>You are {over} messages over your monthly allowance. Extra messages are billed at provider cost on your next invoice; reminders are never paused.</>
+              : <>{allowance - used} included messages left this month. Reminders keep sending even above the allowance (billed at provider cost).</>}
+          </p>
         </div>
       </div>
-      <Card>
-        <form className="mb-3 grid gap-2 sm:grid-cols-7">
-          <Input name="q" defaultValue={f.q} placeholder="Patient or number…" className="sm:col-span-2" />
-          <Select name="channel" defaultValue={f.channel ?? ""}><option value="">All channels</option><option value="whatsapp">WhatsApp</option><option value="sms">SMS</option><option value="email">Email</option></Select>
-          <Select name="status" defaultValue={f.status ?? ""}><option value="">All statuses</option>{Object.keys(STATUS_TONE).map((s) => <option key={s}>{s}</option>)}</Select>
-          <Select name="purpose" defaultValue={f.purpose ?? ""}><option value="">All purposes</option>{purposes.map((p) => <option key={p}>{p}</option>)}</Select>
+      <Panel eyebrow="Log" title={`${rows.length} message${rows.length === 1 ? "" : "s"}`}>
+        <form className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
+          <div className="relative sm:col-span-2">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" aria-hidden />
+            <Input name="q" defaultValue={f.q} placeholder="Patient or number…" className="pl-10" aria-label="Search" />
+          </div>
+          <Select name="channel" defaultValue={f.channel ?? ""} aria-label="Channel"><option value="">All channels</option><option value="whatsapp">WhatsApp</option><option value="sms">SMS</option><option value="email">Email</option></Select>
+          <Select name="status" defaultValue={f.status ?? ""} aria-label="Status"><option value="">All statuses</option>{Object.keys(STATUS_TONE).map((s) => <option key={s}>{s}</option>)}</Select>
+          <Select name="purpose" defaultValue={f.purpose ?? ""} aria-label="Purpose"><option value="">All purposes</option>{purposes.map((p) => <option key={p}>{p}</option>)}</Select>
           <Input type="date" name="from" defaultValue={f.from} max={today} aria-label="From" />
-          <div className="flex gap-2"><Input type="date" name="to" defaultValue={f.to} max={addDays(today, 1)} aria-label="To" /><button className="rounded-md bg-slate-800 px-3 text-sm text-white">Filter</button></div>
+          <div className="flex gap-2"><Input type="date" name="to" defaultValue={f.to} max={addDays(today, 1)} aria-label="To" /><Button variant="secondary" aria-label="Filter"><Filter className="h-4 w-4" /></Button></div>
         </form>
-        <Table head={["When", "Patient", "", "Channel", "Purpose", "Message", "Status"]} empty="No messages match.">
+        <Table head={["", "Patient", "Purpose", "Message", "Status", "When"]} empty="No messages match these filters.">
           {rows.map(({ m, p }) => (
             <tr key={m.id} className="align-top">
-              <Td className="text-xs">{dateTime(m.createdAt, tz)}</Td>
-              <Td>{p ? <Link href={`/patients/${p.id}`} className="text-brand-800 hover:underline">{fullName(p)}</Link> : <span className="text-slate-500">{m.to}</span>}</Td>
-              <Td><Badge tone={m.direction === "in" ? "purple" : "gray"}>{m.direction === "in" ? "in" : "out"}</Badge></Td>
-              <Td className="capitalize">{m.channel}</Td>
-              <Td>{m.purpose}</Td>
-              <Td className="max-w-md whitespace-normal text-xs text-slate-600">{m.body}{m.error && <div className="text-red-600">{m.error}</div>}</Td>
+              <Td className="pr-0"><div className="flex items-center gap-1.5"><ChannelIcon channel={m.channel} />{m.direction === "in" ? <ArrowDownLeft className="h-3.5 w-3.5 text-accent" aria-label="inbound" /> : <ArrowUpRight className="h-3.5 w-3.5 text-subtle" aria-label="outbound" />}</div></Td>
+              <Td>{p ? <Link href={`/patients/${p.id}`} className="font-medium text-fg hover:text-accent">{fullName(p)}</Link> : <span className="text-muted">{m.to}</span>}{p && <div className="font-mono text-xs text-muted">{p.patientNo}</div>}</Td>
+              <Td><span className="rounded-md bg-surface-3 px-2 py-0.5 text-xs text-muted">{m.purpose}</span></Td>
+              <Td className={cx("min-w-64 max-w-md whitespace-normal text-xs", m.direction === "in" ? "text-fg" : "text-muted")}>{m.body}{m.error && <div className="mt-1 text-bad">{m.error}</div>}</Td>
               <Td><Badge tone={STATUS_TONE[m.status]}>{m.status}</Badge></Td>
+              <Td className="text-xs text-muted">{dateTime(m.createdAt, tz)}</Td>
             </tr>
           ))}
         </Table>
-      </Card>
+      </Panel>
     </>
   );
 }

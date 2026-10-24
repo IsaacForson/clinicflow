@@ -1,8 +1,8 @@
 import { and, asc, desc, eq, isNotNull, isNull, or } from "drizzle-orm";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionButton, ActionForm, Submit } from "@/components/form";
-import { Badge, Card, Field, Input, LinkButton, PageHeader, Select, Table, Td } from "@/components/ui";
+import { Activity, Baby, Bell, CalendarClock, CheckCircle2, ClipboardList, HeartPulse, Plus, Syringe, User } from "lucide-react";
+import { A, Avatar, Badge, cx, EmptyState, Field, Input, LinkButton, PageHeader, Panel, Select, Table, Td } from "@/components/ui";
 import { carePlans, patients, patientScheduleItems, scheduleTemplates, vitals } from "@/db/schema";
 import { audit, requireCtx, tx } from "@/lib/auth";
 import { age, dateOnly, dateTime, fullName, localDay } from "@/lib/format";
@@ -38,97 +38,144 @@ export default async function PatientCarePage({ params }: PageProps<"/care/[pati
   const canPlan = can(ctx.user.role, "clinical.write") && ctx.access === "full";
   const canSchedule = can(ctx.user.role, "vitals.write") && ctx.access === "full";
 
+  const day = (d: string) => dateOnly(`${d}T12:00:00Z`, tz);
+  const latest = data.readings[0];
+  const doneCount = data.items.filter((s) => s.status === "done").length;
   return (
     <>
-      <PageHeader title={`${fullName(p)} · care`} subtitle={[p.patientNo, p.sex, age(p.dob), p.phone].filter(Boolean).join(" · ")}
+      <PageHeader icon={<HeartPulse />} eyebrow="Patient care" title={fullName(p)} subtitle={[p.patientNo, p.sex, age(p.dob), p.phone].filter(Boolean).join(" · ")}
         actions={<>
-          <LinkButton variant="secondary" href={`/patients/${p.id}`}>Patient record</LinkButton>
-          {canPlan && <LinkButton href={`/care/new?patient=${p.id}`}>Add care plan</LinkButton>}
+          <LinkButton variant="secondary" href={`/patients/${p.id}`}><User className="h-4 w-4" />Patient record</LinkButton>
+          {canPlan && <LinkButton href={`/care/new?patient=${p.id}`}><Plus className="h-4 w-4" />Add care plan</LinkButton>}
         </>} />
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Card title="Trends">
-            <div className="space-y-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-4">
+          <Panel eyebrow="Trends" title="Readings over time" icon={<Activity />}>
+            <div className="space-y-8">
               <TrendChart title="Blood pressure" unit="mmHg" tz={tz} dates={bp.map((r) => r.recordedAt)}
-                series={[{ label: "Systolic", color: "#5d47ea", values: bp.map((r) => r.bpSys) }, { label: "Diastolic", color: "#22d3ee", values: bp.map((r) => r.bpDia) }]}
+                series={[{ label: "Systolic", color: "var(--accent)", values: bp.map((r) => r.bpSys) }, { label: "Diastolic", color: "var(--accent-2)", values: bp.map((r) => r.bpDia) }]}
                 targets={[...(tg.bpSys ? [{ label: "sys", value: tg.bpSys }] : []), ...(tg.bpDia ? [{ label: "dia", value: tg.bpDia }] : [])]} />
               <TrendChart title="Blood glucose" unit="mmol/L" tz={tz} dates={sugar.map((r) => r.recordedAt)}
-                series={[{ label: "Glucose", color: "#7c3aed", values: sugar.map((r) => r.glucose) }]}
+                series={[{ label: "Glucose", color: "var(--accent-2)", values: sugar.map((r) => r.glucose) }]}
                 targets={tg.glucose ? [{ label: "target", value: tg.glucose }] : []} />
             </div>
-          </Card>
+          </Panel>
 
-          <Card title="Readings">
-            <Table head={["When", "BP", "Glucose", "Source", ""]} empty="No readings yet.">
+          <Panel eyebrow="Log" title="Readings" icon={<ClipboardList />}>
+            <Table head={["When", "BP", "Glucose", "Source", ""]} empty="No readings yet. Readings come from vitals taken in clinic or sent from home.">
               {data.readings.map((r) => {
                 const vs = readingVsTarget(r, tg);
                 return (
                   <tr key={r.id}>
-                    <Td>{dateTime(r.recordedAt, tz)}</Td><Td>{r.bpSys != null ? `${r.bpSys}/${r.bpDia}` : "—"}</Td><Td>{r.glucose ?? "—"}</Td>
+                    <Td className="text-muted">{dateTime(r.recordedAt, tz)}</Td>
+                    <Td className="font-semibold tabular-nums">{r.bpSys != null ? `${r.bpSys}/${r.bpDia}` : <span className="text-subtle">—</span>}</Td>
+                    <Td className="font-semibold tabular-nums">{r.glucose ?? <span className="text-subtle">—</span>}</Td>
                     <Td><Badge tone={r.source === "patient" ? "purple" : "gray"}>{r.source === "patient" ? "home" : "clinic"}</Badge></Td>
                     <Td>{active && vs === "above" && <Badge tone="yellow">above target</Badge>}</Td>
                   </tr>
                 );
               })}
             </Table>
-          </Card>
+          </Panel>
 
-          <Card title="Immunization & antenatal schedule">
-            <Table head={["Due", "Item", "Status", ""]} empty="No schedule started.">
-              {data.items.map((s) => {
-                const overdue = s.status === "due" && s.dueDate < today;
-                return (
-                  <tr key={s.id}>
-                    <Td className={overdue ? "font-medium text-red-700" : ""}>{dateOnly(`${s.dueDate}T12:00:00Z`, tz)}</Td>
-                    <Td className="whitespace-normal">{s.name}</Td>
-                    <Td><Badge tone={s.status === "done" ? "green" : s.status === "missed" ? "red" : s.status === "skipped" ? "gray" : overdue ? "red" : "blue"}>{overdue ? "overdue" : s.status}</Badge>
-                      {s.status === "done" && <span className="ml-1 text-xs text-slate-500">{dateOnly(s.doneAt, tz)}{s.batchNo ? ` · batch ${s.batchNo}` : ""}</span>}</Td>
-                    <Td>{canSchedule && (s.status === "due" || s.status === "missed") && (
-                      <div className="flex items-center gap-1">
-                        <ActionForm action={updateScheduleItemAction} className="flex items-center gap-1 space-y-0">
-                          <input type="hidden" name="id" value={s.id} /><input type="hidden" name="patientId" value={p.id} /><input type="hidden" name="status" value="done" />
-                          <Input type="date" name="doneDate" defaultValue={today} max={today} className="w-36 py-1" aria-label="Date given" />
-                          <Input name="batchNo" placeholder="Batch no." className="w-24 py-1" aria-label="Batch number" />
-                          <Submit variant="secondary" className="px-2 py-1 text-xs">Done</Submit>
-                        </ActionForm>
-                        <ActionButton action={updateScheduleItemAction} fields={{ id: s.id, patientId: p.id, status: "skipped" }} variant="ghost">Skip</ActionButton>
+          <Panel eyebrow="Schedule" title="Immunization & antenatal" icon={<Syringe />}
+            actions={data.items.length > 0 && <span className="text-xs tabular-nums text-muted">{doneCount} of {data.items.length} done</span>}>
+            {data.items.length === 0 ? (
+              <EmptyState compact icon={<Baby />} title="No schedule started">{canSchedule ? "Start an immunization or antenatal schedule below." : "No schedule for this patient."}</EmptyState>
+            ) : (
+              <ol className="relative space-y-3 before:absolute before:inset-y-2 before:left-[7px] before:w-px before:bg-line">
+                {data.items.map((s) => {
+                  const overdue = s.status === "due" && s.dueDate < today;
+                  const tone = s.status === "done" ? "green" : s.status === "missed" ? "red" : s.status === "skipped" ? "gray" : overdue ? "red" : "blue";
+                  return (
+                    <li key={s.id} className="relative pl-7">
+                      <span className={cx("absolute left-0 top-4 grid h-[15px] w-[15px] place-items-center rounded-full border-2 border-canvas",
+                        { green: "bg-ok", red: "bg-bad", gray: "bg-subtle", blue: "bg-info" }[tone])} aria-hidden />
+                      <div className={cx("flex flex-col gap-3 rounded-2xl border p-3.5 sm:flex-row sm:items-center", overdue ? "border-bad/40 bg-bad/5" : "border-line bg-surface", s.status === "skipped" && "opacity-60")}>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-medium text-fg">{s.name}</span>
+                            <Badge tone={tone}>{overdue ? "overdue" : s.status}</Badge>
+                          </div>
+                          <div className="mt-0.5 text-xs text-muted">
+                            Due <span className={cx("tabular-nums", overdue && "font-medium text-bad")}>{day(s.dueDate)}</span>
+                            {s.status === "done" && <> · given {dateOnly(s.doneAt, tz)}{s.batchNo ? ` · batch ${s.batchNo}` : ""}</>}
+                          </div>
+                        </div>
+                        {canSchedule && (s.status === "due" || s.status === "missed") && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <ActionForm action={updateScheduleItemAction} className="flex flex-wrap items-center gap-1.5 space-y-0">
+                              <input type="hidden" name="id" value={s.id} /><input type="hidden" name="patientId" value={p.id} /><input type="hidden" name="status" value="done" />
+                              <Input type="date" name="doneDate" defaultValue={today} max={today} className="h-8 w-36 text-xs" aria-label="Date given" />
+                              <Input name="batchNo" placeholder="Batch no." className="h-8 w-24 text-xs" aria-label="Batch number" />
+                              <Submit variant="secondary" size="sm"><CheckCircle2 className="h-3.5 w-3.5" />Done</Submit>
+                            </ActionForm>
+                            <ActionButton action={updateScheduleItemAction} fields={{ id: s.id, patientId: p.id, status: "skipped" }} variant="ghost">Skip</ActionButton>
+                          </div>
+                        )}
                       </div>
-                    )}</Td>
-                  </tr>
-                );
-              })}
-            </Table>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
             {canSchedule && (
-              <ActionForm action={startScheduleAction} className="mt-4 flex flex-wrap items-end gap-2 space-y-0 border-t border-slate-100 pt-3">
+              <ActionForm action={startScheduleAction} className="mt-5 grid gap-3 space-y-0 border-t border-line pt-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
                 <input type="hidden" name="patientId" value={p.id} />
                 <Field label="Start schedule"><Select name="templateId" required>{data.templates.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</Select></Field>
                 <Field label="From (DOB for immunization, LMP for antenatal)"><Input type="date" name="startDate" defaultValue={p.dob ?? today} required /></Field>
                 <Submit variant="secondary">Start</Submit>
               </ActionForm>
             )}
-            {data.templates.length === 0 && <p className="mt-2 text-xs text-slate-500">No schedule templates. Run scripts/seed-schedules.mts.</p>}
-          </Card>
+            {data.templates.length === 0 && <p className="mt-2 text-xs text-subtle">No schedule templates. Run scripts/seed-schedules.mts.</p>}
+          </Panel>
         </div>
 
-        <div className="space-y-4">
-          <Card title="Care plans">
-            {data.plans.length === 0 && <p className="text-sm text-slate-500">Not enrolled. <Link className="text-brand-800 underline" href={`/care/new?patient=${p.id}`}>Enroll</Link></p>}
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <Panel glow={!!active} bodyClassName="p-5">
+            <div className="flex items-center gap-4">
+              <Avatar name={fullName(p)} size="lg" />
+              <div className="min-w-0">
+                <div className="truncate text-base font-semibold text-fg">{fullName(p)}</div>
+                <div className="font-mono text-xs text-muted">{p.patientNo}</div>
+                {active && <div className="mt-1"><Badge tone="purple">{active.condition}</Badge></div>}
+              </div>
+            </div>
+            {latest && (
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-line bg-surface-2 p-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Latest BP</div>
+                  <div className="mt-1 text-xl font-semibold tabular-nums text-fg">{latest.bpSys != null ? `${latest.bpSys}/${latest.bpDia}` : "—"}</div>
+                  {tg.bpSys && <div className="text-[11px] text-muted">target &lt;{tg.bpSys}/{tg.bpDia ?? "–"}</div>}
+                </div>
+                <div className="rounded-xl border border-line bg-surface-2 p-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Glucose</div>
+                  <div className="mt-1 text-xl font-semibold tabular-nums text-fg">{latest.glucose ?? "—"}</div>
+                  {tg.glucose && <div className="text-[11px] text-muted">target &lt;{tg.glucose}</div>}
+                </div>
+              </div>
+            )}
+          </Panel>
+          <Panel eyebrow="Plans" title="Care plans" icon={<HeartPulse />}>
+            {data.plans.length === 0 && <EmptyState compact icon={<HeartPulse />} title="Not enrolled"><A href={`/care/new?patient=${p.id}`}>Enroll</A> to track check-ups and targets.</EmptyState>}
             <ul className="space-y-3 text-sm">
               {data.plans.map((pl) => (
-                <li key={pl.id} className="rounded-md border border-slate-200 p-3">
+                <li key={pl.id} className={cx("rounded-2xl border p-4", pl.active ? "border-line-strong bg-surface-2" : "border-line opacity-70")}>
                   <div className="flex items-center justify-between">
-                    <span className="font-medium capitalize">{pl.condition}</span>
+                    <span className="font-semibold capitalize text-fg">{pl.condition}</span>
                     <Badge tone={pl.active ? "green" : "gray"}>{pl.active ? "active" : "inactive"}</Badge>
                   </div>
-                  <div className="mt-1 text-slate-600">Every {pl.intervalDays} days{pl.nextDueAt && ` · next ${dateOnly(`${pl.nextDueAt}T12:00:00Z`, tz)}`}</div>
-                  <div className="text-slate-600">Targets: {[pl.targets.bpSys && `BP <${pl.targets.bpSys}/${pl.targets.bpDia ?? "–"}`, pl.targets.glucose && `glucose <${pl.targets.glucose}`].filter(Boolean).join(", ") || "none"}</div>
-                  <div className="text-slate-600">Medication reminder: {pl.adherenceNudges && pl.nudgeTime ? `daily at ${pl.nudgeTime}` : "off"}</div>
-                  {canPlan && pl.active && <div className="mt-2"><ActionButton action={deactivatePlanAction} fields={{ id: pl.id, patientId: p.id }} variant="ghost" confirm="Deactivate this care plan? Reminders will stop.">Deactivate</ActionButton></div>}
+                  <div className="mt-2 space-y-1 text-xs text-muted">
+                    <div className="flex items-center gap-1.5"><CalendarClock className="h-3.5 w-3.5" />Every {pl.intervalDays} days{pl.nextDueAt && ` · next ${day(pl.nextDueAt)}`}</div>
+                    <div className="flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" />Targets: {[pl.targets.bpSys && `BP <${pl.targets.bpSys}/${pl.targets.bpDia ?? "–"}`, pl.targets.glucose && `glucose <${pl.targets.glucose}`].filter(Boolean).join(", ") || "none"}</div>
+                    <div className="flex items-center gap-1.5"><Bell className="h-3.5 w-3.5" />Medication reminder: {pl.adherenceNudges && pl.nudgeTime ? `daily at ${pl.nudgeTime}` : "off"}</div>
+                  </div>
+                  {canPlan && pl.active && <div className="mt-3"><ActionButton action={deactivatePlanAction} fields={{ id: pl.id, patientId: p.id }} variant="ghost" confirm="Deactivate this care plan? Reminders will stop.">Deactivate</ActionButton></div>}
                 </li>
               ))}
             </ul>
-          </Card>
-        </div>
+          </Panel>
+        </aside>
       </div>
     </>
   );

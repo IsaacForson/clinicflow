@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ActionForm, Submit } from "@/components/form";
-import { Badge, Card, Field, Input, PageHeader, Textarea, cx } from "@/components/ui";
+import { FileText, Globe, Languages, MessageSquareText, Plus } from "lucide-react";
+import { Badge, Button, Check, cx, Field, Input, PageHeader, Panel } from "@/components/ui";
+import { TemplateEditor } from "../composer";
 import { messageTemplates } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { DEFAULT_TEMPLATES } from "@/lib/messaging";
@@ -24,43 +26,50 @@ export default async function TemplatesPage({ searchParams }: PageProps<"/messag
   const langs = [...new Set(["en", ...rows.filter((r) => r.key === key).map((r) => r.language)])];
   const editable = can(ctx.user.role, "settings.manage") && ctx.access === "full";
 
+  const ph = [...new Set(["name", "clinic", ...placeholders(DEFAULT_TEMPLATES[key] ?? body)])];
   return (
     <>
-      <PageHeader title="Messages" />
+      <PageHeader icon={<MessageSquareText />} eyebrow="Patient messaging" title="Templates" subtitle="The words patients receive for reminders, results and more — in every language you support." />
       <MessageTabs current="templates" />
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card title="Templates">
-          <ul className="space-y-0.5 text-sm">
+      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <Panel eyebrow="Library" title={`${keys.length} templates`} icon={<FileText />} bodyClassName="p-2">
+          <ul className="space-y-0.5">
             {keys.map((k) => (
-              <li key={k}><Link href={`/messages/templates?key=${k}`} className={cx("flex justify-between rounded px-2 py-1.5", k === key ? "bg-brand-50 text-brand-800" : "hover:bg-slate-50")}>
-                <span>{k.replace(/_/g, " ")}</span>
+              <li key={k}><Link href={`/messages/templates?key=${k}`} aria-current={k === key ? "page" : undefined}
+                className={cx("flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm capitalize transition", k === key ? "bg-surface-3 text-fg shadow-[inset_0_0_0_1px_var(--line-strong)]" : "text-muted hover:bg-surface-2 hover:text-fg")}>
+                <span className="truncate">{k.replace(/_/g, " ")}</span>
                 {rows.some((r) => r.key === k && r.waTemplateName) && <Badge tone="green">WA</Badge>}
               </Link></li>
             ))}
           </ul>
-        </Card>
-        <Card title={`${key.replace(/_/g, " ")} · ${lang}`} className="lg:col-span-2"
-          actions={<div className="flex gap-1">{langs.map((l) => <Link key={l} href={`/messages/templates?key=${key}&lang=${l}`} className={cx("rounded px-2 py-0.5 text-xs", l === lang ? "bg-brand-700 text-white" : "bg-slate-100")}>{l}</Link>)}</div>}>
-          <ActionForm action={saveTemplateAction} key={`${key}-${lang}`}>
+        </Panel>
+        <Panel glow eyebrow={current ? "Customised" : "Default text"} title={<span className="capitalize">{key.replace(/_/g, " ")}</span>} icon={<MessageSquareText />}
+          actions={<div className="flex gap-1 rounded-xl border border-line bg-surface p-1">{langs.map((l) => (
+            <Link key={l} href={`/messages/templates?key=${key}&lang=${l}`} aria-current={l === lang ? "page" : undefined}
+              className={cx("rounded-lg px-2.5 py-1 font-mono text-xs uppercase transition", l === lang ? "bg-aurora text-on-accent" : "text-muted hover:text-fg")}>{l}</Link>
+          ))}</div>}>
+          <ActionForm action={saveTemplateAction} key={`${key}-${lang}`} className="space-y-5">
             <input type="hidden" name="key" value={key} />
             <input type="hidden" name="language" value={lang} />
-            <Field label="Message" hint={`Placeholders: ${placeholders(DEFAULT_TEMPLATES[key] ?? body).map((p) => `{{${p}}}`).join(" ") || "none"} — {{name}} and {{clinic}} are always available.`}>
-              <Textarea name="body" rows={5} defaultValue={body} required disabled={!editable} />
-            </Field>
-            <Field label="Approved WhatsApp template name" hint="Needed to message patients outside the 24-hour window. Parameters must follow the same order as the placeholders above.">
-              <Input name="waTemplateName" defaultValue={current?.waTemplateName ?? ""} placeholder="appointment_reminder_v1" disabled={!editable} />
-            </Field>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="active" defaultChecked={current?.active ?? true} disabled={!editable} className="h-4 w-4" /> Active</label>
-            {editable && <Submit>Save template</Submit>}
+            <TemplateEditor defaultValue={body} disabled={!editable} placeholders={ph} sample={{ name: "Ama", clinic: ctx.tenant.name }}
+              hint="Click a placeholder to insert it — {{name}} and {{clinic}} are always available." />
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+              <Field label="Approved WhatsApp template name" hint="Needed to message patients outside the 24-hour window. Parameters must follow the same order as the placeholders above.">
+                <Input name="waTemplateName" defaultValue={current?.waTemplateName ?? ""} placeholder="appointment_reminder_v1" disabled={!editable} className="font-mono" />
+              </Field>
+              <Check name="active" defaultChecked={current?.active ?? true} disabled={!editable} label="Active" className="h-10" />
+            </div>
+            {editable && <div className="flex justify-end"><Submit>Save template</Submit></div>}
           </ActionForm>
           {editable && (
-            <form className="mt-4 flex items-end gap-2 border-t border-slate-100 pt-3">
+            <form className="mt-6 flex flex-wrap items-end gap-2 border-t border-line pt-5">
               <input type="hidden" name="key" value={key} />
-              <Field label="Add a language (code, e.g. tw, ha, sw, fr)"><Input name="lang" pattern="[a-z]{2,3}" required className="w-28" /></Field>
-              <button className="rounded-md bg-slate-100 px-3 py-2 text-sm">Open</button>
+              <Field label="Add a language (code, e.g. tw, ha, sw, fr)"><div className="relative"><Languages className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" aria-hidden /><Input name="lang" pattern="[a-z]{2,3}" required className="w-36 pl-9 font-mono" /></div></Field>
+              <Button variant="secondary"><Plus className="h-4 w-4" />Open</Button>
             </form>
           )}
-        </Card>
+          {!editable && <p className="mt-4 flex items-center gap-2 text-xs text-subtle"><Globe className="h-3.5 w-3.5" />Only clinic admins can edit templates.</p>}
+        </Panel>
       </div>
     </>
   );

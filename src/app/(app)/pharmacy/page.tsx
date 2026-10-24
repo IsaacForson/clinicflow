@@ -9,6 +9,9 @@ import { can } from "@/lib/permissions";
 
 export const metadata = { title: "Pharmacy" };
 
+function waitMin(d: Date) { return Math.floor((Date.now() - d.getTime()) / 60_000); }
+function wait(d: Date) { const m = waitMin(d); return m < 60 ? `${m}m` : m < 2880 ? `${Math.floor(m / 60)}h` : `${Math.floor(m / 1440)}d`; }
+
 export default async function PharmacyPage() {
   const ctx = await requireCtx("dispense");
   const { rows, lines } = await tx(ctx, async (t) => {
@@ -21,8 +24,6 @@ export default async function PharmacyPage() {
   const recent = await tx(ctx, (t) => t.select({ rx: prescriptions, p: patients }).from(prescriptions).innerJoin(patients, eq(patients.id, prescriptions.patientId))
     .where(eq(prescriptions.status, "dispensed")).orderBy(desc(prescriptions.createdAt)).limit(10));
   const tz = ctx.tenant.timezone;
-  const waitMin = (d: Date) => Math.floor((Date.now() - d.getTime()) / 60_000);
-  const wait = (d: Date) => { const m = waitMin(d); return m < 60 ? `${m}m` : m < 2880 ? `${Math.floor(m / 60)}h` : `${Math.floor(m / 1440)}d`; };
   const partial = rows.filter((r) => r.rx.status === "partially_dispensed").length;
   return (
     <>
