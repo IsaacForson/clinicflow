@@ -1,4 +1,5 @@
 import { LogOut, Plus, ShieldAlert, Sparkles } from "lucide-react";
+import { Avatar, Callout, LinkButton, StatusDot } from "@/components/ui";
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireCtx } from "@/lib/auth";
@@ -40,30 +41,29 @@ const ACTIONS: { href: string; label: string; perm: Permission }[] = [
   { href: "/lab/new", label: "New lab order", perm: "lab.result" },
 ];
 
-const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("");
-
 async function SessionNav() {
   const ctx = await requireCtx();
   const items = NAV.filter((n) => (!n.perm || can(ctx.user.role, n.perm)) && (!n.feature || hasFeature(ctx.tenant, n.feature)))
     .map(({ href, label, icon, group }) => ({ href, label, icon, group }));
+  const fullName = [ctx.user.title, ctx.user.name].filter(Boolean).join(" ");
   return (
     <>
       <Nav items={items} clinic={ctx.tenant.name} footer={
         <div className="space-y-2">
           {ctx.branches.length > 1 && (
-            <form action={switchBranchAction} className="flex gap-1.5">
+            <form action={switchBranchAction} className="flex gap-1.5 lg:rail:hidden">
               <select name="branchId" defaultValue={ctx.branchId} aria-label="Branch"
-                className="min-w-0 flex-1 rounded-lg border-0 bg-white/[0.06] py-1.5 pl-2.5 text-xs text-slate-200 ring-1 ring-white/10 focus:ring-cyan-400">
-                {ctx.branches.map((b) => <option key={b.id} value={b.id} className="text-slate-900">{b.name}</option>)}
+                className="h-9 min-w-0 flex-1 rounded-xl border border-line bg-surface-2 px-2.5 text-xs text-fg">
+                {ctx.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
-              <button className="rounded-lg bg-white/[0.08] px-2.5 text-xs font-medium text-slate-200 hover:bg-white/[0.14]">Switch</button>
+              <button className="rounded-xl border border-line bg-surface-2 px-2.5 text-xs font-medium text-fg hover:bg-surface-3">Switch</button>
             </form>
           )}
-          <Link href="/account" className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-white/[0.05]">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-cyan-400 text-xs font-semibold text-white ring-2 ring-white/10">{initials(ctx.user.name)}</span>
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-medium text-slate-100">{[ctx.user.title, ctx.user.name].filter(Boolean).join(" ")}</span>
-              <span className="block truncate text-xs text-slate-500">{ROLE_LABELS[ctx.user.role]}</span>
+          <Link href="/account" title={fullName} className="flex items-center gap-3 rounded-2xl p-1.5 transition hover:bg-surface-2 lg:rail:justify-center">
+            <Avatar name={ctx.user.name} />
+            <span className="min-w-0 lg:rail:hidden">
+              <span className="block truncate text-sm font-medium text-fg">{fullName}</span>
+              <span className="block truncate text-[11px] text-subtle">{ROLE_LABELS[ctx.user.role]}</span>
             </span>
           </Link>
         </div>
@@ -77,17 +77,17 @@ async function TopBar() {
   const ctx = await requireCtx();
   const branch = ctx.branches.find((b) => b.id === ctx.branchId)?.name;
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-900/5 bg-white/60 backdrop-blur-xl print:hidden">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 pl-16 pr-4 lg:px-8">
+    <header className="sticky top-3 z-20 px-3 print:hidden lg:px-6">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 rounded-2xl border border-line bg-solid/70 pl-14 pr-2 shadow-panel backdrop-blur-2xl lg:pl-2">
         <CommandTrigger canSearch={can(ctx.user.role, "patients.read")} />
         <div className="ml-auto flex items-center gap-2">
-          {ctx.branches.length > 1 && <span className="hidden rounded-full bg-slate-900/5 px-3 py-1 text-xs font-medium text-slate-600 md:inline">{branch}</span>}
+          <span className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-1.5 text-xs text-muted md:inline-flex">
+            <StatusDot tone="green" label="Online" /> {branch ?? ctx.tenant.name}
+          </span>
           {can(ctx.user.role, "patients.write") && ctx.access === "full" && (
-            <Link href="/patients/new" className="hidden h-10 items-center gap-1.5 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 px-3.5 text-sm font-medium text-white shadow-glow transition hover:brightness-110 sm:inline-flex">
-              <Plus className="h-4 w-4" aria-hidden /> New patient
-            </Link>
+            <LinkButton href="/patients/new" size="sm" className="hidden h-9 sm:inline-flex"><Plus className="h-4 w-4" aria-hidden /> New patient</LinkButton>
           )}
-          <SignOutButton action={logoutAction} className="grid h-10 w-10 place-items-center rounded-xl text-slate-500 ring-1 ring-slate-900/10 transition hover:bg-white hover:text-slate-900">
+          <SignOutButton action={logoutAction} className="grid h-9 w-9 place-items-center rounded-xl border border-line text-muted transition hover:bg-surface-3 hover:text-fg">
             <LogOut className="h-4 w-4" aria-label="Sign out" />
           </SignOutButton>
         </div>
@@ -99,55 +99,50 @@ async function TopBar() {
 async function Banners() {
   const ctx = await requireCtx();
   const trialDays = trialDaysLeft(ctx.tenant);
-  const bar = "mx-auto mt-4 flex max-w-7xl items-center gap-3 rounded-2xl px-4 py-2.5 text-sm print:hidden";
+  const show = ctx.access === "read_only" || (trialDays !== null && trialDays <= 7) || (ctx.user.role === "owner" && !ctx.user.totpEnabled);
+  if (!show) return null;
   return (
-    <div className="px-4 lg:px-8">
+    <div className="mx-auto mt-4 max-w-[1400px] space-y-2 px-3 lg:px-6">
       {ctx.access === "read_only" && (
-        <div className={`${bar} bg-amber-500/10 text-amber-900 ring-1 ring-amber-500/20`}>
-          <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden />
-          <span>This account is read-only because the subscription is unpaid. Your data is safe and exportable.</span>
-          <Link href="/settings/subscription" className="ml-auto font-semibold underline">Renew</Link>
-        </div>
+        <Callout tone="yellow" icon={<ShieldAlert />} actions={<LinkButton href="/settings/subscription" size="sm" variant="secondary">Renew</LinkButton>}>
+          Read-only mode: the subscription is unpaid. Your data is safe and you can still export everything.
+        </Callout>
       )}
       {trialDays !== null && trialDays <= 7 && ctx.access === "full" && (
-        <div className={`${bar} bg-gradient-to-r from-brand-500/10 to-cyan-400/10 text-brand-900 ring-1 ring-brand-500/15`}>
-          <Sparkles className="h-4 w-4 shrink-0 text-brand-500" aria-hidden />
-          <span>{trialDays > 0 ? `${trialDays} day${trialDays === 1 ? "" : "s"} left in your trial.` : "Your trial has ended."}</span>
-          {can(ctx.user.role, "settings.manage") && <Link href="/settings/subscription" className="ml-auto font-semibold underline">Choose a plan</Link>}
-        </div>
+        <Callout tone="purple" icon={<Sparkles />} actions={can(ctx.user.role, "settings.manage") && <LinkButton href="/settings/subscription" size="sm">Choose a plan</LinkButton>}>
+          {trialDays > 0 ? `${trialDays} day${trialDays === 1 ? "" : "s"} left in your free trial.` : "Your free trial has ended."}
+        </Callout>
       )}
       {ctx.user.role === "owner" && !ctx.user.totpEnabled && (
-        <div className={`${bar} bg-white/70 text-xs text-slate-600 ring-1 ring-slate-900/5`}>
-          <ShieldAlert className="h-4 w-4 shrink-0 text-brand-500" aria-hidden />
-          <span>Protect patient data: turn on two-factor authentication for your owner account.</span>
-          <Link href="/account" className="ml-auto font-semibold text-brand-700 underline">Set up</Link>
-        </div>
+        <Callout tone="blue" icon={<ShieldAlert />} actions={<LinkButton href="/account" size="sm" variant="secondary">Set up 2FA</LinkButton>}>
+          Protect patient data with two-factor authentication on your owner account.
+        </Callout>
       )}
     </div>
   );
 }
 
 const PageFallback = (
-  <div className="space-y-4">
-    <div className="h-8 w-56 animate-pulse rounded-xl bg-slate-900/[0.06]" />
-    <div className="grid gap-4 sm:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-900/[0.05]" />)}</div>
-    <div className="h-64 animate-pulse rounded-2xl bg-slate-900/[0.05]" />
+  <div className="space-y-6" aria-busy="true">
+    <div className="skeleton h-10 w-72" />
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-32 rounded-[1.25rem]" />)}</div>
+    <div className="skeleton h-80 rounded-[1.25rem]" />
   </div>
 );
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="cf-aurora min-h-screen print:bg-white">
-      <Suspense fallback={<aside className="fixed inset-y-0 left-0 hidden w-64 bg-slate-950 lg:block"><div className="p-5"><LogoMark /></div></aside>}>
+    <div className="backdrop-os min-h-screen text-fg print:bg-white">
+      <Suspense fallback={<aside className="fixed inset-y-3 left-3 hidden w-[248px] rounded-3xl border border-line bg-solid/80 lg:block lg:rail:w-[76px]"><div className="p-4"><LogoMark /></div></aside>}>
         <SessionNav />
       </Suspense>
-      <div className="lg:pl-64">
+      <div className="transition-[padding] duration-300 lg:pl-[260px] lg:rail:pl-[88px] print:pl-0">
         <OfflineBanner />
         <SwRegister />
         <OutboxSync />
-        <Suspense fallback={<div className="h-16 border-b border-slate-900/5 bg-white/60" />}><TopBar /></Suspense>
+        <Suspense fallback={<div className="mx-3 mt-3 h-14 rounded-2xl border border-line bg-solid/70 lg:mx-6" />}><TopBar /></Suspense>
         <Suspense fallback={null}><Banners /></Suspense>
-        <main className="mx-auto max-w-7xl px-4 py-8 lg:px-8 print:max-w-none print:p-0">
+        <main className="mx-auto max-w-[1400px] px-4 pb-16 pt-8 lg:px-8 print:max-w-none print:p-0">
           <Suspense fallback={PageFallback}>{children}</Suspense>
         </main>
       </div>

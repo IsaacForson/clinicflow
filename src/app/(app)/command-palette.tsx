@@ -58,11 +58,11 @@ export function CommandPalette({ pages, actions, canSearch }: { pages: NavItem[]
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-slate-950/40 px-4 pt-[12vh] backdrop-blur-sm print:hidden" onMouseDown={close}>
+    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-canvas/70 px-4 pt-[12vh] backdrop-blur-md print:hidden" onMouseDown={close}>
       <div role="dialog" aria-modal="true" aria-label="Search and commands" onMouseDown={(e) => e.stopPropagation()}
-        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white/95 shadow-2xl ring-1 ring-slate-900/10 backdrop-blur-xl animate-fade-up">
-        <div className="flex items-center gap-3 border-b border-slate-900/5 px-4">
-          <Search className="h-5 w-5 text-brand-500" aria-hidden />
+        className="w-full max-w-xl overflow-hidden rounded-3xl border border-line-strong bg-solid/95 shadow-panel backdrop-blur-2xl animate-rise ring-aurora">
+        <div className="flex items-center gap-3 border-b border-line px-5">
+          <Search className="h-5 w-5 text-accent" aria-hidden />
           <input ref={inputRef} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }}
             onKeyDown={(e) => {
               if (e.key === "Escape") close();
@@ -71,8 +71,8 @@ export function CommandPalette({ pages, actions, canSearch }: { pages: NavItem[]
               else if (e.key === "Enter") { e.preventDefault(); go(entries[sel]); }
             }}
             placeholder={canSearch ? "Search patients by name, phone or number… or jump to a page" : "Jump to a page or action…"}
-            className="h-14 flex-1 bg-transparent text-[15px] text-slate-900 outline-none placeholder:text-slate-400" aria-label="Search" />
-          <kbd className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-500">esc</kbd>
+            className="h-14 flex-1 bg-transparent text-[15px] text-fg outline-none placeholder:text-subtle" aria-label="Search" />
+          <kbd className="rounded-md border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted">esc</kbd>
         </div>
         <ul className="max-h-[60vh] overflow-y-auto p-2" role="listbox">
           {entries.map((e, idx) => {
@@ -80,24 +80,24 @@ export function CommandPalette({ pages, actions, canSearch }: { pages: NavItem[]
             const first = idx === 0 || entries[idx - 1].kind !== e.kind;
             return (
               <li key={e.key}>
-                {first && <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">{e.kind === "patient" ? "Patients" : e.kind === "action" ? "Quick actions" : "Go to"}</div>}
+                {first && <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">{e.kind === "patient" ? "Patients" : e.kind === "action" ? "Quick actions" : "Go to"}</div>}
                 <button type="button" role="option" aria-selected={idx === sel} onMouseEnter={() => setActive(idx)} onClick={() => go(e)}
-                  className={cx("flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition", idx === sel ? "bg-gradient-to-r from-brand-500/10 to-cyan-400/10 text-slate-950" : "text-slate-700")}>
-                  <span className={cx("grid h-8 w-8 shrink-0 place-items-center rounded-lg", e.kind === "patient" ? "bg-brand-500/10 text-brand-600" : e.kind === "action" ? "bg-amber-500/10 text-amber-600" : "bg-slate-500/10 text-slate-500")}>
+                  className={cx("flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition", idx === sel ? "bg-surface-3 text-fg" : "text-muted")}>
+                  <span className={cx("grid h-8 w-8 shrink-0 place-items-center rounded-lg", e.kind === "patient" ? "bg-accent/15 text-accent" : e.kind === "action" ? "bg-warn/15 text-warn" : "bg-surface-3 text-muted")}>
                     <Icon className="h-4 w-4" aria-hidden />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{e.label}</span>
-                    {e.hint && <span className="block truncate text-xs text-slate-500">{e.hint}</span>}
+                    {e.hint && <span className="block truncate text-xs text-subtle">{e.hint}</span>}
                   </span>
-                  {idx === sel && <CornerDownLeft className="h-4 w-4 text-slate-400" aria-hidden />}
+                  {idx === sel && <CornerDownLeft className="h-4 w-4 text-subtle" aria-hidden />}
                 </button>
               </li>
             );
           })}
-          {entries.length === 0 && <li className="px-3 py-10 text-center text-sm text-slate-500">{searching ? "No patients or pages match." : "Type to search."}</li>}
+          {entries.length === 0 && <li className="px-3 py-10 text-center text-sm text-muted">{searching ? "No patients or pages match." : "Type to search."}</li>}
         </ul>
-        <div className="flex items-center gap-4 border-t border-slate-900/5 bg-slate-50/70 px-4 py-2 text-[11px] text-slate-500">
+        <div className="flex items-center gap-4 border-t border-line bg-surface px-5 py-2.5 text-[11px] text-subtle">
           <span><kbd className="font-mono">↑↓</kbd> navigate</span><span><kbd className="font-mono">↵</kbd> open</span><span><kbd className="font-mono">⌘K</kbd> toggle</span>
         </div>
       </div>
@@ -109,10 +109,10 @@ export function CommandPalette({ pages, actions, canSearch }: { pages: NavItem[]
 export function CommandTrigger({ canSearch }: { canSearch: boolean }) {
   return (
     <button type="button" onClick={() => window.dispatchEvent(new Event("cf:command"))}
-      className="group flex h-10 w-full max-w-md items-center gap-2.5 rounded-xl bg-white/70 px-3.5 text-sm text-slate-400 shadow-[inset_0_1px_2px_rgb(15_23_42/0.04)] ring-1 ring-slate-900/10 transition hover:bg-white hover:ring-brand-300">
-      <Search className="h-4 w-4 text-slate-400 group-hover:text-brand-500" aria-hidden />
+      className="group flex h-11 w-full max-w-lg items-center gap-3 rounded-2xl border border-line bg-surface px-4 text-sm text-subtle backdrop-blur-xl transition hover:border-line-strong hover:bg-surface-2">
+      <Search className="h-4 w-4 text-subtle group-hover:text-accent-2" aria-hidden />
       <span className="flex-1 truncate text-left">{canSearch ? "Search patients, pages, actions…" : "Jump to…"}</span>
-      <kbd className="hidden rounded-md bg-slate-900/5 px-1.5 py-0.5 font-mono text-[11px] text-slate-500 sm:inline">⌘K</kbd>
+      <kbd className="hidden rounded-md border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted sm:inline">⌘K</kbd>
     </button>
   );
 }
