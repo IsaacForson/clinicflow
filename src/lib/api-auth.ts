@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { adminDb, withTenant, type Tx } from "@/db";
@@ -60,6 +61,7 @@ export async function apiHandler(req: Request, scope: ApiScope, fn: (t: Tx, k: A
     const body = await withTenant(k.tenantId, (t) => fn(t, k));
     return body instanceof Response ? body : Response.json(body, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
+    unstable_rethrow(e); // let Next's own control-flow errors (prerender bailout, redirects) through
     if (e instanceof ApiError) return Response.json({ error: e.message }, { status: e.status, headers: e.status === 429 ? { "Retry-After": "60" } : undefined });
     if (e instanceof z.ZodError) return Response.json({ error: "Invalid request", issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })) }, { status: 422 });
     console.error(e);
