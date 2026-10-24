@@ -34,6 +34,10 @@ export default async function InboxPage({ searchParams }: PageProps<"/messages/i
     return map;
   }, new Map<string, typeof rows>())].map(([k, msgs]) => ({ k, msgs, latest: msgs[0] }));
   const active = convos.find((c) => c.k === sel) ?? convos[0];
+  // Full thread for the open conversation: patient replies and what the clinic sent, oldest first.
+  const thread = active ? await tx(ctx, (t) => t.select().from(messageLog)
+    .where(active.latest.p ? eq(messageLog.patientId, active.latest.p.id) : eq(messageLog.to, active.latest.m.to))
+    .orderBy(desc(messageLog.createdAt)).limit(60)) : [];
   const who = (r: (typeof rows)[number]) => (r.p ? fullName(r.p) : r.m.to);
   const time = (d: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit" }).format(d);
   return (
@@ -76,13 +80,14 @@ export default async function InboxPage({ searchParams }: PageProps<"/messages/i
                 </div>
               </header>
               <ol className="flex-1 space-y-4 overflow-y-auto px-5 py-6">
-                {[...active.msgs].reverse().map(({ m }) => (
-                  <li key={m.id} className="flex max-w-[85%] flex-col items-start gap-1">
-                    <div className="rounded-2xl rounded-bl-md border border-line bg-surface-2 px-4 py-2.5 text-sm text-fg shadow-panel">
+                {[...thread].reverse().map((m) => (
+                  <li key={m.id} className={cx("flex max-w-[85%] flex-col gap-1", m.direction === "out" ? "ml-auto items-end" : "items-start")}>
+                    <div className={cx("rounded-2xl px-4 py-2.5 text-sm shadow-panel", m.direction === "out" ? "rounded-br-md bg-aurora text-on-accent" : "rounded-bl-md border border-line bg-surface-2 text-fg")}>
                       <p className="whitespace-pre-wrap">{m.body}</p>
                     </div>
                     <div className="flex items-center gap-2 px-1 text-[11px] text-subtle">
                       <span className="tabular-nums">{dateTime(m.createdAt, tz)}</span><span className="capitalize">· {m.channel}</span>
+                      {m.direction === "out" && <span className="capitalize">· {m.status}</span>}
                       {m.templateKey?.startsWith("cmd:") && <span className="inline-flex items-center gap-1 rounded-md bg-accent-2/12 px-1.5 py-0.5 text-accent-2"><Bot className="h-3 w-3" />auto: {m.templateKey.slice(4)}</span>}
                     </div>
                   </li>

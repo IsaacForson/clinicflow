@@ -2,7 +2,7 @@ import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { ChevronRight, Phone, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { Avatar, Badge, EmptyState, Kbd, LinkButton, PageHeader, Panel } from "@/components/ui";
-import { patients } from "@/db/schema";
+import { insurers, patients } from "@/db/schema";
 import { requireCtx, tx } from "@/lib/auth";
 import { blindIndex } from "@/lib/crypto";
 import { age, dateOnly, e164, fullName } from "@/lib/format";
@@ -24,6 +24,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
       eq(patients.nationalIdIndex, blindIndex(q)), ilike(patients.memberNo, like),
     ))).orderBy(patients.lastName).limit(100);
   });
+  const insurerName = new Map((await tx(ctx, (t) => t.select({ id: insurers.id, name: insurers.name }).from(insurers))).map((i) => [i.id, i.name]));
   return (
     <>
       <PageHeader eyebrow="Care" icon={<Users />} title="Patients"
@@ -68,7 +69,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
                   </div>
                   <span className="hidden w-40 items-center gap-1.5 text-sm text-muted tabular-nums md:flex">{p.phone && <><Phone className="h-3.5 w-3.5 text-subtle" aria-hidden />{p.phone}</>}</span>
                   <span className="hidden w-28 lg:block">
-                    {p.insurerId ? <Badge tone="teal"><ShieldCheck className="h-3 w-3" aria-hidden />Insured</Badge> : <Badge>Self-pay</Badge>}
+                    {p.insurerId ? <Badge tone="teal"><ShieldCheck className="h-3 w-3" aria-hidden />{insurerName.get(p.insurerId) ?? "Insured"}</Badge> : <Badge>Self-pay</Badge>}
                   </span>
                   <span className="hidden w-28 text-right text-xs text-subtle sm:block">{dateOnly(p.createdAt, ctx.tenant.timezone)}</span>
                   <ChevronRight className="h-4 w-4 shrink-0 text-subtle transition group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden />

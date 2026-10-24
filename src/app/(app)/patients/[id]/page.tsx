@@ -12,7 +12,7 @@ import {
   allergies, appointments, consents, documents, guardians, insurers, invoices, patients, users, visits, vitals,
 } from "@/db/schema";
 import { audit, requireCtx, tx } from "@/lib/auth";
-import { patientCredit } from "@/lib/billing";
+import { outstandingForPatient, patientCredit } from "@/lib/billing";
 import { age, dateOnly, dateTime, fullName, money } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { addAllergyAction, addGuardianAction, recordConsentAction, removeAllergyAction, uploadDocumentAction } from "../actions";
@@ -65,6 +65,7 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
       appts: await t.select({ a: appointments, doctor: users.name }).from(appointments).leftJoin(users, eq(users.id, appointments.practitionerId)).where(eq(appointments.patientId, id)).orderBy(desc(appointments.startsAt)).limit(10),
       invoices: can(ctx.user.role, "billing.read") ? await t.select().from(invoices).where(eq(invoices.patientId, id)).orderBy(desc(invoices.createdAt)).limit(10) : [],
       credit: await patientCredit(t, id),
+      owed: await outstandingForPatient(t, id),
       insurers: await t.select({ id: insurers.id, name: insurers.name }).from(insurers).where(eq(insurers.active, true)),
       relatives: await t.select({ id: patients.id, firstName: patients.firstName, lastName: patients.lastName }).from(patients).where(and(eq(patients.phone, p.phone ?? "__none__"), isNull(patients.mergedIntoId))).limit(10),
     };
@@ -220,7 +221,7 @@ export default async function PatientPage({ params }: PageProps<"/patients/[id]"
 
         {can(role, "billing.read") && (
           <Panel eyebrow="Money" title="Invoices" icon={<Wallet />} className="lg:col-span-6"
-            actions={data.credit ? <Badge tone="green">Credit {money(data.credit, cur)}</Badge> : undefined}>
+            actions={<>{data.owed > 0 && <Badge tone="yellow">Owes {money(data.owed, cur)}</Badge>}{data.credit ? <Badge tone="green">Credit {money(data.credit, cur)}</Badge> : null}</>}>
             <Table head={["Invoice", "Date", "Total", "Balance", "Status"]} empty="No invoices yet.">
               {data.invoices.map((i) => (
                 <tr key={i.id}>
