@@ -6,6 +6,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
   title: { template: "%s · ClinicFlow", default: "ClinicFlow — Run your clinic without paper" },
   description: "Clinic software for private practices in Ghana, Nigeria and Kenya: queue and walk-ins, patient records, billing with mobile money and insurance, WhatsApp reminders. Works through unstable internet.",
   applicationName: "ClinicFlow",
