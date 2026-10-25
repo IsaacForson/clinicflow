@@ -10,7 +10,7 @@ const g = globalThis as unknown as { __cfAdmin?: Db; __cfApp?: Db };
 
 function connect(url: string | undefined, name: string): Db {
   if (!url) throw new Error(`${name} is not set`);
-  return drizzle(postgres(url, { max: 10, prepare: false }), { schema });
+  return drizzle(postgres(url, { max: 1, idle_timeout: 5, prepare: false }), { schema });
 }
 
 /** Owner connection: bypasses RLS. Only for auth, signup, workers, webhooks and migrations. */

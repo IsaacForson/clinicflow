@@ -8,3 +8,7 @@
 
 [functions."cron-tick"]
   schedule = "* * * * *"
+
+[[edge_functions]]
+  function = "strip-netlify-comment"
+  path = "/*"

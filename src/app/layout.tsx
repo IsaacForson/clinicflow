@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -19,13 +20,13 @@ export const viewport: Viewport = {
 };
 
 // Applies the saved theme before first paint (no flash). Values: "dark" | "light" | "system" (default: dark).
-const THEME_SCRIPT = `try{var t=localStorage.getItem("cf-theme")||"dark";if(t==="system")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;document.documentElement.dataset.rail=localStorage.getItem("cf-rail")==="1"?"collapsed":"open"}catch(e){}`;
+const THEME_SCRIPT = `try{var h=document.head;if(h){for(var n=h.firstChild;n;){var x=n.nextSibling;if(n.nodeType===8&&/Netlify/.test(n.nodeValue||""))h.removeChild(n);n=x}}var t=localStorage.getItem("cf-theme")||"dark";if(t==="system")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;document.documentElement.dataset.rail=localStorage.getItem("cf-rail")==="1"?"collapsed":"open"}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <Script id="boot" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
